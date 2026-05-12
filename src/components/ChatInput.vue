@@ -1,0 +1,187 @@
+<template>
+  <div class="chat-input-container">
+    <div class="input-wrapper">
+      <textarea
+        ref="textareaRef"
+        v-model="inputValue"
+        :placeholder="disabled ? 'Generating response...' : 'Send a message...'"
+        :disabled="disabled"
+        class="chat-textarea"
+        rows="1"
+        @keydown="handleKeydown"
+        @input="autoResize"
+      />
+      <button
+        :class="['send-btn', { active: inputValue.trim() && !disabled, streaming: isStreaming }]"
+        :disabled="!inputValue.trim() || disabled"
+        @click="handleSend"
+      >
+        <svg v-if="!isStreaming" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+        </svg>
+        <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <rect x="6" y="6" width="12" height="12" rx="2"/>
+        </svg>
+      </button>
+    </div>
+
+    <p class="input-hint">
+      Press <kbd>Enter</kbd> to send, <kbd>Shift + Enter</kbd> for new line
+    </p>
+  </div>
+</template>
+
+<script setup>
+import { ref, nextTick, watch } from 'vue'
+
+const props = defineProps({
+  disabled: { type: Boolean, default: false },
+  isStreaming: { type: Boolean, default: false },
+})
+
+const emit = defineEmits(['send', 'cancel'])
+
+const inputValue = ref('')
+const textareaRef = ref(null)
+
+function autoResize() {
+  const el = textareaRef.value
+  if (!el) return
+  el.style.height = 'auto'
+  el.style.height = Math.min(el.scrollHeight, 200) + 'px'
+}
+
+function handleKeydown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault()
+    handleSend()
+  }
+}
+
+function handleSend() {
+  const value = inputValue.value.trim()
+  if (!value || props.disabled) return
+
+  emit('send', value)
+  inputValue.value = ''
+
+  nextTick(() => {
+    autoResize()
+    textareaRef.value?.focus()
+  })
+}
+
+// Auto-resize on model changes
+watch(inputValue, () => {
+  autoResize()
+})
+
+function focus() {
+  textareaRef.value?.focus()
+}
+
+defineExpose({ focus })
+</script>
+
+<style scoped>
+.chat-input-container {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 1rem 1.5rem 1.5rem;
+  width: 100%;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  background: #2f2f2f;
+  border: 1px solid #424242;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-wrapper:focus-within {
+  border-color: #555;
+  box-shadow: 0 0 0 2px rgba(16, 163, 127, 0.15);
+}
+
+.chat-textarea {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #ececec;
+  font-size: 0.9375rem;
+  font-family: inherit;
+  line-height: 1.5;
+  resize: none;
+  max-height: 200px;
+  min-height: 24px;
+  padding: 0;
+}
+
+.chat-textarea::placeholder {
+  color: #6b6b6b;
+}
+
+.chat-textarea:disabled {
+  opacity: 0.6;
+}
+
+.send-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: #6b6b6b;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.send-btn.active {
+  background: #10a37f;
+  color: white;
+}
+
+.send-btn.active:hover {
+  background: #0d8a6c;
+}
+
+.send-btn.streaming {
+  background: #ef4444;
+  color: white;
+}
+
+.send-btn.streaming:hover {
+  background: #dc2626;
+}
+
+.send-btn:disabled {
+  cursor: not-allowed;
+}
+
+.input-hint {
+  text-align: center;
+  font-size: 0.6875rem;
+  color: #555;
+  margin-top: 0.5rem;
+}
+
+.input-hint kbd {
+  display: inline-block;
+  padding: 0.1rem 0.35rem;
+  background: #2f2f2f;
+  border: 1px solid #424242;
+  border-radius: 3px;
+  font-size: 0.625rem;
+  font-family: inherit;
+  color: #888;
+}
+</style>
