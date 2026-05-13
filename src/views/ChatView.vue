@@ -89,9 +89,10 @@ function scrollToBottom() {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: #212121;
+  background: var(--bg-primary);
   min-width: 0;
   position: relative;
+  transition: background-color 0.2s ease;
 }
 
 .welcome-screen {
@@ -110,21 +111,21 @@ function scrollToBottom() {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid #2f2f2f;
+  border: 2px solid var(--border-subtle);
   border-radius: 1rem;
-  background: #1e1e1e;
+  background: var(--bg-code);
 }
 
 .welcome-title {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #ececec;
+  color: var(--text-primary);
   text-align: center;
 }
 
 .welcome-sub {
   font-size: 0.9375rem;
-  color: #888;
+  color: var(--text-secondary);
   text-align: center;
   max-width: 36rem;
 }
@@ -137,7 +138,7 @@ function scrollToBottom() {
 
 .input-area-wrapper {
   flex-shrink: 0;
-  background: linear-gradient(transparent, #212121 20%);
+  background: linear-gradient(transparent, var(--bg-primary) 20%);
   padding-top: 2rem;
 }
 </style>

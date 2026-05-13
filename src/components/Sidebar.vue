@@ -98,12 +98,13 @@ function handleNewChat() {
 <style scoped>
 .sidebar {
   width: 260px;
-  background: #171717;
+  background: var(--bg-tertiary);
   display: flex;
   flex-direction: column;
   height: 100%;
   flex-shrink: 0;
-  border-right: 1px solid #2f2f2f;
+  border-right: 1px solid var(--border-subtle);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .sidebar-header {
@@ -116,17 +117,17 @@ function handleNewChat() {
   align-items: center;
   gap: 0.6rem;
   padding: 0.65rem 0.75rem;
-  border: 1px solid #424242;
+  border: 1px solid var(--border-color);
   border-radius: 0.5rem;
   background: transparent;
-  color: #ececec;
+  color: var(--text-primary);
   font-size: 0.875rem;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .new-chat-btn:hover {
-  background: #2f2f2f;
+  background: var(--bg-secondary);
 }
 
 .sidebar-search {
@@ -139,28 +140,28 @@ function handleNewChat() {
   left: 1.5rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #6b6b6b;
+  color: var(--text-muted);
   pointer-events: none;
 }
 
 .search-input {
   width: 100%;
   padding: 0.55rem 0.75rem 0.55rem 2.25rem;
-  border: 1px solid #424242;
+  border: 1px solid var(--border-color);
   border-radius: 0.5rem;
   background: transparent;
-  color: #ececec;
+  color: var(--text-primary);
   font-size: 0.8125rem;
   outline: none;
   transition: border-color 0.2s;
 }
 
 .search-input::placeholder {
-  color: #6b6b6b;
+  color: var(--text-muted);
 }
 
 .search-input:focus {
-  border-color: #10a37f;
+  border-color: var(--accent-primary);
 }
 
 .conversation-list {
@@ -181,11 +182,11 @@ function handleNewChat() {
 }
 
 .conversation-item:hover {
-  background: #2f2f2f;
+  background: var(--bg-secondary);
 }
 
 .conversation-item.active {
-  background: #3d3d3d;
+  background: var(--bg-elevated);
 }
 
 .conv-title {
@@ -194,7 +195,7 @@ function handleNewChat() {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: #ececec;
+  color: var(--text-primary);
 }
 
 .delete-btn {
@@ -206,7 +207,7 @@ function handleNewChat() {
   height: 24px;
   border: none;
   background: transparent;
-  color: #a0a0a0;
+  color: var(--text-secondary);
   cursor: pointer;
   border-radius: 4px;
   transition: all 0.15s;
@@ -217,20 +218,20 @@ function handleNewChat() {
 }
 
 .delete-btn:hover {
-  background: #4a4a4a;
+  background: var(--bg-elevated);
   color: #ef4444;
 }
 
 .empty-state {
   padding: 2rem 1rem;
   text-align: center;
-  color: #6b6b6b;
+  color: var(--text-muted);
   font-size: 0.8125rem;
 }
 
 .sidebar-footer {
   padding: 0.75rem;
-  border-top: 1px solid #2f2f2f;
+  border-top: 1px solid var(--border-subtle);
 }
 
 .footer-btn {
@@ -241,7 +242,7 @@ function handleNewChat() {
   padding: 0.6rem 0.75rem;
   border: none;
   background: transparent;
-  color: #a0a0a0;
+  color: var(--text-secondary);
   font-size: 0.8125rem;
   cursor: pointer;
   border-radius: 0.5rem;
@@ -249,7 +250,7 @@ function handleNewChat() {
 }
 
 .footer-btn:hover {
-  background: #2f2f2f;
-  color: #ececec;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
 }
 </style>

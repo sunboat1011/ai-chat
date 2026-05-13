@@ -95,15 +95,15 @@ defineExpose({ focus })
   position: relative;
   display: flex;
   align-items: flex-end;
-  background: #2f2f2f;
-  border: 1px solid #424242;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 0.75rem;
   padding: 0.75rem;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .input-wrapper:focus-within {
-  border-color: #555;
+  border-color: var(--accent-primary);
   box-shadow: 0 0 0 2px rgba(16, 163, 127, 0.15);
 }
 
@@ -112,7 +112,7 @@ defineExpose({ focus })
   background: transparent;
   border: none;
   outline: none;
-  color: #ececec;
+  color: var(--text-primary);
   font-size: 0.9375rem;
   font-family: inherit;
   line-height: 1.5;
@@ -123,7 +123,7 @@ defineExpose({ focus })
 }
 
 .chat-textarea::placeholder {
-  color: #6b6b6b;
+  color: var(--text-muted);
 }
 
 .chat-textarea:disabled {
@@ -139,19 +139,19 @@ defineExpose({ focus })
   border: none;
   border-radius: 0.5rem;
   background: transparent;
-  color: #6b6b6b;
+  color: var(--text-muted);
   cursor: pointer;
   transition: all 0.2s;
   flex-shrink: 0;
 }
 
 .send-btn.active {
-  background: #10a37f;
+  background: var(--accent-primary);
   color: white;
 }
 
 .send-btn.active:hover {
-  background: #0d8a6c;
+  background: var(--accent-hover);
 }
 
 .send-btn.streaming {
@@ -170,18 +170,18 @@ defineExpose({ focus })
 .input-hint {
   text-align: center;
   font-size: 0.6875rem;
-  color: #555;
+  color: var(--text-muted);
   margin-top: 0.5rem;
 }
 
 .input-hint kbd {
   display: inline-block;
   padding: 0.1rem 0.35rem;
-  background: #2f2f2f;
-  border: 1px solid #424242;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 3px;
   font-size: 0.625rem;
   font-family: inherit;
-  color: #888;
+  color: var(--text-secondary);
 }
 </style>

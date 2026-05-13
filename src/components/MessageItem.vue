@@ -111,7 +111,7 @@ async function copyMessage() {
 }
 
 .message-wrapper.user {
-  background: #2f2f2f;
+  background: var(--bg-secondary);
   margin: 0 -1.5rem;
   padding: 1.25rem 1.5rem;
 }
@@ -150,8 +150,8 @@ async function copyMessage() {
 }
 
 .ai-avatar {
-  background: #2f2f2f;
-  border: 1px solid #424242;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
 }
 
 .message-body {
@@ -163,7 +163,7 @@ async function copyMessage() {
   font-size: 0.8125rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
-  color: #ececec;
+  color: var(--text-primary);
 }
 
 .message-actions {
@@ -185,14 +185,14 @@ async function copyMessage() {
   padding: 0.3rem;
   border: none;
   background: transparent;
-  color: #6b6b6b;
+  color: var(--text-muted);
   cursor: pointer;
   border-radius: 4px;
   transition: all 0.15s;
 }
 
 .action-btn:hover {
-  background: #3d3d3d;
-  color: #ececec;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
 }
 </style>
