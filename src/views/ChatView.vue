@@ -19,6 +19,7 @@
         v-for="msg in messages"
         :key="msg.id"
         :message="msg"
+        @edit="handleEdit"
       />
     </div>
 
@@ -44,7 +45,7 @@ const props = defineProps({
   isLoading: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['send', 'cancel'])
+const emit = defineEmits(['send', 'cancel', 'edit'])
 
 const messagesContainerRef = ref(null)
 
@@ -54,6 +55,10 @@ function handleSend(message) {
 
 function cancelStreaming() {
   emit('cancel')
+}
+
+function handleEdit(messageId, newContent) {
+  emit('edit', messageId, newContent)
 }
 
 // Auto-scroll to bottom on new messages

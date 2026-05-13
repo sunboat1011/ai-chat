@@ -14,6 +14,7 @@
       :is-loading="isLoading"
       @send="handleSendMessage"
       @cancel="handleCancelStreaming"
+      @edit="handleEditMessage"
     />
 
     <SettingsModal
@@ -46,6 +47,7 @@ const {
   deleteConversation,
   sendMessage,
   cancelStreaming,
+  editMessage,
 } = useChat()
 
 onMounted(() => {
@@ -77,6 +79,10 @@ async function handleSendMessage(message) {
 
 function handleCancelStreaming() {
   cancelStreaming()
+}
+
+async function handleEditMessage(messageId, newContent) {
+  await editMessage(messageId, newContent)
 }
 
 function closeSettings() {

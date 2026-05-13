@@ -125,6 +125,21 @@ export function useChat() {
     abortController.value?.abort()
   }
 
+  // ─── Edit Message ───
+  async function editMessage(messageId, newContent) {
+    if (!newContent.trim() || isLoading.value) return
+
+    const index = messages.value.findIndex((m) => m.id === messageId)
+    if (index === -1) return
+
+    // Truncate from this message onward
+    messages.value = messages.value.slice(0, index)
+    persistConversation()
+
+    // Re-send with edited content
+    await sendMessage(newContent)
+  }
+
   function persistConversation() {
     const conv = conversations.value.find((c) => c.id === activeConversation.value)
     if (conv) {
@@ -145,5 +160,6 @@ export function useChat() {
     updateConversationTitle,
     sendMessage,
     cancelStreaming,
+    editMessage,
   }
 }
