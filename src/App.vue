@@ -6,7 +6,7 @@
       @select="handleSelectConversation"
       @delete="handleDeleteConversation"
       @new-chat="handleNewChat"
-      @toggle-theme="toggleTheme"
+      @open-settings="isSettingsOpen = true"
     />
 
     <router-view
@@ -15,17 +15,25 @@
       @send="handleSendMessage"
       @cancel="handleCancelStreaming"
     />
+
+    <SettingsModal
+      v-if="isSettingsOpen"
+      @close="closeSettings"
+    />
   </div>
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { onMounted, provide } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Sidebar from '@/components/Sidebar.vue'
+import SettingsModal from '@/components/SettingsModal.vue'
 import { useChat } from '@/composables/useChat'
 
 const route = useRoute()
 const router = useRouter()
+const isSettingsOpen = ref(false)
 
 const {
   conversations,
@@ -71,9 +79,8 @@ function handleCancelStreaming() {
   cancelStreaming()
 }
 
-function toggleTheme() {
-  // Placeholder: could toggle a dark/light class on <html>
-  console.log('Theme toggle clicked — implement light/dark swap here.')
+function closeSettings() {
+  isSettingsOpen.value = false
 }
 </script>
 

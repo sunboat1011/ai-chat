@@ -11,13 +11,14 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api'
  * @param {Function} options.onError    - Called on network / parse error
  * @returns {AbortController} - Call .abort() on this to cancel the request
  */
-export function streamChat({ message, conversationId, onChunk, onDone, onError }) {
+export function streamChat({ apiBaseUrl, model, message, conversationId, onChunk, onDone, onError }) {
+  const API_BASE = apiBaseUrl || import.meta.env.VITE_API_BASE_URL || '/api'
   const controller = new AbortController()
 
   fetch(`${API_BASE}/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, conversationId }),
+    body: JSON.stringify({ message, conversationId, model }),
     signal: controller.signal,
   })
     .then(async (res) => {

@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { streamChat, fetchConversations, createConversation as apiCreateConversation } from '@/api/chat'
 import { loadConversations, saveConversations, generateId } from '@/utils/storage'
+import { useSettings } from '@/composables'
 
 /**
  * Composable that manages chat state: conversations, messages, streaming.
@@ -9,6 +10,7 @@ import { loadConversations, saveConversations, generateId } from '@/utils/storag
  * For simplicity this composable uses reactive refs.
  */
 export function useChat() {
+  const { settings } = useSettings()
   const conversations = ref(loadConversations())
   const activeConversation = ref(null)
   const messages = ref([])
@@ -95,6 +97,8 @@ export function useChat() {
 
     // Call streaming API
     abortController.value = streamChat({
+      apiBaseUrl: settings.value.apiBaseUrl,
+      model: settings.value.model,
       message: userContent.trim(),
       conversationId: convId,
       onChunk: (chunk, fullText) => {
