@@ -23,6 +23,7 @@
           ref="contentRef"
           class="markdown-body"
           v-html="renderedContent"
+          @click="handleContentClick"
         ></div>
 
         <div v-if="message.streaming" class="typing-indicator">
@@ -100,6 +101,40 @@ async function copyMessage() {
     document.body.removeChild(textarea)
     copied.value = true
     setTimeout(() => { copied.value = false }, 2000)
+  }
+}
+
+/**
+ * Event-delegation handler for clicks inside rendered markdown.
+ * Currently handles code-block copy buttons (replaces inline onclick).
+ */
+async function handleContentClick(e) {
+  const btn = e.target.closest('button[data-action="copy-code"]')
+  if (!btn) return
+
+  const wrapper = btn.closest('.code-block-wrapper')
+  const codeEl = wrapper?.querySelector('code')
+  if (!codeEl) return
+
+  try {
+    await navigator.clipboard.writeText(codeEl.textContent)
+    btn.classList.add('copied')
+    btn.innerHTML = `
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      Copied!`
+    setTimeout(() => {
+      btn.classList.remove('copied')
+      btn.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+          <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+        </svg>
+        Copy`
+    }, 2000)
+  } catch {
+    // silently ignore clipboard errors
   }
 }
 </script>
