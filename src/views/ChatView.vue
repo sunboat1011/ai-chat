@@ -85,13 +85,24 @@
     </div>
 
     <!-- Messages -->
-    <div ref="messagesContainerRef" class="messages-container">
+    <div ref="messagesContainerRef" class="messages-container" @scroll="handleMessagesScroll">
+      <button
+        v-if="hiddenCount > 0"
+        class="load-earlier-btn"
+        aria-label="Load earlier messages"
+        @click="loadEarlier"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="18 15 12 9 6 15"/>
+        </svg>
+        Load earlier ({{ hiddenCount }} {{ hiddenCount === 1 ? 'message' : 'messages' }})
+      </button>
       <MessageItem
-        v-for="(msg, idx) in messages"
+        v-for="(msg, idx) in visibleMessages"
         :key="msg.id"
         :message="msg"
         :search-query="searchQuery"
-        :current-local-match-index="getLocalMatchIndex(idx)"
+        :current-local-match-index="getLocalMatchIndex(visibleStartIndex + idx)"
         @edit="handleEdit"
         @delete="handleDelete"
         @regenerate="handleRegenerate"
@@ -118,6 +129,7 @@ import ChatInput from '@/components/ChatInput.vue'
 const props = defineProps({
   messages: { type: Array, required: true },
   isLoading: { type: Boolean, default: false },
+  activeConversation: { type: String, default: null },
 })
 
 const emit = defineEmits(['send', 'cancel', 'edit', 'delete', 'regenerate'])
@@ -127,6 +139,62 @@ const searchInputRef = ref(null)
 const showSearch = ref(false)
 const searchQuery = ref('')
 const currentMatchIndex = ref(0)
+
+// ─── Virtual scrolling: render only the latest N messages, load more on scroll-up ───
+const INITIAL_BATCH = 50
+const LOAD_MORE_BATCH = 50
+const SCROLL_NEAR_TOP_PX = 80
+
+const visibleCount = ref(INITIAL_BATCH)
+let isLoadingMore = false
+
+const visibleMessages = computed(() => {
+  const total = props.messages.length
+  if (visibleCount.value >= total) return props.messages
+  return props.messages.slice(total - visibleCount.value)
+})
+
+const visibleStartIndex = computed(
+  () => props.messages.length - visibleMessages.value.length
+)
+
+const hiddenCount = computed(
+  () => props.messages.length - visibleMessages.value.length
+)
+
+async function loadEarlier() {
+  if (isLoadingMore || hiddenCount.value === 0) return
+  isLoadingMore = true
+  const el = messagesContainerRef.value
+  const prevScrollHeight = el?.scrollHeight ?? 0
+  const prevScrollTop = el?.scrollTop ?? 0
+  visibleCount.value = Math.min(
+    visibleCount.value + LOAD_MORE_BATCH,
+    props.messages.length
+  )
+  await nextTick()
+  if (el) {
+    const delta = el.scrollHeight - prevScrollHeight
+    el.scrollTop = prevScrollTop + delta
+  }
+  isLoadingMore = false
+}
+
+function handleMessagesScroll() {
+  const el = messagesContainerRef.value
+  if (!el || hiddenCount.value === 0) return
+  if (el.scrollTop < SCROLL_NEAR_TOP_PX) {
+    loadEarlier()
+  }
+}
+
+// Reset window when switching conversations
+watch(
+  () => props.activeConversation,
+  () => {
+    visibleCount.value = INITIAL_BATCH
+  }
+)
 
 // ─── Search: count matches per message based on raw content ───
 const matchCountsPerMessage = computed(() => {
@@ -174,6 +242,25 @@ watch(totalMatches, (n) => {
     currentMatchIndex.value = 0
   }
 })
+
+// If the current search match falls in the hidden range, expand the window
+watch(
+  () => [currentMatchIndex.value, totalMatches.value, searchQuery.value],
+  () => {
+    if (!searchQuery.value || totalMatches.value === 0) return
+    if (currentMatchIndex.value < 0) return
+    let cumulative = 0
+    for (let i = 0; i < matchCountsPerMessage.value.length; i++) {
+      cumulative += matchCountsPerMessage.value[i]
+      if (cumulative > currentMatchIndex.value) {
+        if (i < visibleStartIndex.value) {
+          visibleCount.value = props.messages.length - i
+        }
+        return
+      }
+    }
+  }
+)
 
 function nextMatch() {
   if (totalMatches.value === 0) return
@@ -461,5 +548,33 @@ function scrollToBottom() {
   flex-shrink: 0;
   background: linear-gradient(transparent, var(--bg-primary) 20%);
   padding-top: 2rem;
+}
+
+.load-earlier-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  max-width: 14rem;
+  margin: 0.75rem auto 0.25rem;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.load-earlier-btn:hover {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.load-earlier-btn svg {
+  flex-shrink: 0;
 }
 </style>

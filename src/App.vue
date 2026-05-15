@@ -12,6 +12,7 @@
     <router-view
       :messages="messages"
       :is-loading="isLoading"
+      :active-conversation="activeConversation"
       @send="handleSendMessage"
       @cancel="handleCancelStreaming"
       @edit="handleEditMessage"
