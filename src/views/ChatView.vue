@@ -20,6 +20,7 @@
         :key="msg.id"
         :message="msg"
         @edit="handleEdit"
+        @delete="handleDelete"
       />
     </div>
 
@@ -45,7 +46,7 @@ const props = defineProps({
   isLoading: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['send', 'cancel', 'edit'])
+const emit = defineEmits(['send', 'cancel', 'edit', 'delete'])
 
 const messagesContainerRef = ref(null)
 
@@ -59,6 +60,10 @@ function cancelStreaming() {
 
 function handleEdit(messageId, newContent) {
   emit('edit', messageId, newContent)
+}
+
+function handleDelete(messageId) {
+  emit('delete', messageId)
 }
 
 // Auto-scroll to bottom on new messages

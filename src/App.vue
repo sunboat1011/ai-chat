@@ -15,7 +15,14 @@
       @send="handleSendMessage"
       @cancel="handleCancelStreaming"
       @edit="handleEditMessage"
+      @delete="handleDeleteMessage"
     />
+
+    <!-- Undo toast -->
+    <div v-if="lastDeleted" class="undo-toast">
+      <span>Message deleted</span>
+      <button class="undo-btn" @click="handleUndoDelete">Undo</button>
+    </div>
 
     <SettingsModal
       v-if="isSettingsOpen"
@@ -41,6 +48,7 @@ const {
   activeConversation,
   messages,
   isLoading,
+  lastDeleted,
   init,
   setActiveConversation,
   createNewConversation,
@@ -48,6 +56,8 @@ const {
   sendMessage,
   cancelStreaming,
   editMessage,
+  deleteMessage,
+  undoDelete,
 } = useChat()
 
 onMounted(() => {
@@ -85,6 +95,14 @@ async function handleEditMessage(messageId, newContent) {
   await editMessage(messageId, newContent)
 }
 
+function handleDeleteMessage(messageId) {
+  deleteMessage(messageId)
+}
+
+function handleUndoDelete() {
+  undoDelete()
+}
+
 function closeSettings() {
   isSettingsOpen.value = false
 }
@@ -96,5 +114,51 @@ function closeSettings() {
   height: 100vh;
   width: 100vw;
   overflow: hidden;
+}
+
+.undo-toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.625rem 1.25rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  animation: slideUp 0.2s ease-out;
+}
+
+.undo-btn {
+  padding: 0.25rem 0.75rem;
+  border: none;
+  background: var(--accent-primary);
+  color: white;
+  border-radius: 0.25rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.undo-btn:hover {
+  background: var(--accent-hover);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
 </style>

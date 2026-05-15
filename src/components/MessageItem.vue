@@ -56,6 +56,12 @@
                 <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
               </svg>
             </button>
+            <button class="action-btn" @click="confirmDelete" title="Delete">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+              </svg>
+            </button>
             <button class="action-btn" @click="copyMessage" title="Copy">
               <svg v-if="!copied" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
@@ -80,7 +86,7 @@ const props = defineProps({
   message: { type: Object, required: true },
 })
 
-const emit = defineEmits(['edit'])
+const emit = defineEmits(['edit', 'delete'])
 
 const contentRef = ref(null)
 const copied = ref(false)
@@ -157,6 +163,13 @@ function autoResizeEdit() {
   if (!el) return
   el.style.height = 'auto'
   el.style.height = Math.min(el.scrollHeight, 200) + 'px'
+}
+
+function confirmDelete() {
+  if (props.message.streaming) return
+  if (window.confirm('Are you sure you want to delete this message?')) {
+    emit('delete', props.message.id)
+  }
 }
 
 async function copyMessage() {

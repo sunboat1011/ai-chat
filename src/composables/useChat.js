@@ -17,6 +17,10 @@ export function useChat() {
   const isLoading = ref(false)
   const abortController = ref(null)
 
+  // ─── Delete undo ───
+  const lastDeleted = ref(null)
+  let undoTimer = null
+
   // ─── Initialize ───
   function init() {
     if (!activeConversation.value && conversations.value.length > 0) {
@@ -140,6 +144,57 @@ export function useChat() {
     await sendMessage(newContent)
   }
 
+  // ─── Delete Message ───
+  function deleteMessage(messageId) {
+    if (isLoading.value) return
+    const index = messages.value.findIndex((m) => m.id === messageId)
+    if (index === -1) return
+
+    // Cancel any pending undo timer
+    if (undoTimer) {
+      clearTimeout(undoTimer)
+      undoTimer = null
+    }
+
+    const deleted = messages.value[index]
+    lastDeleted.value = { message: deleted, index, convId: activeConversation.value }
+
+    messages.value.splice(index, 1)
+    persistConversation()
+
+    // Auto-clear undo after 5 seconds
+    undoTimer = setTimeout(() => {
+      lastDeleted.value = null
+      undoTimer = null
+    }, 5000)
+  }
+
+  function undoDelete() {
+    if (!lastDeleted.value) return
+    const { message, index, convId } = lastDeleted.value
+
+    if (activeConversation.value !== convId) {
+      setActiveConversation(convId)
+    }
+
+    messages.value.splice(index, 0, message)
+    persistConversation()
+
+    if (undoTimer) {
+      clearTimeout(undoTimer)
+      undoTimer = null
+    }
+    lastDeleted.value = null
+  }
+
+  function clearUndo() {
+    if (undoTimer) {
+      clearTimeout(undoTimer)
+      undoTimer = null
+    }
+    lastDeleted.value = null
+  }
+
   function persistConversation() {
     const conv = conversations.value.find((c) => c.id === activeConversation.value)
     if (conv) {
@@ -153,6 +208,7 @@ export function useChat() {
     activeConversation,
     messages,
     isLoading,
+    lastDeleted,
     init,
     setActiveConversation,
     createNewConversation,
@@ -161,5 +217,8 @@ export function useChat() {
     sendMessage,
     cancelStreaming,
     editMessage,
+    deleteMessage,
+    undoDelete,
+    clearUndo,
   }
 }
