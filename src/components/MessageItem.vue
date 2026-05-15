@@ -101,6 +101,8 @@ import ConfirmModal from './ConfirmModal.vue'
 
 const props = defineProps({
   message: { type: Object, required: true },
+  searchQuery: { type: String, default: '' },
+  currentLocalMatchIndex: { type: Number, default: -1 },
 })
 
 const emit = defineEmits(['edit', 'delete', 'regenerate'])
@@ -136,6 +138,85 @@ watch(
         container.scrollTop = container.scrollHeight
       }
     }
+  }
+)
+
+// ─── Search Highlight ───
+function highlightMatches() {
+  if (!contentRef.value || isEditing.value) return
+
+  // Reset to clean rendered content so previous marks are cleared
+  contentRef.value.innerHTML = renderedContent.value
+
+  const query = props.searchQuery
+  if (!query) return
+
+  const lowerQuery = query.toLowerCase()
+
+  // Collect text nodes that contain the query
+  const walker = document.createTreeWalker(
+    contentRef.value,
+    NodeFilter.SHOW_TEXT,
+    null
+  )
+  const targets = []
+  let node = walker.nextNode()
+  while (node) {
+    if (node.nodeValue && node.nodeValue.toLowerCase().includes(lowerQuery)) {
+      targets.push(node)
+    }
+    node = walker.nextNode()
+  }
+
+  // Wrap occurrences in <mark>; tag the n-th hit as current when it matches
+  let localIndex = 0
+  for (const textNode of targets) {
+    const text = textNode.nodeValue
+    const lowerText = text.toLowerCase()
+    const fragment = document.createDocumentFragment()
+    let pos = 0
+    while (pos < text.length) {
+      const hit = lowerText.indexOf(lowerQuery, pos)
+      if (hit === -1) {
+        fragment.appendChild(document.createTextNode(text.slice(pos)))
+        break
+      }
+      if (hit > pos) {
+        fragment.appendChild(document.createTextNode(text.slice(pos, hit)))
+      }
+      const mark = document.createElement('mark')
+      mark.className = 'search-highlight'
+      if (localIndex === props.currentLocalMatchIndex) {
+        mark.classList.add('search-highlight-current')
+      }
+      mark.textContent = text.slice(hit, hit + lowerQuery.length)
+      fragment.appendChild(mark)
+      localIndex++
+      pos = hit + lowerQuery.length
+    }
+    textNode.parentNode?.replaceChild(fragment, textNode)
+  }
+}
+
+watch(
+  () => [
+    props.searchQuery,
+    props.currentLocalMatchIndex,
+    renderedContent.value,
+    isEditing.value,
+  ],
+  highlightMatches,
+  { flush: 'post', immediate: true }
+)
+
+watch(
+  () => [props.searchQuery, props.currentLocalMatchIndex],
+  () => {
+    if (props.currentLocalMatchIndex === -1) return
+    nextTick(() => {
+      const el = contentRef.value?.querySelector('.search-highlight-current')
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    })
   }
 )
 

@@ -274,3 +274,26 @@ html.light .markdown-body pre code {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }
 }
+
+/* ─── Search Highlight ─── */
+.search-highlight {
+  background: rgba(255, 213, 79, 0.45);
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+.search-highlight-current {
+  background: #ff9800;
+  color: #1a1a1a;
+  box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.6);
+}
+
+html.light .search-highlight {
+  background: rgba(255, 235, 59, 0.55);
+}
+
+html.light .search-highlight-current {
+  background: #ff9800;
+  color: #1a1a1a;
+}
