@@ -75,12 +75,23 @@
         </template>
       </div>
     </div>
+
+    <ConfirmModal
+      :visible="showDeleteConfirm"
+      title="Delete Message"
+      message="Are you sure you want to delete this message? This action cannot be undone."
+      confirm-text="Delete"
+      cancel-text="Cancel"
+      @confirm="handleDeleteConfirm"
+      @cancel="handleDeleteCancel"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue'
 import { renderMarkdown, escapeHtmlText } from '@/utils/markdown'
+import ConfirmModal from './ConfirmModal.vue'
 
 const props = defineProps({
   message: { type: Object, required: true },
@@ -93,6 +104,7 @@ const copied = ref(false)
 const isEditing = ref(false)
 const editContent = ref('')
 const editTextareaRef = ref(null)
+const showDeleteConfirm = ref(false)
 
 const renderedContent = computed(() => {
   const { content, role } = props.message
@@ -167,9 +179,16 @@ function autoResizeEdit() {
 
 function confirmDelete() {
   if (props.message.streaming) return
-  if (window.confirm('Are you sure you want to delete this message?')) {
-    emit('delete', props.message.id)
-  }
+  showDeleteConfirm.value = true
+}
+
+function handleDeleteConfirm() {
+  showDeleteConfirm.value = false
+  emit('delete', props.message.id)
+}
+
+function handleDeleteCancel() {
+  showDeleteConfirm.value = false
 }
 
 async function copyMessage() {

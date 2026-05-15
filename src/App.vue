@@ -118,7 +118,7 @@ function closeSettings() {
 
 .undo-toast {
   position: fixed;
-  bottom: 80px;
+  top: 16px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 100;
@@ -132,7 +132,7 @@ function closeSettings() {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   font-size: 0.875rem;
   color: var(--text-primary);
-  animation: slideUp 0.2s ease-out;
+  animation: slideDown 0.2s ease-out;
 }
 
 .undo-btn {
@@ -151,10 +151,10 @@ function closeSettings() {
   background: var(--accent-hover);
 }
 
-@keyframes slideUp {
+@keyframes slideDown {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(10px);
+    transform: translateX(-50%) translateY(-10px);
   }
   to {
     opacity: 1;
