@@ -21,6 +21,7 @@
         :message="msg"
         @edit="handleEdit"
         @delete="handleDelete"
+        @regenerate="handleRegenerate"
       />
     </div>
 
@@ -46,7 +47,7 @@ const props = defineProps({
   isLoading: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['send', 'cancel', 'edit', 'delete'])
+const emit = defineEmits(['send', 'cancel', 'edit', 'delete', 'regenerate'])
 
 const messagesContainerRef = ref(null)
 
@@ -64,6 +65,10 @@ function handleEdit(messageId, newContent) {
 
 function handleDelete(messageId) {
   emit('delete', messageId)
+}
+
+function handleRegenerate(messageId) {
+  emit('regenerate', messageId)
 }
 
 // Auto-scroll to bottom on new messages

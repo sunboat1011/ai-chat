@@ -16,6 +16,7 @@
       @cancel="handleCancelStreaming"
       @edit="handleEditMessage"
       @delete="handleDeleteMessage"
+      @regenerate="handleRegenerateMessage"
     />
 
     <!-- Undo toast -->
@@ -58,6 +59,7 @@ const {
   editMessage,
   deleteMessage,
   undoDelete,
+  regenerateMessage,
 } = useChat()
 
 onMounted(() => {
@@ -97,6 +99,10 @@ async function handleEditMessage(messageId, newContent) {
 
 function handleDeleteMessage(messageId) {
   deleteMessage(messageId)
+}
+
+async function handleRegenerateMessage(messageId) {
+  await regenerateMessage(messageId)
 }
 
 function handleUndoDelete() {

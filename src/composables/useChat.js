@@ -129,6 +129,58 @@ export function useChat() {
     abortController.value?.abort()
   }
 
+  // ─── Regenerate AI Response ───
+  async function regenerateMessage(messageId) {
+    if (isLoading.value) return
+
+    const aiIndex = messages.value.findIndex((m) => m.id === messageId)
+    if (aiIndex === -1) return
+    if (aiIndex === 0) return // Cannot regenerate first message
+
+    // Find the preceding user message
+    const userMessage = messages.value[aiIndex - 1]
+    if (userMessage?.role !== 'user') return
+
+    const userContent = userMessage.content
+    const convId = activeConversation.value
+
+    // Remove the old AI message and insert a new placeholder at the same position
+    const newAiMessage = {
+      id: generateId(),
+      role: 'assistant',
+      content: '',
+      timestamp: Date.now(),
+      streaming: true,
+    }
+    messages.value.splice(aiIndex, 1, newAiMessage)
+    isLoading.value = true
+
+    // Call streaming API with the same user content
+    abortController.value = streamChat({
+      apiBaseUrl: settings.value.apiBaseUrl,
+      model: settings.value.model,
+      message: userContent,
+      conversationId: convId,
+      onChunk: (chunk, fullText) => {
+        newAiMessage.content = fullText
+      },
+      onDone: (fullText) => {
+        newAiMessage.content = fullText
+        newAiMessage.streaming = false
+        isLoading.value = false
+        persistConversation()
+      },
+      onError: (err) => {
+        newAiMessage.content = `**Error:** Failed to get response. ${err.message}`
+        newAiMessage.streaming = false
+        isLoading.value = false
+        persistConversation()
+      },
+    })
+
+    persistConversation()
+  }
+
   // ─── Edit Message ───
   async function editMessage(messageId, newContent) {
     if (!newContent.trim() || isLoading.value) return
@@ -220,5 +272,6 @@ export function useChat() {
     deleteMessage,
     undoDelete,
     clearUndo,
+    regenerateMessage,
   }
 }
