@@ -77,6 +77,14 @@
                 <polyline points="20 6 9 17 4 12"/>
               </svg>
             </button>
+            <button class="action-btn" @click="handleBranch" title="Branch from here">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="6" y1="3" x2="6" y2="15"/>
+                <circle cx="18" cy="6" r="3"/>
+                <circle cx="6" cy="18" r="3"/>
+                <path d="M18 9a9 9 0 0 1-9 9"/>
+              </svg>
+            </button>
           </div>
         </template>
       </div>
@@ -105,7 +113,7 @@ const props = defineProps({
   currentLocalMatchIndex: { type: Number, default: -1 },
 })
 
-const emit = defineEmits(['edit', 'delete', 'regenerate'])
+const emit = defineEmits(['edit', 'delete', 'regenerate', 'branch'])
 
 const contentRef = ref(null)
 const copied = ref(false)
@@ -281,6 +289,11 @@ function handleDeleteCancel() {
 function handleRegenerate() {
   if (props.message.streaming) return
   emit('regenerate', props.message.id)
+}
+
+function handleBranch() {
+  if (props.message.streaming) return
+  emit('branch', props.message.id)
 }
 
 async function copyMessage() {

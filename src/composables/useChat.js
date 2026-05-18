@@ -211,6 +211,44 @@ export function useChat() {
     persistConversation()
   }
 
+  // ─── Branch from Message ───
+  function branchFromMessage(messageId) {
+    if (isLoading.value) return null
+    const convId = activeConversation.value
+    const conv = conversations.value.find((c) => c.id === convId)
+    if (!conv) return null
+
+    const index = messages.value.findIndex((m) => m.id === messageId)
+    if (index === -1) return null
+
+    const branchedMessages = messages.value.slice(0, index + 1).map((m) => ({
+      ...m,
+      id: generateId(),
+      streaming: false,
+    }))
+
+    const newId = generateId()
+    const baseTitle = (conv.title || 'New Chat').replace(/\s*\(branch( \d+)?\)$/i, '')
+    const siblingCount = conversations.value.filter((c) =>
+      (c.title || '').startsWith(`${baseTitle} (branch`)
+    ).length
+    const branchTitle = siblingCount === 0
+      ? `${baseTitle} (branch)`
+      : `${baseTitle} (branch ${siblingCount + 1})`
+
+    const newConv = {
+      id: newId,
+      title: branchTitle,
+      messages: branchedMessages,
+      createdAt: Date.now(),
+      systemPrompt: conv.systemPrompt || '',
+    }
+    conversations.value.unshift(newConv)
+    saveConversations(conversations.value)
+    setActiveConversation(newId)
+    return newConv
+  }
+
   // ─── Edit Message ───
   async function editMessage(messageId, newContent) {
     if (!newContent.trim() || isLoading.value) return
@@ -305,5 +343,6 @@ export function useChat() {
     undoDelete,
     clearUndo,
     regenerateMessage,
+    branchFromMessage,
   }
 }

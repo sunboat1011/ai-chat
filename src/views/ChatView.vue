@@ -162,6 +162,7 @@
         @edit="handleEdit"
         @delete="handleDelete"
         @regenerate="handleRegenerate"
+        @branch="handleBranch"
       />
     </div>
 
@@ -189,7 +190,7 @@ const props = defineProps({
   systemPrompt: { type: String, default: '' },
 })
 
-const emit = defineEmits(['send', 'cancel', 'edit', 'delete', 'regenerate', 'update-system-prompt'])
+const emit = defineEmits(['send', 'cancel', 'edit', 'delete', 'regenerate', 'branch', 'update-system-prompt'])
 
 const messagesContainerRef = ref(null)
 const searchInputRef = ref(null)
@@ -397,6 +398,10 @@ function handleDelete(messageId) {
 
 function handleRegenerate(messageId) {
   emit('regenerate', messageId)
+}
+
+function handleBranch(messageId) {
+  emit('branch', messageId)
 }
 
 // ─── System Prompt Editing ───

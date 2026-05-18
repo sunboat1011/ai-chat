@@ -19,6 +19,7 @@
       @edit="handleEditMessage"
       @delete="handleDeleteMessage"
       @regenerate="handleRegenerateMessage"
+      @branch="handleBranchMessage"
       @update-system-prompt="handleUpdateSystemPrompt"
     />
 
@@ -74,6 +75,7 @@ const {
   regenerateMessage,
   getConversationSystemPrompt,
   updateSystemPrompt,
+  branchFromMessage,
 } = useChat()
 
 onMounted(() => {
@@ -135,6 +137,13 @@ function handleDeleteMessage(messageId) {
 
 async function handleRegenerateMessage(messageId) {
   await regenerateMessage(messageId)
+}
+
+function handleBranchMessage(messageId) {
+  const newConv = branchFromMessage(messageId)
+  if (newConv) {
+    router.push(`/chat/${newConv.id}`)
+  }
 }
 
 function handleUndoDelete() {
