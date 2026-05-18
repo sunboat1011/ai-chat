@@ -23,6 +23,15 @@ export function useChat() {
 
   // ─── Initialize ───
   function init() {
+    // Migrate old conversations: add systemPrompt field if missing
+    for (const conv of conversations.value) {
+      if (!('systemPrompt' in conv)) {
+        conv.systemPrompt = ''
+      }
+    }
+    if (conversations.value.length > 0) {
+      saveConversations(conversations.value)
+    }
     if (!activeConversation.value && conversations.value.length > 0) {
       setActiveConversation(conversations.value[0].id)
     }
@@ -35,9 +44,10 @@ export function useChat() {
     messages.value = conv ? conv.messages : []
   }
 
-  function createNewConversation() {
+  function createNewConversation(systemPrompt = '') {
     const id = generateId()
-    const conv = { id, title: 'New Chat', messages: [], createdAt: Date.now() }
+    const prompt = systemPrompt || settings.value.defaultSystemPrompt || ''
+    const conv = { id, title: 'New Chat', messages: [], createdAt: Date.now(), systemPrompt: prompt }
     conversations.value.unshift(conv)
     saveConversations(conversations.value)
     setActiveConversation(id)
@@ -59,6 +69,19 @@ export function useChat() {
       conv.title = title
       saveConversations(conversations.value)
     }
+  }
+
+  function updateSystemPrompt(id, systemPrompt) {
+    const conv = conversations.value.find((c) => c.id === id)
+    if (conv) {
+      conv.systemPrompt = systemPrompt
+      saveConversations(conversations.value)
+    }
+  }
+
+  function getConversationSystemPrompt(id) {
+    const conv = conversations.value.find((c) => c.id === id)
+    return conv?.systemPrompt || ''
   }
 
   // ─── Send Message ───
@@ -99,11 +122,15 @@ export function useChat() {
     messages.value.push(aiMessage)
     isLoading.value = true
 
+    const conv = conversations.value.find((c) => c.id === convId)
+    const systemPrompt = conv?.systemPrompt || ''
+
     // Call streaming API
     abortController.value = streamChat({
       apiBaseUrl: settings.value.apiBaseUrl,
       model: settings.value.model,
       message: userContent.trim(),
+      systemPrompt,
       conversationId: convId,
       onChunk: (chunk, fullText) => {
         aiMessage.content = fullText
@@ -143,6 +170,8 @@ export function useChat() {
 
     const userContent = userMessage.content
     const convId = activeConversation.value
+    const conv = conversations.value.find((c) => c.id === convId)
+    const systemPrompt = conv?.systemPrompt || ''
 
     // Remove the old AI message and insert a new placeholder at the same position
     const newAiMessage = {
@@ -160,6 +189,7 @@ export function useChat() {
       apiBaseUrl: settings.value.apiBaseUrl,
       model: settings.value.model,
       message: userContent,
+      systemPrompt,
       conversationId: convId,
       onChunk: (chunk, fullText) => {
         newAiMessage.content = fullText
@@ -266,6 +296,8 @@ export function useChat() {
     createNewConversation,
     deleteConversation,
     updateConversationTitle,
+    updateSystemPrompt,
+    getConversationSystemPrompt,
     sendMessage,
     cancelStreaming,
     editMessage,

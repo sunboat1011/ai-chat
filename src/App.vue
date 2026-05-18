@@ -13,11 +13,13 @@
       :messages="messages"
       :is-loading="isLoading"
       :active-conversation="activeConversation"
+      :system-prompt="activeConversation ? getConversationSystemPrompt(activeConversation) : ''"
       @send="handleSendMessage"
       @cancel="handleCancelStreaming"
       @edit="handleEditMessage"
       @delete="handleDeleteMessage"
       @regenerate="handleRegenerateMessage"
+      @update-system-prompt="handleUpdateSystemPrompt"
     />
 
     <!-- Undo toast -->
@@ -25,6 +27,12 @@
       <span>Message deleted</span>
       <button class="undo-btn" @click="handleUndoDelete">Undo</button>
     </div>
+
+    <RoleSelectModal
+      v-if="isRoleSelectOpen"
+      @confirm="handleRoleSelect"
+      @skip="handleRoleSkip"
+    />
 
     <SettingsModal
       v-if="isSettingsOpen"
@@ -39,11 +47,14 @@ import { onMounted, provide } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Sidebar from '@/components/Sidebar.vue'
 import SettingsModal from '@/components/SettingsModal.vue'
+import RoleSelectModal from '@/components/RoleSelectModal.vue'
 import { useChat } from '@/composables/useChat'
 
 const route = useRoute()
 const router = useRouter()
 const isSettingsOpen = ref(false)
+const isRoleSelectOpen = ref(false)
+const pendingNewChat = ref(false)
 
 const {
   conversations,
@@ -61,6 +72,8 @@ const {
   deleteMessage,
   undoDelete,
   regenerateMessage,
+  getConversationSystemPrompt,
+  updateSystemPrompt,
 } = useChat()
 
 onMounted(() => {
@@ -73,8 +86,26 @@ function handleSelectConversation(id) {
 }
 
 function handleNewChat() {
-  const conv = createNewConversation()
-  router.push(`/chat/${conv.id}`)
+  isRoleSelectOpen.value = true
+  pendingNewChat.value = true
+}
+
+function handleRoleSelect(systemPrompt) {
+  isRoleSelectOpen.value = false
+  if (pendingNewChat.value) {
+    const conv = createNewConversation(systemPrompt)
+    pendingNewChat.value = false
+    router.push(`/chat/${conv.id}`)
+  }
+}
+
+function handleRoleSkip() {
+  isRoleSelectOpen.value = false
+  if (pendingNewChat.value) {
+    const conv = createNewConversation()
+    pendingNewChat.value = false
+    router.push(`/chat/${conv.id}`)
+  }
 }
 
 function handleDeleteConversation(id) {
@@ -108,6 +139,12 @@ async function handleRegenerateMessage(messageId) {
 
 function handleUndoDelete() {
   undoDelete()
+}
+
+function handleUpdateSystemPrompt(systemPrompt) {
+  if (activeConversation.value) {
+    updateSystemPrompt(activeConversation.value, systemPrompt)
+  }
 }
 
 function closeSettings() {

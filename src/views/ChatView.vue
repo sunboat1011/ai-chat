@@ -71,6 +71,62 @@
       </svg>
     </button>
 
+    <!-- System Prompt Banner -->
+    <div v-if="systemPrompt" class="system-prompt-banner">
+      <div class="system-prompt-content">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5"/>
+          <path d="M2 12l10 5 10-5"/>
+        </svg>
+        <span class="system-prompt-label">Role:</span>
+        <span class="system-prompt-text" :title="systemPrompt">{{ systemPrompt }}</span>
+        <button class="system-prompt-edit-btn" aria-label="Edit system prompt" title="Edit system prompt" @click="openSystemPromptEdit">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div v-else-if="activeConversation" class="system-prompt-banner empty">
+      <div class="system-prompt-content">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5"/>
+          <path d="M2 12l10 5 10-5"/>
+        </svg>
+        <span class="system-prompt-label">General Assistant</span>
+        <button class="system-prompt-edit-btn" aria-label="Edit system prompt" title="Edit system prompt" @click="openSystemPromptEdit">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- System Prompt Edit Modal -->
+    <div v-if="showSystemPromptEdit" class="sp-edit-overlay" @click="closeSystemPromptEdit">
+      <div class="sp-edit-modal" @click.stop>
+        <div class="sp-edit-header">
+          <h3>Edit System Prompt</h3>
+          <p class="sp-edit-hint">Changes affect all future messages in this conversation.</p>
+        </div>
+        <textarea
+          ref="spTextareaRef"
+          v-model="editingSystemPrompt"
+          rows="5"
+          class="sp-edit-textarea"
+          placeholder="e.g., You are a helpful coding assistant..."
+        />
+        <div class="sp-edit-actions">
+          <button class="sp-edit-btn sp-edit-cancel" @click="closeSystemPromptEdit">Cancel</button>
+          <button class="sp-edit-btn sp-edit-save" @click="saveSystemPrompt">Save</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Empty State -->
     <div v-if="messages.length === 0" class="welcome-screen">
       <div class="welcome-logo">
@@ -130,15 +186,19 @@ const props = defineProps({
   messages: { type: Array, required: true },
   isLoading: { type: Boolean, default: false },
   activeConversation: { type: String, default: null },
+  systemPrompt: { type: String, default: '' },
 })
 
-const emit = defineEmits(['send', 'cancel', 'edit', 'delete', 'regenerate'])
+const emit = defineEmits(['send', 'cancel', 'edit', 'delete', 'regenerate', 'update-system-prompt'])
 
 const messagesContainerRef = ref(null)
 const searchInputRef = ref(null)
 const showSearch = ref(false)
 const searchQuery = ref('')
 const currentMatchIndex = ref(0)
+const showSystemPromptEdit = ref(false)
+const editingSystemPrompt = ref('')
+const spTextareaRef = ref(null)
 
 // ─── Virtual scrolling: render only the latest N messages, load more on scroll-up ───
 const INITIAL_BATCH = 50
@@ -337,6 +397,25 @@ function handleDelete(messageId) {
 
 function handleRegenerate(messageId) {
   emit('regenerate', messageId)
+}
+
+// ─── System Prompt Editing ───
+function openSystemPromptEdit() {
+  editingSystemPrompt.value = props.systemPrompt
+  showSystemPromptEdit.value = true
+  nextTick(() => {
+    spTextareaRef.value?.focus()
+  })
+}
+
+function closeSystemPromptEdit() {
+  showSystemPromptEdit.value = false
+  editingSystemPrompt.value = ''
+}
+
+function saveSystemPrompt() {
+  emit('update-system-prompt', editingSystemPrompt.value.trim())
+  showSystemPromptEdit.value = false
 }
 
 // Auto-scroll to bottom on new messages
@@ -576,5 +655,169 @@ function scrollToBottom() {
 
 .load-earlier-btn svg {
   flex-shrink: 0;
+}
+
+/* ─── System Prompt Banner ─── */
+.system-prompt-banner {
+  flex-shrink: 0;
+  padding: 0.5rem 1rem;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.system-prompt-banner.empty {
+  background: transparent;
+  border-bottom: none;
+  padding: 0.5rem 1rem 0;
+}
+
+.system-prompt-content {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  max-width: 48rem;
+  margin: 0 auto;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.system-prompt-content svg {
+  flex-shrink: 0;
+  color: var(--accent-primary);
+}
+
+.system-prompt-label {
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.system-prompt-text {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.8;
+}
+
+.system-prompt-edit-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.15s;
+}
+
+.system-prompt-edit-btn:hover {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+/* ─── System Prompt Edit Modal ─── */
+.sp-edit-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.sp-edit-modal {
+  width: 480px;
+  max-width: 90vw;
+  background: var(--bg-secondary);
+  border-radius: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  color: var(--text-primary);
+  animation: slideUp 0.25s ease-out;
+}
+
+.sp-edit-header h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem;
+}
+
+.sp-edit-hint {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin: 0 0 0.75rem;
+}
+
+.sp-edit-textarea {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-family: inherit;
+  line-height: 1.5;
+  resize: vertical;
+  min-height: 80px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.sp-edit-textarea:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(16, 163, 127, 0.2);
+}
+
+.sp-edit-textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.sp-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.sp-edit-btn {
+  padding: 0.45rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: 1px solid transparent;
+}
+
+.sp-edit-cancel {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: var(--border-color);
+}
+
+.sp-edit-cancel:hover {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+.sp-edit-save {
+  background: var(--accent-primary);
+  color: white;
+  border-color: var(--accent-primary);
+}
+
+.sp-edit-save:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 </style>

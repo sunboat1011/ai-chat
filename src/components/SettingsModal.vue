@@ -109,6 +109,24 @@
             </select>
           </div>
         </div>
+
+        <!-- System Prompt -->
+        <div class="setting-group">
+          <h3>System Prompt</h3>
+
+          <div class="setting-item">
+            <label for="default-system-prompt">Default System Prompt</label>
+            <textarea
+              id="default-system-prompt"
+              v-model="settings.defaultSystemPrompt"
+              rows="4"
+              placeholder="e.g., You are a helpful coding assistant..."
+            />
+            <p class="hint">
+              Applied to all new conversations. Each conversation can override this independently.
+            </p>
+          </div>
+        </div>
       </div>
 
       <div class="modal-footer">

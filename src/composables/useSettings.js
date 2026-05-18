@@ -7,6 +7,7 @@ const DEFAULT_SETTINGS = {
   apiBaseUrl: import.meta.env.VITE_API_BASE_URL || '/api',
   model: 'claude-3-sonnet',
   accentColor: 'green',
+  defaultSystemPrompt: '',
 }
 
 const ACCENT_COLORS = {
