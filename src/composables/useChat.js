@@ -23,13 +23,30 @@ export function useChat() {
 
   // ─── Initialize ───
   function init() {
-    // Migrate old conversations: add systemPrompt field if missing
+    let needsSave = false
     for (const conv of conversations.value) {
+      // Migrate old conversations: add systemPrompt field if missing
       if (!('systemPrompt' in conv)) {
         conv.systemPrompt = ''
+        needsSave = true
+      }
+      // Migrate: ensure all messages have timestamps
+      if (conv.messages && conv.messages.length > 0) {
+        conv.messages.forEach((msg, idx) => {
+          if (!msg.timestamp) {
+            msg.timestamp = (conv.updatedAt || conv.createdAt || Date.now()) + idx * 1000
+            needsSave = true
+          }
+        })
+      }
+      // Migrate: ensure updatedAt exists
+      if (!conv.updatedAt) {
+        const lastMsg = conv.messages?.[conv.messages.length - 1]
+        conv.updatedAt = lastMsg?.timestamp || conv.createdAt || Date.now()
+        needsSave = true
       }
     }
-    if (conversations.value.length > 0) {
+    if (needsSave) {
       saveConversations(conversations.value)
     }
     if (!activeConversation.value && conversations.value.length > 0) {
@@ -47,7 +64,7 @@ export function useChat() {
   function createNewConversation(systemPrompt = '') {
     const id = generateId()
     const prompt = systemPrompt || settings.value.defaultSystemPrompt || ''
-    const conv = { id, title: 'New Chat', messages: [], createdAt: Date.now(), systemPrompt: prompt }
+    const conv = { id, title: 'New Chat', messages: [], createdAt: Date.now(), updatedAt: Date.now(), systemPrompt: prompt }
     conversations.value.unshift(conv)
     saveConversations(conversations.value)
     setActiveConversation(id)
@@ -241,6 +258,7 @@ export function useChat() {
       title: branchTitle,
       messages: branchedMessages,
       createdAt: Date.now(),
+      updatedAt: Date.now(),
       systemPrompt: conv.systemPrompt || '',
     }
     conversations.value.unshift(newConv)
@@ -319,6 +337,7 @@ export function useChat() {
     const conv = conversations.value.find((c) => c.id === activeConversation.value)
     if (conv) {
       conv.messages = [...messages.value]
+      conv.updatedAt = Date.now()
       saveConversations(conversations.value)
     }
   }

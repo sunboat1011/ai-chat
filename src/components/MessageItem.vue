@@ -17,6 +17,14 @@
       <div class="message-body">
         <div class="message-author">
           {{ message.role === 'user' ? 'You' : 'AI Assistant' }}
+          <time
+            v-if="message.timestamp"
+            :datetime="isoTimestamp"
+            :title="absoluteTime"
+            class="message-time"
+          >
+            {{ relativeTime }}
+          </time>
         </div>
 
         <!-- Editing mode -->
@@ -105,6 +113,8 @@
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue'
 import { renderMarkdown, escapeHtmlText } from '@/utils/markdown'
+import { formatRelative, formatAbsolute, formatISOTime } from '@/utils/time'
+import { useNow } from '@/composables/useNow'
 import ConfirmModal from './ConfirmModal.vue'
 
 const props = defineProps({
@@ -121,6 +131,21 @@ const isEditing = ref(false)
 const editContent = ref('')
 const editTextareaRef = ref(null)
 const showDeleteConfirm = ref(false)
+
+// ─── Timestamp display ───
+const { now } = useNow()
+
+const isoTimestamp = computed(() =>
+  props.message.timestamp ? formatISOTime(props.message.timestamp) : ''
+)
+
+const absoluteTime = computed(() =>
+  props.message.timestamp ? formatAbsolute(props.message.timestamp) : ''
+)
+
+const relativeTime = computed(() =>
+  props.message.timestamp ? formatRelative(props.message.timestamp, now.value) : ''
+)
 
 const renderedContent = computed(() => {
   const { content, role } = props.message
@@ -503,5 +528,24 @@ async function handleContentClick(e) {
 .edit-save:hover {
   background: var(--accent-hover);
   border-color: var(--accent-hover);
+}
+
+.message-author {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.message-time {
+  font-size: 0.6875rem;
+  font-weight: 400;
+  color: var(--text-muted);
+  opacity: 0.7;
+  transition: opacity 0.2s, color 0.2s;
+}
+
+.message-wrapper:hover .message-time {
+  opacity: 1;
+  color: var(--text-secondary);
 }
 </style>

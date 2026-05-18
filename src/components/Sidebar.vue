@@ -30,11 +30,15 @@
         :class="['conversation-item', { active: conv.id === activeConversation }]"
         @click="$emit('select', conv.id)"
       >
-        <span class="conv-title">{{ conv.title }}</span>
+        <div class="conv-info">
+          <span class="conv-title">{{ conv.title }}</span>
+          <span class="conv-time">{{ formatRelative(getLastActiveAt(conv), now) }}</span>
+        </div>
         <button
           class="delete-btn"
           @click.stop="$emit('delete', conv.id)"
           title="Delete conversation"
+          aria-label="Delete conversation"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="3 6 5 6 21 6"/>
@@ -72,6 +76,8 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { formatRelative } from '@/utils/time'
+import { useNow } from '@/composables/useNow'
 
 const props = defineProps({
   conversations: { type: Array, required: true },
@@ -81,6 +87,7 @@ const props = defineProps({
 const emit = defineEmits(['select', 'delete', 'new-chat', 'toggle-theme'])
 
 const searchQuery = ref('')
+const { now } = useNow()
 
 const filteredConversations = computed(() => {
   if (!searchQuery.value) return props.conversations
@@ -92,6 +99,11 @@ const filteredConversations = computed(() => {
 
 function handleNewChat() {
   emit('new-chat')
+}
+
+function getLastActiveAt(conv) {
+  const lastMsg = conv.messages?.[conv.messages.length - 1]
+  return lastMsg?.timestamp || conv.updatedAt || conv.createdAt || 0
 }
 </script>
 
@@ -172,7 +184,7 @@ function handleNewChat() {
 
 .conversation-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   padding: 0.6rem 0.75rem;
   border-radius: 0.5rem;
@@ -189,13 +201,25 @@ function handleNewChat() {
   background: var(--bg-elevated);
 }
 
-.conv-title {
+.conv-info {
   flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.conv-title {
   font-size: 0.8125rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   color: var(--text-primary);
+}
+
+.conv-time {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
 }
 
 .delete-btn {
@@ -205,6 +229,7 @@ function handleNewChat() {
   justify-content: center;
   width: 24px;
   height: 24px;
+  margin-top: 0.15rem;
   border: none;
   background: transparent;
   color: var(--text-secondary);
