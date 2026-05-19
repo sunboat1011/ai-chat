@@ -66,6 +66,7 @@ const {
   init,
   setActiveConversation,
   createNewConversation,
+  createConversationFromTemplate,
   deleteConversation,
   sendMessage,
   cancelStreaming,
@@ -92,11 +93,17 @@ function handleNewChat() {
   pendingNewChat.value = true
 }
 
-function handleRoleSelect(systemPrompt) {
+function handleRoleSelect(templatePayload) {
   isRoleSelectOpen.value = false
-  if (pendingNewChat.value) {
-    const conv = createNewConversation(systemPrompt)
-    pendingNewChat.value = false
+  if (!pendingNewChat.value) return
+  pendingNewChat.value = false
+
+  const hasMessages = templatePayload.messages && templatePayload.messages.length > 0
+  if (hasMessages) {
+    const conv = createConversationFromTemplate(templatePayload)
+    router.push(`/chat/${conv.id}`)
+  } else {
+    const conv = createNewConversation(templatePayload.systemPrompt || '')
     router.push(`/chat/${conv.id}`)
   }
 }

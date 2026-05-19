@@ -2,28 +2,31 @@
   <div class="role-modal-overlay" @click="handleOverlayClick">
     <div class="role-modal" @click.stop>
       <div class="modal-header">
-        <h2>Choose a Role</h2>
-        <p class="modal-subtitle">Select a preset or create your own system prompt</p>
+        <h2>Choose a Template</h2>
+        <p class="modal-subtitle">Select a preset template or create your own</p>
       </div>
 
       <div class="role-content">
-        <!-- Preset roles -->
+        <!-- Template grid -->
         <div class="preset-grid">
           <button
-            v-for="preset in PRESETS"
-            :key="preset.name"
+            v-for="template in allTemplates"
+            :key="template.id"
             type="button"
-            :class="['preset-card', { active: selectedPreset === preset.name }]"
-            @click="selectPreset(preset)"
+            :class="['preset-card', { active: selectedTemplateId === template.id }]"
+            @click="selectTemplate(template)"
           >
-            <span class="preset-icon">{{ preset.icon }}</span>
-            <span class="preset-name">{{ preset.name }}</span>
-            <span class="preset-desc">{{ preset.description }}</span>
+            <span class="preset-icon">{{ template.icon }}</span>
+            <span class="preset-name">{{ template.name }}</span>
+            <span class="preset-desc">{{ template.description }}</span>
+            <span v-if="template.messages && template.messages.length > 0" class="preset-badge" title="Has initial messages">
+              {{ template.messages.length }} msg
+            </span>
           </button>
 
           <button
             type="button"
-            :class="['preset-card', 'custom-card', { active: selectedPreset === 'Custom' }]"
+            :class="['preset-card', 'custom-card', { active: selectedTemplateId === '__custom__' }]"
             @click="selectCustom"
           >
             <span class="preset-icon">✏️</span>
@@ -33,7 +36,7 @@
         </div>
 
         <!-- Custom prompt textarea -->
-        <div v-if="selectedPreset === 'Custom' || customPrompt" class="custom-area">
+        <div v-if="selectedTemplateId === '__custom__' || showCustomArea" class="custom-area">
           <label for="custom-prompt">System Prompt</label>
           <textarea
             id="custom-prompt"
@@ -46,6 +49,23 @@
             The system prompt defines how the AI behaves throughout this conversation.
           </p>
         </div>
+
+        <!-- Template detail preview -->
+        <div v-else-if="selectedTemplate && selectedTemplate.systemPrompt" class="template-preview">
+          <label>System Prompt</label>
+          <p class="template-preview-text">{{ selectedTemplate.systemPrompt }}</p>
+          <div v-if="selectedTemplate.messages && selectedTemplate.messages.length > 0" class="template-messages-preview">
+            <label>Initial Messages ({{ selectedTemplate.messages.length }})</label>
+            <div
+              v-for="(msg, idx) in selectedTemplate.messages"
+              :key="idx"
+              class="template-msg-item"
+            >
+              <span class="template-msg-role">{{ msg.role }}</span>
+              <span class="template-msg-content">{{ msg.content }}</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="modal-footer">
@@ -53,7 +73,7 @@
         <button
           type="button"
           class="confirm-btn"
-          :disabled="selectedPreset === 'Custom' && !customPrompt.trim()"
+          :disabled="selectedTemplateId === '__custom__' && !customPrompt.trim()"
           @click="handleConfirm"
         >
           Start Chat
@@ -64,53 +84,34 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-
-const PRESETS = [
-  {
-    name: 'General Assistant',
-    icon: '🤖',
-    description: 'Helpful, harmless, honest',
-    prompt: 'You are a helpful AI assistant. Answer questions clearly and concisely.',
-  },
-  {
-    name: 'Code Expert',
-    icon: '💻',
-    description: 'Programming & debugging',
-    prompt: 'You are an expert software engineer. Provide clean, well-documented code. Explain your reasoning step by step. Prefer modern best practices.',
-  },
-  {
-    name: 'Creative Writer',
-    icon: '✍️',
-    description: 'Storytelling & copywriting',
-    prompt: 'You are a creative writing assistant. Help with storytelling, copywriting, and brainstorming. Be imaginative and inspiring.',
-  },
-  {
-    name: 'Translator',
-    icon: '🌐',
-    description: 'Accurate translations',
-    prompt: 'You are a professional translator. Provide accurate, natural-sounding translations. Preserve tone and context. Explain nuances when relevant.',
-  },
-  {
-    name: 'Data Analyst',
-    icon: '📊',
-    description: 'Analysis & insights',
-    prompt: 'You are a data analyst. Help interpret data, create visualizations (in text/Markdown), and derive actionable insights. Be precise with numbers.',
-  },
-]
+import { ref, computed } from 'vue'
+import { useSettings } from '@/composables/useSettings'
 
 const emit = defineEmits(['confirm', 'skip'])
 
-const selectedPreset = ref('General Assistant')
+const { getAllTemplates } = useSettings()
+
+const allTemplates = computed(() => getAllTemplates())
+
+const selectedTemplateId = ref('builtin-general')
 const customPrompt = ref('')
 
-function selectPreset(preset) {
-  selectedPreset.value = preset.name
-  customPrompt.value = preset.prompt
+const selectedTemplate = computed(() =>
+  allTemplates.value.find((t) => t.id === selectedTemplateId.value)
+)
+
+const showCustomArea = computed(() => {
+  const t = selectedTemplate.value
+  return t && !t.systemPrompt && t.id !== '__custom__'
+})
+
+function selectTemplate(template) {
+  selectedTemplateId.value = template.id
+  customPrompt.value = template.systemPrompt || ''
 }
 
 function selectCustom() {
-  selectedPreset.value = 'Custom'
+  selectedTemplateId.value = '__custom__'
   customPrompt.value = ''
 }
 
@@ -119,10 +120,22 @@ function handleSkip() {
 }
 
 function handleConfirm() {
-  const prompt = selectedPreset.value === 'Custom'
-    ? customPrompt.value.trim()
-    : customPrompt.value.trim()
-  emit('confirm', prompt)
+  if (selectedTemplateId.value === '__custom__') {
+    emit('confirm', {
+      systemPrompt: customPrompt.value.trim(),
+      messages: [],
+    })
+  } else {
+    const template = selectedTemplate.value
+    if (template) {
+      emit('confirm', {
+        systemPrompt: template.systemPrompt || '',
+        messages: template.messages || [],
+      })
+    } else {
+      emit('confirm', { systemPrompt: '', messages: [] })
+    }
+  }
 }
 
 function handleOverlayClick(e) {
@@ -148,7 +161,7 @@ function handleOverlayClick(e) {
 }
 
 .role-modal {
-  width: 480px;
+  width: 520px;
   max-width: 90vw;
   max-height: 85vh;
   background: var(--bg-secondary, #2f2f2f);
@@ -196,7 +209,7 @@ function handleOverlayClick(e) {
 
 .preset-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 0.5rem;
 }
 
@@ -204,8 +217,8 @@ function handleOverlayClick(e) {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.875rem 0.5rem;
+  gap: 0.25rem;
+  padding: 0.75rem 0.4rem;
   border: 1px solid var(--border-color, #424242);
   border-radius: 0.5rem;
   background: var(--bg-input, #2a2a2a);
@@ -213,6 +226,7 @@ function handleOverlayClick(e) {
   cursor: pointer;
   transition: all 0.15s;
   text-align: center;
+  position: relative;
 }
 
 .preset-card:hover {
@@ -226,18 +240,31 @@ function handleOverlayClick(e) {
 }
 
 .preset-icon {
-  font-size: 1.5rem;
+  font-size: 1.35rem;
   line-height: 1;
 }
 
 .preset-name {
-  font-size: 0.8125rem;
+  font-size: 0.78rem;
   font-weight: 600;
 }
 
 .preset-desc {
-  font-size: 0.6875rem;
+  font-size: 0.65rem;
   color: var(--text-secondary, #a0a0a0);
+  line-height: 1.2;
+}
+
+.preset-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 0.6rem;
+  padding: 1px 4px;
+  background: var(--accent-primary, #10a37f);
+  color: white;
+  border-radius: 0.25rem;
+  font-weight: 500;
 }
 
 .custom-area {
@@ -282,6 +309,60 @@ function handleOverlayClick(e) {
   margin-top: 0.4rem;
   font-size: 0.75rem;
   color: var(--text-muted, #6b6b6b);
+}
+
+/* ─── Template preview ─── */
+.template-preview {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background: var(--bg-input, #2a2a2a);
+  border: 1px solid var(--border-color, #424242);
+}
+
+.template-preview label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-secondary, #a0a0a0);
+  margin-bottom: 0.35rem;
+}
+
+.template-preview-text {
+  font-size: 0.8125rem;
+  color: var(--text-primary, #ececec);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.template-messages-preview {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-color, #424242);
+}
+
+.template-msg-item {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.4rem 0;
+  font-size: 0.78rem;
+}
+
+.template-msg-role {
+  flex-shrink: 0;
+  font-weight: 600;
+  color: var(--accent-primary, #10a37f);
+  text-transform: capitalize;
+  min-width: 3.5rem;
+}
+
+.template-msg-content {
+  color: var(--text-secondary, #a0a0a0);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .modal-footer {

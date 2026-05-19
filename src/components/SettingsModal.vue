@@ -210,6 +210,117 @@
           </div>
         </div>
 
+        <!-- Templates -->
+        <div class="setting-group">
+          <div class="setting-group-header">
+            <h3>Conversation Templates</h3>
+            <button
+              type="button"
+              class="group-add-btn"
+              @click="openTemplateForm"
+              aria-label="Add custom template"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Add
+            </button>
+          </div>
+
+          <div v-if="allTemplates.length === BUILT_IN_TEMPLATES.length" class="custom-model-empty">
+            No custom templates. Click "Add" to create your own.
+          </div>
+
+          <div class="custom-model-list">
+            <div
+              v-for="t in allTemplates"
+              :key="t.id"
+              class="custom-model-item"
+            >
+              <div class="custom-model-info">
+                <span class="custom-model-name">
+                  <span style="margin-right: 0.35rem;">{{ t.icon }}</span>
+                  {{ t.name }}
+                  <span v-if="t.builtIn" class="template-built-in-badge">Built-in</span>
+                </span>
+                <span class="custom-model-id">{{ t.description }}</span>
+              </div>
+              <div v-if="!t.builtIn" class="custom-model-actions">
+                <button
+                  type="button"
+                  class="custom-model-action-btn"
+                  aria-label="Edit template"
+                  title="Edit"
+                  @click="editTemplate(t)"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="custom-model-action-btn delete"
+                  aria-label="Delete template"
+                  title="Delete"
+                  @click="removeTemplate(t.id)"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/>
+                    <line x1="10" y1="11" x2="10" y2="17"/>
+                    <line x1="14" y1="11" x2="14" y2="17"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Template Form Modal -->
+        <div v-if="showTemplateForm" class="custom-model-overlay" @click="closeTemplateForm">
+          <div class="custom-model-form" @click.stop>
+            <div class="custom-model-form-header">
+              <h4>{{ editingTemplateId ? 'Edit Template' : 'Add Template' }}</h4>
+              <p class="custom-model-form-hint">Create a reusable conversation template.</p>
+            </div>
+
+            <div class="custom-model-form-body">
+              <div class="form-field">
+                <label for="tmpl-name">Name</label>
+                <input id="tmpl-name" v-model="tmplForm.name" type="text" placeholder="e.g., Bug Fixer" />
+              </div>
+              <div class="form-field" style="display: grid; grid-template-columns: 80px 1fr; gap: 0.75rem;">
+                <div>
+                  <label for="tmpl-icon">Icon</label>
+                  <input id="tmpl-icon" v-model="tmplForm.icon" type="text" placeholder="✨" style="text-align: center;" />
+                </div>
+                <div>
+                  <label for="tmpl-desc">Description</label>
+                  <input id="tmpl-desc" v-model="tmplForm.description" type="text" placeholder="Short description..." />
+                </div>
+              </div>
+              <div class="form-field">
+                <label for="tmpl-prompt">System Prompt</label>
+                <textarea
+                  id="tmpl-prompt"
+                  v-model="tmplForm.systemPrompt"
+                  rows="4"
+                  placeholder="e.g., You are a helpful coding assistant..."
+                  style="width: 100%; padding: 0.55rem 0.75rem; border-radius: 0.5rem; border: 1px solid #424242; background: #2a2a2a; color: #ececec; font-size: 0.875rem; font-family: inherit; resize: vertical; outline: none;"
+                />
+                <p class="hint">Defines how the AI behaves in conversations started from this template.</p>
+              </div>
+            </div>
+
+            <div class="custom-model-form-actions">
+              <button type="button" class="cm-btn cm-btn-cancel" @click="closeTemplateForm">Cancel</button>
+              <button type="button" class="cm-btn cm-btn-save" @click="saveTemplate">{{ editingTemplateId ? 'Update' : 'Add' }}</button>
+            </div>
+          </div>
+        </div>
+
         <!-- Model Parameters -->
         <div class="setting-group">
           <div class="setting-group-header">
@@ -309,7 +420,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useSettings } from '@/composables/useSettings'
 
 const emit = defineEmits(['close'])
@@ -320,11 +431,20 @@ const {
   addCustomModel,
   updateCustomModel,
   deleteCustomModel,
+  addCustomTemplate,
+  updateCustomTemplate,
+  deleteCustomTemplate,
+  getAllTemplates,
   DEFAULT_MODEL_PARAMS,
   MODEL_PARAM_BOUNDS,
   ACCENT_COLORS,
   BUILT_IN_MODELS,
+  BUILT_IN_TEMPLATES,
 } = useSettings()
+
+const allTemplates = computed(() =>
+  getAllTemplates().map((t) => ({ ...t, builtIn: t.builtIn ?? false }))
+)
 
 function close() {
   emit('close')
@@ -407,6 +527,67 @@ function removeCustomModel(id) {
   const model = settings.value.customModels?.find((m) => m.id === id)
   if (model && confirm(`Delete custom model "${model.name}"?`)) {
     deleteCustomModel(id)
+  }
+}
+
+// ─── Template form ───
+const showTemplateForm = ref(false)
+const editingTemplateId = ref(null)
+const tmplForm = ref({
+  name: '',
+  icon: '',
+  description: '',
+  systemPrompt: '',
+})
+
+function openTemplateForm() {
+  editingTemplateId.value = null
+  tmplForm.value = { name: '', icon: '✨', description: '', systemPrompt: '' }
+  showTemplateForm.value = true
+}
+
+function editTemplate(template) {
+  editingTemplateId.value = template.id
+  tmplForm.value = {
+    name: template.name,
+    icon: template.icon || '✨',
+    description: template.description || '',
+    systemPrompt: template.systemPrompt || '',
+  }
+  showTemplateForm.value = true
+}
+
+function closeTemplateForm() {
+  showTemplateForm.value = false
+  editingTemplateId.value = null
+  tmplForm.value = { name: '', icon: '', description: '', systemPrompt: '' }
+}
+
+function saveTemplate() {
+  const payload = {
+    name: tmplForm.value.name,
+    icon: tmplForm.value.icon || '✨',
+    description: tmplForm.value.description,
+    systemPrompt: tmplForm.value.systemPrompt,
+  }
+
+  if (!payload.name?.trim()) {
+    alert('Please enter a template name.')
+    return
+  }
+
+  if (editingTemplateId.value) {
+    updateCustomTemplate(editingTemplateId.value, payload)
+  } else {
+    addCustomTemplate(payload)
+  }
+  closeTemplateForm()
+}
+
+function removeTemplate(id) {
+  const template = settings.value.customTemplates?.find((t) => t.id === id)
+  if (template && confirm(`Delete template "${template.name}"?`)) {
+    deleteCustomTemplate(id)
   }
 }
 </script>
@@ -985,5 +1166,17 @@ select {
 .cm-btn-save:hover {
   background: var(--accent-hover, #0d8a6c);
   border-color: var(--accent-hover, #0d8a6c);
+}
+
+/* ─── Template badge ─── */
+.template-built-in-badge {
+  font-size: 0.65rem;
+  padding: 1px 5px;
+  background: #555;
+  color: #ccc;
+  border-radius: 0.25rem;
+  margin-left: 0.35rem;
+  font-weight: 500;
+  vertical-align: middle;
 }
 </style>

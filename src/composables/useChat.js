@@ -71,6 +71,30 @@ export function useChat() {
     return conv
   }
 
+  function createConversationFromTemplate(template) {
+    const id = generateId()
+    const prompt = template.systemPrompt || settings.value.defaultSystemPrompt || ''
+    const initialMessages = (template.messages || []).map((m) => ({
+      id: generateId(),
+      role: m.role,
+      content: m.content,
+      timestamp: Date.now(),
+    }))
+    const title = template.name || 'New Chat'
+    const conv = {
+      id,
+      title,
+      messages: initialMessages,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      systemPrompt: prompt,
+    }
+    conversations.value.unshift(conv)
+    saveConversations(conversations.value)
+    setActiveConversation(id)
+    return conv
+  }
+
   function deleteConversation(id) {
     conversations.value = conversations.value.filter((c) => c.id !== id)
     saveConversations(conversations.value)
@@ -362,6 +386,7 @@ export function useChat() {
     init,
     setActiveConversation,
     createNewConversation,
+    createConversationFromTemplate,
     deleteConversation,
     updateConversationTitle,
     updateSystemPrompt,
