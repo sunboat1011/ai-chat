@@ -1,6 +1,6 @@
 <template>
   <div class="settings-modal-overlay" @click="close">
-    <div class="settings-modal" @click.stop>
+    <div ref="settingsModalRef" class="settings-modal" @click.stop>
       <div class="modal-header">
         <h2>Settings</h2>
         <button @click="close" class="close-btn" aria-label="Close">
@@ -184,7 +184,7 @@
 
         <!-- Custom Model Form Modal -->
         <div v-if="showCustomModelForm" class="custom-model-overlay" @click="closeCustomModelForm">
-          <div class="custom-model-form" @click.stop>
+          <div ref="customModelFormRef" class="custom-model-form" @click.stop>
             <div class="custom-model-form-header">
               <h4>{{ editingModelId ? 'Edit Custom Model' : 'Add Custom Model' }}</h4>
               <p class="custom-model-form-hint">Configure a custom OpenAI-compatible endpoint.</p>
@@ -288,7 +288,7 @@
 
         <!-- Template Form Modal -->
         <div v-if="showTemplateForm" class="custom-model-overlay" @click="closeTemplateForm">
-          <div class="custom-model-form" @click.stop>
+          <div ref="templateFormRef" class="custom-model-form" @click.stop>
             <div class="custom-model-form-header">
               <h4>{{ editingTemplateId ? 'Edit Template' : 'Add Template' }}</h4>
               <p class="custom-model-form-hint">Create a reusable conversation template.</p>
@@ -429,10 +429,86 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useSettings } from '@/composables/useSettings'
 
 const emit = defineEmits(['close'])
+
+// ─── Focus trap ───
+const settingsModalRef = ref(null)
+const customModelFormRef = ref(null)
+const templateFormRef = ref(null)
+let preOpenActiveElement = null
+
+function getFocusableElements(container) {
+  if (!container) return []
+  const selector =
+    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+  return Array.from(container.querySelectorAll(selector)).filter(
+    (el) => !el.disabled && el.offsetParent !== null
+  )
+}
+
+function getActiveTrapContainer() {
+  if (showCustomModelForm.value && customModelFormRef.value) {
+    return customModelFormRef.value
+  }
+  if (showTemplateForm.value && templateFormRef.value) {
+    return templateFormRef.value
+  }
+  if (settingsModalRef.value) {
+    return settingsModalRef.value
+  }
+  return null
+}
+
+function applyFocusTrap(e) {
+  const container = getActiveTrapContainer()
+  if (!container) return
+
+  if (e.key === 'Escape') {
+    e.preventDefault()
+    if (showCustomModelForm.value) {
+      closeCustomModelForm()
+    } else if (showTemplateForm.value) {
+      closeTemplateForm()
+    } else {
+      close()
+    }
+    return
+  }
+
+  if (e.key !== 'Tab') return
+
+  const focusable = getFocusableElements(container)
+  if (focusable.length === 0) {
+    e.preventDefault()
+    return
+  }
+
+  const first = focusable[0]
+  const last = focusable[focusable.length - 1]
+
+  if (e.shiftKey) {
+    if (document.activeElement === first || !container.contains(document.activeElement)) {
+      e.preventDefault()
+      last.focus()
+    }
+  } else {
+    if (document.activeElement === last || !container.contains(document.activeElement)) {
+      e.preventDefault()
+      first.focus()
+    }
+  }
+}
+
+function focusFirstInContainer(container) {
+  const focusable = getFocusableElements(container)
+  if (focusable.length > 0) {
+    focusable[0].focus()
+  }
+}
+
 const {
   settings,
   resetSettings,
@@ -599,6 +675,56 @@ function removeTemplate(id) {
     deleteCustomTemplate(id)
   }
 }
+
+// ─── Focus trap activation ───
+watch(showCustomModelForm, (visible) => {
+  if (visible) {
+    preOpenActiveElement = document.activeElement
+    nextTick(() => {
+      if (customModelFormRef.value) focusFirstInContainer(customModelFormRef.value)
+    })
+  } else {
+    if (preOpenActiveElement && typeof preOpenActiveElement.focus === 'function') {
+      preOpenActiveElement.focus()
+    }
+    preOpenActiveElement = null
+    nextTick(() => {
+      if (settingsModalRef.value) focusFirstInContainer(settingsModalRef.value)
+    })
+  }
+})
+
+watch(showTemplateForm, (visible) => {
+  if (visible) {
+    preOpenActiveElement = document.activeElement
+    nextTick(() => {
+      if (templateFormRef.value) focusFirstInContainer(templateFormRef.value)
+    })
+  } else {
+    if (preOpenActiveElement && typeof preOpenActiveElement.focus === 'function') {
+      preOpenActiveElement.focus()
+    }
+    preOpenActiveElement = null
+    nextTick(() => {
+      if (settingsModalRef.value) focusFirstInContainer(settingsModalRef.value)
+    })
+  }
+})
+
+onMounted(() => {
+  preOpenActiveElement = document.activeElement
+  nextTick(() => {
+    if (settingsModalRef.value) focusFirstInContainer(settingsModalRef.value)
+  })
+  document.addEventListener('keydown', applyFocusTrap)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', applyFocusTrap)
+  if (preOpenActiveElement && typeof preOpenActiveElement.focus === 'function') {
+    preOpenActiveElement.focus()
+  }
+})
 </script>
 
 <style scoped>
