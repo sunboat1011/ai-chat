@@ -171,6 +171,7 @@
       <ChatInput
         :disabled="false"
         :is-streaming="isLoading"
+        :conversation-id="activeConversation"
         @send="handleSend"
         @cancel="cancelStreaming"
       />

@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { streamChat, fetchConversations, createConversation as apiCreateConversation } from '@/api/chat'
-import { loadConversations, saveConversations, generateId } from '@/utils/storage'
+import { loadConversations, saveConversations, generateId, clearDraft } from '@/utils/storage'
 import { useSettings } from '@/composables'
 
 /**
@@ -74,6 +74,7 @@ export function useChat() {
   function deleteConversation(id) {
     conversations.value = conversations.value.filter((c) => c.id !== id)
     saveConversations(conversations.value)
+    clearDraft(id)
     if (activeConversation.value === id) {
       activeConversation.value = conversations.value[0]?.id ?? null
       messages.value = conversations.value[0]?.messages ?? []

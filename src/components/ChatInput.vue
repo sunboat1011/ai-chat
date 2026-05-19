@@ -32,17 +32,37 @@
 </template>
 
 <script setup>
-import { ref, nextTick, watch } from 'vue'
+import { ref, nextTick, watch, onMounted } from 'vue'
+import { loadDraft, saveDraft, clearDraft } from '@/utils/storage'
 
 const props = defineProps({
   disabled: { type: Boolean, default: false },
   isStreaming: { type: Boolean, default: false },
+  conversationId: { type: String, default: null },
 })
 
 const emit = defineEmits(['send', 'cancel'])
 
 const inputValue = ref('')
 const textareaRef = ref(null)
+let suppressSave = false
+
+function restoreDraft() {
+  suppressSave = true
+  inputValue.value = loadDraft(props.conversationId)
+  nextTick(() => {
+    suppressSave = false
+    autoResize()
+  })
+}
+
+onMounted(() => {
+  restoreDraft()
+})
+
+watch(() => props.conversationId, () => {
+  restoreDraft()
+})
 
 function autoResize() {
   const el = textareaRef.value
@@ -62,7 +82,10 @@ function handleSend() {
   const value = inputValue.value.trim()
   if (!value || props.disabled) return
 
+  const currentConvId = props.conversationId
   emit('send', value)
+
+  clearDraft(currentConvId)
   inputValue.value = ''
 
   nextTick(() => {
@@ -71,9 +94,14 @@ function handleSend() {
   })
 }
 
-// Auto-resize on model changes
-watch(inputValue, () => {
+watch(inputValue, (val) => {
   autoResize()
+  if (suppressSave) return
+  if (!val) {
+    clearDraft(props.conversationId)
+  } else {
+    saveDraft(props.conversationId, val)
+  }
 })
 
 function focus() {
