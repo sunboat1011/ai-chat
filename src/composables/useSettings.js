@@ -2,6 +2,17 @@ import { ref, watch } from 'vue'
 
 const SETTINGS_KEY = 'ai-chat-settings'
 
+// ─── Built-in models ───
+const BUILT_IN_MODELS = [
+  { id: 'claude-3-haiku', name: 'Claude 3 Haiku' },
+  { id: 'claude-3-sonnet', name: 'Claude 3 Sonnet' },
+  { id: 'claude-3-opus', name: 'Claude 3 Opus' },
+  { id: 'claude-3-5-sonnet', name: 'Claude 3.5 Sonnet' },
+  { id: 'gpt-4', name: 'GPT-4' },
+  { id: 'gpt-4-turbo', name: 'GPT-4 Turbo' },
+  { id: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo' },
+]
+
 // ─── Model parameter defaults & bounds (single source of truth) ───
 const DEFAULT_MODEL_PARAMS = {
   temperature: 1.0,
@@ -21,6 +32,7 @@ const DEFAULT_SETTINGS = {
   model: 'claude-3-sonnet',
   accentColor: 'green',
   defaultSystemPrompt: '',
+  customModels: [],
   ...DEFAULT_MODEL_PARAMS,
 }
 
@@ -96,6 +108,40 @@ function shadeColor(color, percent) {
   return `#${toHex(R)}${toHex(G)}${toHex(B)}`
 }
 
+// ─── API Key base64 encode / decode ───
+function encodeApiKey(key) {
+  if (!key) return ''
+  try {
+    return btoa(key)
+  } catch {
+    return btoa(unescape(encodeURIComponent(key)))
+  }
+}
+
+function decodeApiKey(encoded) {
+  if (!encoded) return ''
+  try {
+    return atob(encoded)
+  } catch {
+    return ''
+  }
+}
+
+// ─── Custom model helpers ───
+function getAllModelOptions(customModels = []) {
+  const builtins = BUILT_IN_MODELS.map((m) => ({ ...m, builtIn: true }))
+  const customs = (customModels || []).map((m) => ({ ...m, builtIn: false }))
+  return [...builtins, ...customs]
+}
+
+function isCustomModel(modelId, customModels = []) {
+  return customModels.some((m) => m.id === modelId)
+}
+
+function getCustomModel(modelId, customModels = []) {
+  return customModels.find((m) => m.id === modelId)
+}
+
 // ─── Listen for system theme changes ───
 function initSystemThemeListener() {
   const mq = window.matchMedia('(prefers-color-scheme: dark)')
@@ -146,14 +192,87 @@ export function useSettings() {
     }
   }
 
+  // ─── Custom model CRUD ───
+  function addCustomModel(model) {
+    const encodedKey = encodeApiKey(model.apiKey || '')
+    const newModel = {
+      id: `custom-${Date.now()}`,
+      name: model.name?.trim() || 'Custom Model',
+      modelId: model.modelId?.trim() || 'gpt-4',
+      apiUrl: model.apiUrl?.trim() || '',
+      apiKey: encodedKey,
+    }
+    settings.value.customModels = [...(settings.value.customModels || []), newModel]
+    return newModel
+  }
+
+  function updateCustomModel(modelId, updates) {
+    const list = settings.value.customModels || []
+    const idx = list.findIndex((m) => m.id === modelId)
+    if (idx === -1) return null
+
+    const updated = { ...list[idx] }
+    if (updates.name !== undefined) updated.name = updates.name?.trim() || updated.name
+    if (updates.modelId !== undefined) updated.modelId = updates.modelId?.trim() || updated.modelId
+    if (updates.apiUrl !== undefined) updated.apiUrl = updates.apiUrl?.trim() || ''
+    if (updates.apiKey !== undefined) {
+      const key = updates.apiKey?.trim() || ''
+      updated.apiKey = key ? encodeApiKey(key) : ''
+    }
+
+    const newList = [...list]
+    newList[idx] = updated
+    settings.value.customModels = newList
+
+    if (settings.value.model === modelId) {
+      settings.value.model = modelId
+    }
+    return updated
+  }
+
+  function deleteCustomModel(modelId) {
+    const list = settings.value.customModels || []
+    settings.value.customModels = list.filter((m) => m.id !== modelId)
+    if (settings.value.model === modelId) {
+      settings.value.model = DEFAULT_SETTINGS.model
+    }
+  }
+
+  function getAllModels() {
+    return getAllModelOptions(settings.value.customModels)
+  }
+
+  function getActiveModelConfig() {
+    const modelId = settings.value.model
+    const custom = getCustomModel(modelId, settings.value.customModels)
+    if (custom) {
+      return {
+        model: custom.modelId,
+        apiBaseUrl: custom.apiUrl || settings.value.apiBaseUrl,
+        apiKey: decodeApiKey(custom.apiKey),
+      }
+    }
+    return {
+      model: modelId,
+      apiBaseUrl: settings.value.apiBaseUrl,
+      apiKey: '',
+    }
+  }
+
   return {
     settings,
     saveSettings,
     loadSettings,
     resetSettings,
     resetModelParams,
+    addCustomModel,
+    updateCustomModel,
+    deleteCustomModel,
+    getAllModels,
+    getActiveModelConfig,
     DEFAULT_MODEL_PARAMS,
     MODEL_PARAM_BOUNDS,
     ACCENT_COLORS,
+    BUILT_IN_MODELS,
   }
 }

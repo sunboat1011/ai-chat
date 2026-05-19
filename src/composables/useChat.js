@@ -10,7 +10,7 @@ import { useSettings } from '@/composables'
  * For simplicity this composable uses reactive refs.
  */
 export function useChat() {
-  const { settings } = useSettings()
+  const { settings, getActiveModelConfig } = useSettings()
   const conversations = ref(loadConversations())
   const activeConversation = ref(null)
   const messages = ref([])
@@ -144,9 +144,11 @@ export function useChat() {
     const systemPrompt = conv?.systemPrompt || ''
 
     // Call streaming API
+    const modelConfig = getActiveModelConfig()
     abortController.value = streamChat({
-      apiBaseUrl: settings.value.apiBaseUrl,
-      model: settings.value.model,
+      apiBaseUrl: modelConfig.apiBaseUrl,
+      apiKey: modelConfig.apiKey,
+      model: modelConfig.model,
       message: userContent.trim(),
       systemPrompt,
       conversationId: convId,
@@ -206,9 +208,11 @@ export function useChat() {
     isLoading.value = true
 
     // Call streaming API with the same user content
+    const modelConfig = getActiveModelConfig()
     abortController.value = streamChat({
-      apiBaseUrl: settings.value.apiBaseUrl,
-      model: settings.value.model,
+      apiBaseUrl: modelConfig.apiBaseUrl,
+      apiKey: modelConfig.apiKey,
+      model: modelConfig.model,
       message: userContent,
       systemPrompt,
       conversationId: convId,

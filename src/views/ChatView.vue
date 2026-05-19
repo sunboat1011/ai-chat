@@ -71,38 +71,58 @@
       </svg>
     </button>
 
-    <!-- System Prompt Banner -->
-    <div v-if="systemPrompt" class="system-prompt-banner">
-      <div class="system-prompt-content">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-          <path d="M2 17l10 5 10-5"/>
-          <path d="M2 12l10 5 10-5"/>
-        </svg>
-        <span class="system-prompt-label">Role:</span>
-        <span class="system-prompt-text" :title="systemPrompt">{{ systemPrompt }}</span>
-        <button class="system-prompt-edit-btn" aria-label="Edit system prompt" title="Edit system prompt" @click="openSystemPromptEdit">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+    <!-- Top bar: System Prompt + Model Selector -->
+    <div class="chat-top-bar">
+      <div v-if="systemPrompt" class="system-prompt-banner">
+        <div class="system-prompt-content">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
           </svg>
-        </button>
+          <span class="system-prompt-label">Role:</span>
+          <span class="system-prompt-text" :title="systemPrompt">{{ systemPrompt }}</span>
+          <button class="system-prompt-edit-btn" aria-label="Edit system prompt" title="Edit system prompt" @click="openSystemPromptEdit">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          </button>
+        </div>
       </div>
-    </div>
-    <div v-else-if="activeConversation" class="system-prompt-banner empty">
-      <div class="system-prompt-content">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-          <path d="M2 17l10 5 10-5"/>
-          <path d="M2 12l10 5 10-5"/>
-        </svg>
-        <span class="system-prompt-label">General Assistant</span>
-        <button class="system-prompt-edit-btn" aria-label="Edit system prompt" title="Edit system prompt" @click="openSystemPromptEdit">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+      <div v-else-if="activeConversation" class="system-prompt-banner empty">
+        <div class="system-prompt-content">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
           </svg>
-        </button>
+          <span class="system-prompt-label">General Assistant</span>
+          <button class="system-prompt-edit-btn" aria-label="Edit system prompt" title="Edit system prompt" @click="openSystemPromptEdit">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Model Selector -->
+      <div v-if="activeConversation" class="model-selector-wrap">
+        <select
+          :value="currentModel"
+          class="model-selector"
+          aria-label="Select model"
+          title="Select model"
+          @change="handleModelChange"
+        >
+          <optgroup label="Built-in">
+            <option v-for="m in builtInModels" :key="m.id" :value="m.id">{{ m.name }}</option>
+          </optgroup>
+          <optgroup v-if="customModels.length > 0" label="Custom">
+            <option v-for="m in customModels" :key="m.id" :value="m.id">{{ m.name }}</option>
+          </optgroup>
+        </select>
       </div>
     </div>
 
@@ -183,6 +203,7 @@
 import { ref, computed, nextTick, watch, onMounted, onBeforeUnmount } from 'vue'
 import MessageItem from '@/components/MessageItem.vue'
 import ChatInput from '@/components/ChatInput.vue'
+import { useSettings } from '@/composables/useSettings'
 
 const props = defineProps({
   messages: { type: Array, required: true },
@@ -191,7 +212,7 @@ const props = defineProps({
   systemPrompt: { type: String, default: '' },
 })
 
-const emit = defineEmits(['send', 'cancel', 'edit', 'delete', 'regenerate', 'branch', 'update-system-prompt'])
+const emit = defineEmits(['send', 'cancel', 'edit', 'delete', 'regenerate', 'branch', 'update-system-prompt', 'select-model'])
 
 const messagesContainerRef = ref(null)
 const searchInputRef = ref(null)
@@ -201,6 +222,21 @@ const currentMatchIndex = ref(0)
 const showSystemPromptEdit = ref(false)
 const editingSystemPrompt = ref('')
 const spTextareaRef = ref(null)
+
+// ─── Model selector ───
+const { settings, getAllModels, BUILT_IN_MODELS } = useSettings()
+
+const currentModel = computed(() => settings.value.model)
+const allModels = computed(() => getAllModels())
+const builtInModels = computed(() => BUILT_IN_MODELS)
+const customModels = computed(() => settings.value.customModels || [])
+
+function handleModelChange(e) {
+  const modelId = e.target.value
+  if (modelId && modelId !== settings.value.model) {
+    settings.value.model = modelId
+  }
+}
 
 // ─── Virtual scrolling: render only the latest N messages, load more on scroll-up ───
 const INITIAL_BATCH = 50
@@ -663,26 +699,69 @@ function scrollToBottom() {
   flex-shrink: 0;
 }
 
-/* ─── System Prompt Banner ─── */
-.system-prompt-banner {
+/* ─── Top bar: System Prompt + Model Selector ─── */
+.chat-top-bar {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
   padding: 0.5rem 1rem;
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border-subtle);
 }
 
+.system-prompt-banner {
+  flex: 1;
+  min-width: 0;
+}
+
 .system-prompt-banner.empty {
   background: transparent;
-  border-bottom: none;
-  padding: 0.5rem 1rem 0;
+}
+
+.model-selector-wrap {
+  flex-shrink: 0;
+}
+
+.model-selector {
+  padding: 0.3rem 1.8rem 0.3rem 0.6rem;
+  border-radius: 0.375rem;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s, color 0.15s;
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 0.45rem center;
+  max-width: 12rem;
+}
+
+.model-selector:hover {
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.model-selector:focus {
+  border-color: var(--accent-primary);
+}
+
+.model-selector option,
+.model-selector optgroup {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 0.8125rem;
 }
 
 .system-prompt-content {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  max-width: 48rem;
-  margin: 0 auto;
   font-size: 0.75rem;
   color: var(--text-secondary);
 }

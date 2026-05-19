@@ -97,16 +97,116 @@
           </div>
 
           <div class="setting-item">
-            <label for="model">Model</label>
+            <label for="model">Default Model</label>
             <select id="model" v-model="settings.model">
-              <option value="claude-3-haiku">Claude 3 Haiku</option>
-              <option value="claude-3-sonnet">Claude 3 Sonnet</option>
-              <option value="claude-3-opus">Claude 3 Opus</option>
-              <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
-              <option value="gpt-4">GPT-4</option>
-              <option value="gpt-4-turbo">GPT-4 Turbo</option>
-              <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+              <optgroup label="Built-in">
+                <option v-for="m in BUILT_IN_MODELS" :key="m.id" :value="m.id">{{ m.name }}</option>
+              </optgroup>
+              <optgroup v-if="settings.customModels?.length > 0" label="Custom">
+                <option v-for="m in settings.customModels" :key="m.id" :value="m.id">{{ m.name }}</option>
+              </optgroup>
             </select>
+          </div>
+        </div>
+
+        <!-- Custom Models -->
+        <div class="setting-group">
+          <div class="setting-group-header">
+            <h3>Custom Models</h3>
+            <button
+              type="button"
+              class="group-add-btn"
+              @click="openCustomModelForm"
+              aria-label="Add custom model"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Add
+            </button>
+          </div>
+
+          <div v-if="settings.customModels?.length === 0" class="custom-model-empty">
+            No custom models. Click "Add" to configure your own endpoint.
+          </div>
+
+          <div v-else class="custom-model-list">
+            <div
+              v-for="m in settings.customModels"
+              :key="m.id"
+              class="custom-model-item"
+              :class="{ active: settings.model === m.id }"
+            >
+              <div class="custom-model-info">
+                <span class="custom-model-name">{{ m.name }}</span>
+                <span class="custom-model-id">{{ m.modelId }}</span>
+              </div>
+              <div class="custom-model-actions">
+                <button
+                  type="button"
+                  class="custom-model-action-btn"
+                  aria-label="Edit custom model"
+                  title="Edit"
+                  @click="editCustomModel(m)"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="custom-model-action-btn delete"
+                  aria-label="Delete custom model"
+                  title="Delete"
+                  @click="removeCustomModel(m.id)"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/>
+                    <line x1="10" y1="11" x2="10" y2="17"/>
+                    <line x1="14" y1="11" x2="14" y2="17"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Custom Model Form Modal -->
+        <div v-if="showCustomModelForm" class="custom-model-overlay" @click="closeCustomModelForm">
+          <div class="custom-model-form" @click.stop>
+            <div class="custom-model-form-header">
+              <h4>{{ editingModelId ? 'Edit Custom Model' : 'Add Custom Model' }}</h4>
+              <p class="custom-model-form-hint">Configure a custom OpenAI-compatible endpoint.</p>
+            </div>
+
+            <div class="custom-model-form-body">
+              <div class="form-field">
+                <label for="cm-name">Display Name</label>
+                <input id="cm-name" v-model="cmForm.name" type="text" placeholder="e.g., My Local LLM" />
+              </div>
+              <div class="form-field">
+                <label for="cm-model-id">Model ID</label>
+                <input id="cm-model-id" v-model="cmForm.modelId" type="text" placeholder="e.g., gpt-4, llama-3-70b" />
+              </div>
+              <div class="form-field">
+                <label for="cm-api-url">API URL (optional)</label>
+                <input id="cm-api-url" v-model="cmForm.apiUrl" type="text" placeholder="e.g., http://localhost:8080/api" />
+                <p class="hint">Leave empty to use the global API Base URL.</p>
+              </div>
+              <div class="form-field">
+                <label for="cm-api-key">API Key (optional)</label>
+                <input id="cm-api-key" v-model="cmForm.apiKey" type="password" placeholder="sk-..." />
+                <p class="hint">Stored with base64 encoding. Cleared on edit if left blank.</p>
+              </div>
+            </div>
+
+            <div class="custom-model-form-actions">
+              <button type="button" class="cm-btn cm-btn-cancel" @click="closeCustomModelForm">Cancel</button>
+              <button type="button" class="cm-btn cm-btn-save" @click="saveCustomModel">{{ editingModelId ? 'Update' : 'Add' }}</button>
+            </div>
           </div>
         </div>
 
@@ -209,10 +309,22 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { useSettings } from '@/composables/useSettings'
 
 const emit = defineEmits(['close'])
-const { settings, resetSettings, resetModelParams, DEFAULT_MODEL_PARAMS, MODEL_PARAM_BOUNDS, ACCENT_COLORS } = useSettings()
+const {
+  settings,
+  resetSettings,
+  resetModelParams,
+  addCustomModel,
+  updateCustomModel,
+  deleteCustomModel,
+  DEFAULT_MODEL_PARAMS,
+  MODEL_PARAM_BOUNDS,
+  ACCENT_COLORS,
+  BUILT_IN_MODELS,
+} = useSettings()
 
 function close() {
   emit('close')
@@ -227,6 +339,74 @@ function handleReset() {
 function handleResetModelParams() {
   if (confirm('Reset model parameters to defaults?')) {
     resetModelParams()
+  }
+}
+
+// ─── Custom model form ───
+const showCustomModelForm = ref(false)
+const editingModelId = ref(null)
+const cmForm = ref({
+  name: '',
+  modelId: '',
+  apiUrl: '',
+  apiKey: '',
+})
+
+function openCustomModelForm() {
+  editingModelId.value = null
+  cmForm.value = { name: '', modelId: '', apiUrl: '', apiKey: '' }
+  showCustomModelForm.value = true
+}
+
+function editCustomModel(model) {
+  editingModelId.value = model.id
+  cmForm.value = {
+    name: model.name,
+    modelId: model.modelId,
+    apiUrl: model.apiUrl || '',
+    apiKey: '',
+  }
+  showCustomModelForm.value = true
+}
+
+function closeCustomModelForm() {
+  showCustomModelForm.value = false
+  editingModelId.value = null
+  cmForm.value = { name: '', modelId: '', apiUrl: '', apiKey: '' }
+}
+
+function saveCustomModel() {
+  const payload = {
+    name: cmForm.value.name,
+    modelId: cmForm.value.modelId,
+    apiUrl: cmForm.value.apiUrl,
+  }
+  if (cmForm.value.apiKey?.trim()) {
+    payload.apiKey = cmForm.value.apiKey.trim()
+  }
+
+  if (!payload.name?.trim()) {
+    alert('Please enter a display name.')
+    return
+  }
+  if (!payload.modelId?.trim()) {
+    alert('Please enter a model ID.')
+    return
+  }
+
+  if (editingModelId.value) {
+    updateCustomModel(editingModelId.value, payload)
+  } else {
+    const created = addCustomModel(payload)
+    settings.value.model = created.id
+  }
+  closeCustomModelForm()
+}
+
+function removeCustomModel(id) {
+  const model = settings.value.customModels?.find((m) => m.id === id)
+  if (model && confirm(`Delete custom model "${model.name}"?`)) {
+    deleteCustomModel(id)
   }
 }
 </script>
@@ -598,5 +778,212 @@ select {
 .number-input::-webkit-inner-spin-button,
 .number-input::-webkit-outer-spin-button {
   opacity: 1;
+}
+
+/* ─── Custom Model List ─── */
+.custom-model-empty {
+  font-size: 0.8125rem;
+  color: #888;
+  padding: 0.75rem 0;
+  text-align: center;
+}
+
+.custom-model-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.custom-model-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid #424242;
+  background: #2a2a2a;
+  transition: border-color 0.15s;
+}
+
+.custom-model-item.active {
+  border-color: var(--accent-primary, #10a37f);
+}
+
+.custom-model-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.custom-model-name {
+  font-size: 0.875rem;
+  color: #ececec;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.custom-model-id {
+  font-size: 0.75rem;
+  color: #888;
+  font-family: 'Fira Code', monospace;
+}
+
+.custom-model-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.custom-model-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: #a0a0a0;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.custom-model-action-btn:hover {
+  background: #353535;
+  color: #ececec;
+}
+
+.custom-model-action-btn.delete:hover {
+  color: #ef4444;
+}
+
+.group-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  color: var(--accent-primary, #10a37f);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.15s;
+  padding: 0.25rem 0.4rem;
+  border-radius: 0.25rem;
+}
+
+.group-add-btn:hover {
+  color: var(--accent-hover, #0d8a6c);
+  background: rgba(16, 163, 127, 0.08);
+}
+
+/* ─── Custom Model Form Modal ─── */
+.custom-model-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.custom-model-form {
+  width: 440px;
+  max-width: 90vw;
+  background: #2f2f2f;
+  border-radius: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  color: #ececec;
+  animation: slideUp 0.25s ease-out;
+}
+
+.custom-model-form-header h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem;
+}
+
+.custom-model-form-hint {
+  font-size: 0.75rem;
+  color: #888;
+  margin: 0 0 1rem;
+}
+
+.custom-model-form-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.form-field label {
+  display: block;
+  font-size: 0.8125rem;
+  margin-bottom: 0.35rem;
+  color: #cccccc;
+  font-weight: 500;
+}
+
+.form-field input {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid #424242;
+  background: #2a2a2a;
+  color: #ececec;
+  font-size: 0.875rem;
+  font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-field input:focus {
+  outline: none;
+  border-color: var(--accent-primary, #10a37f);
+  box-shadow: 0 0 0 2px rgba(16, 163, 127, 0.2);
+}
+
+.custom-model-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.cm-btn {
+  padding: 0.5rem 1.1rem;
+  border-radius: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: 1px solid transparent;
+}
+
+.cm-btn-cancel {
+  background: transparent;
+  color: #a0a0a0;
+  border-color: #424242;
+}
+
+.cm-btn-cancel:hover {
+  background: #353535;
+  color: #ececec;
+}
+
+.cm-btn-save {
+  background: var(--accent-primary, #10a37f);
+  color: white;
+  border-color: var(--accent-primary, #10a37f);
+}
+
+.cm-btn-save:hover {
+  background: var(--accent-hover, #0d8a6c);
+  border-color: var(--accent-hover, #0d8a6c);
 }
 </style>
