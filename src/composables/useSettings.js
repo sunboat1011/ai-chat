@@ -2,12 +2,26 @@ import { ref, watch } from 'vue'
 
 const SETTINGS_KEY = 'ai-chat-settings'
 
+// ─── Model parameter defaults & bounds (single source of truth) ───
+const DEFAULT_MODEL_PARAMS = {
+  temperature: 1.0,
+  maxTokens: 2048,
+  topP: 1.0,
+}
+
+const MODEL_PARAM_BOUNDS = {
+  temperature: { min: 0, max: 2, step: 0.1 },
+  maxTokens: { min: 1, max: 32000, step: 1 },
+  topP: { min: 0, max: 1, step: 0.05 },
+}
+
 const DEFAULT_SETTINGS = {
   theme: 'dark',
   apiBaseUrl: import.meta.env.VITE_API_BASE_URL || '/api',
   model: 'claude-3-sonnet',
   accentColor: 'green',
   defaultSystemPrompt: '',
+  ...DEFAULT_MODEL_PARAMS,
 }
 
 const ACCENT_COLORS = {
@@ -125,11 +139,21 @@ export function useSettings() {
     settings.value = { ...DEFAULT_SETTINGS }
   }
 
+  function resetModelParams() {
+    settings.value = {
+      ...settings.value,
+      ...DEFAULT_MODEL_PARAMS,
+    }
+  }
+
   return {
     settings,
     saveSettings,
     loadSettings,
     resetSettings,
+    resetModelParams,
+    DEFAULT_MODEL_PARAMS,
+    MODEL_PARAM_BOUNDS,
     ACCENT_COLORS,
   }
 }

@@ -110,6 +110,77 @@
           </div>
         </div>
 
+        <!-- Model Parameters -->
+        <div class="setting-group">
+          <div class="setting-group-header">
+            <h3>Model Parameters</h3>
+            <button
+              type="button"
+              class="group-reset-btn"
+              @click="handleResetModelParams"
+              title="Reset model parameters to defaults"
+            >
+              Reset to default
+            </button>
+          </div>
+
+          <div class="setting-item">
+            <div class="slider-label-row">
+              <label>Temperature</label>
+              <span class="slider-value">{{ Number(settings.temperature).toFixed(1) }}</span>
+            </div>
+            <input
+              type="range"
+              :min="MODEL_PARAM_BOUNDS.temperature.min"
+              :max="MODEL_PARAM_BOUNDS.temperature.max"
+              :step="MODEL_PARAM_BOUNDS.temperature.step"
+              v-model.number="settings.temperature"
+              class="slider-input"
+            />
+            <p class="hint">
+              Controls randomness: 0 is deterministic, 2 is highly random.
+              Default is {{ DEFAULT_MODEL_PARAMS.temperature }}.
+            </p>
+          </div>
+
+          <div class="setting-item">
+            <div class="slider-label-row">
+              <label>Max Tokens</label>
+              <span class="slider-value">{{ settings.maxTokens }}</span>
+            </div>
+            <input
+              type="number"
+              :min="MODEL_PARAM_BOUNDS.maxTokens.min"
+              :max="MODEL_PARAM_BOUNDS.maxTokens.max"
+              v-model.number="settings.maxTokens"
+              class="number-input"
+            />
+            <p class="hint">
+              Maximum number of tokens to generate.
+              Default is {{ DEFAULT_MODEL_PARAMS.maxTokens }}.
+            </p>
+          </div>
+
+          <div class="setting-item">
+            <div class="slider-label-row">
+              <label>Top P</label>
+              <span class="slider-value">{{ Number(settings.topP).toFixed(2) }}</span>
+            </div>
+            <input
+              type="range"
+              :min="MODEL_PARAM_BOUNDS.topP.min"
+              :max="MODEL_PARAM_BOUNDS.topP.max"
+              :step="MODEL_PARAM_BOUNDS.topP.step"
+              v-model.number="settings.topP"
+              class="slider-input"
+            />
+            <p class="hint">
+              Nucleus sampling: consider only the top probability mass.
+              Default is {{ DEFAULT_MODEL_PARAMS.topP }}.
+            </p>
+          </div>
+        </div>
+
         <!-- System Prompt -->
         <div class="setting-group">
           <h3>System Prompt</h3>
@@ -141,7 +212,7 @@
 import { useSettings } from '@/composables/useSettings'
 
 const emit = defineEmits(['close'])
-const { settings, resetSettings, ACCENT_COLORS } = useSettings()
+const { settings, resetSettings, resetModelParams, DEFAULT_MODEL_PARAMS, MODEL_PARAM_BOUNDS, ACCENT_COLORS } = useSettings()
 
 function close() {
   emit('close')
@@ -150,6 +221,12 @@ function close() {
 function handleReset() {
   if (confirm('Reset all settings to defaults?')) {
     resetSettings()
+  }
+}
+
+function handleResetModelParams() {
+  if (confirm('Reset model parameters to defaults?')) {
+    resetModelParams()
   }
 }
 </script>
@@ -415,5 +492,111 @@ select {
 
 .save-btn:hover {
   background: var(--accent-hover, #0d8a6c);
+}
+
+/* ─── Setting group header with inline reset ─── */
+.setting-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #3a3a3a;
+}
+
+.setting-group-header h3 {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #ececec;
+  margin: 0;
+}
+
+.group-reset-btn {
+  font-size: 0.75rem;
+  color: #888;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.group-reset-btn:hover {
+  color: var(--accent-primary, #10a37f);
+  text-decoration: underline;
+}
+
+/* ─── Slider + number inputs ─── */
+.slider-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.slider-value {
+  font-size: 0.8125rem;
+  color: var(--accent-primary, #10a37f);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.slider-input {
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: #424242;
+  outline: none;
+  margin: 0.6rem 0 0.2rem;
+  cursor: pointer;
+}
+
+.slider-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent-primary, #10a37f);
+  border: 2px solid #ececec;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.slider-input::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 0 4px rgba(16, 163, 127, 0.2);
+}
+
+.slider-input::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent-primary, #10a37f);
+  border: 2px solid #ececec;
+  cursor: pointer;
+}
+
+.number-input {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid #424242;
+  background: #2a2a2a;
+  color: #ececec;
+  font-size: 0.875rem;
+  font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.number-input:focus {
+  outline: none;
+  border-color: var(--accent-primary, #10a37f);
+  box-shadow: 0 0 0 2px rgba(16, 163, 127, 0.2);
+}
+
+.number-input::-webkit-inner-spin-button,
+.number-input::-webkit-outer-spin-button {
+  opacity: 1;
 }
 </style>

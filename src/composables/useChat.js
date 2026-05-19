@@ -150,6 +150,9 @@ export function useChat() {
       message: userContent.trim(),
       systemPrompt,
       conversationId: convId,
+      temperature: settings.value.temperature,
+      maxTokens: settings.value.maxTokens,
+      topP: settings.value.topP,
       onChunk: (chunk, fullText) => {
         aiMessage.content = fullText
       },
@@ -209,6 +212,9 @@ export function useChat() {
       message: userContent,
       systemPrompt,
       conversationId: convId,
+      temperature: settings.value.temperature,
+      maxTokens: settings.value.maxTokens,
+      topP: settings.value.topP,
       onChunk: (chunk, fullText) => {
         newAiMessage.content = fullText
       },
