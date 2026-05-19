@@ -4,7 +4,7 @@
       <textarea
         ref="textareaRef"
         v-model="inputValue"
-        :placeholder="disabled ? 'Generating response...' : 'Send a message...'"
+        :placeholder="disabled ? $t('chatInput.placeholderGenerating') : $t('chatInput.placeholder')"
         :disabled="disabled"
         class="chat-textarea"
         rows="1"
@@ -14,8 +14,8 @@
       <button
         :class="['send-btn', { active: inputValue.trim() && !disabled, streaming: isStreaming }]"
         :disabled="!inputValue.trim() || disabled"
-        :aria-label="isStreaming ? 'Stop generating' : 'Send message'"
-        :title="isStreaming ? 'Stop generating' : 'Send message'"
+        :aria-label="isStreaming ? $t('chatInput.stop') : $t('chatInput.send')"
+        :title="isStreaming ? $t('chatInput.stop') : $t('chatInput.send')"
         @click="handleSend"
       >
         <svg v-if="!isStreaming" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
@@ -27,9 +27,7 @@
       </button>
     </div>
 
-    <p class="input-hint">
-      Press <kbd>Enter</kbd> to send, <kbd>Shift + Enter</kbd> for new line
-    </p>
+    <p class="input-hint" v-html="$t('chatInput.hint', { enter: 'Enter', shiftEnter: 'Shift + Enter' })"></p>
   </div>
 </template>
 

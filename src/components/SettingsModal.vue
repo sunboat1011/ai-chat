@@ -2,8 +2,8 @@
   <div class="settings-modal-overlay" @click="close">
     <div ref="settingsModalRef" class="settings-modal" @click.stop>
       <div class="modal-header">
-        <h2>Settings</h2>
-        <button @click="close" class="close-btn" aria-label="Close">
+        <h2>{{ $t('settings.title') }}</h2>
+        <button @click="close" class="close-btn" :aria-label="$t('settings.close')">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M18 6L6 18" />
             <path d="M6 6L18 18" />
@@ -14,27 +14,27 @@
       <div class="settings-content">
         <!-- Appearance -->
         <div class="setting-group">
-          <h3>Appearance</h3>
+          <h3>{{ $t('settings.appearance') }}</h3>
 
           <div class="setting-item">
-            <label>Theme</label>
+            <label>{{ $t('settings.theme') }}</label>
             <div class="theme-options">
               <button
                 type="button"
                 :class="{ active: settings.theme === 'dark' }"
-                aria-label="Use dark theme"
+                :aria-label="$t('settings.themeDark')"
                 :aria-pressed="settings.theme === 'dark'"
                 @click="settings.theme = 'dark'"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
                 </svg>
-                Dark
+                {{ $t('settings.dark') }}
               </button>
               <button
                 type="button"
                 :class="{ active: settings.theme === 'light' }"
-                aria-label="Use light theme"
+                :aria-label="$t('settings.themeLight')"
                 :aria-pressed="settings.theme === 'light'"
                 @click="settings.theme = 'light'"
               >
@@ -49,12 +49,12 @@
                   <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
                   <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
                 </svg>
-                Light
+                {{ $t('settings.light') }}
               </button>
               <button
                 type="button"
                 :class="{ active: settings.theme === 'system' }"
-                aria-label="Use system theme"
+                :aria-label="$t('settings.themeSystem')"
                 :aria-pressed="settings.theme === 'system'"
                 @click="settings.theme = 'system'"
               >
@@ -63,13 +63,13 @@
                   <line x1="8" y1="21" x2="16" y2="21"/>
                   <line x1="12" y1="17" x2="12" y2="21"/>
                 </svg>
-                System
+                {{ $t('settings.system') }}
               </button>
             </div>
           </div>
 
           <div class="setting-item">
-            <label>Accent Color</label>
+            <label>{{ $t('settings.accentColor') }}</label>
             <div class="color-options">
               <button
                 v-for="(hex, name) in ACCENT_COLORS"
@@ -77,7 +77,7 @@
                 type="button"
                 class="color-option"
                 :class="{ active: settings.accentColor === name }"
-                :aria-label="`Use ${name} accent color`"
+                :aria-label="$t('settings.accentColorLabel', { name })"
                 :aria-pressed="settings.accentColor === name"
                 @click="settings.accentColor = name"
                 :title="name"
@@ -91,26 +91,26 @@
 
         <!-- API Configuration -->
         <div class="setting-group">
-          <h3>API Configuration</h3>
+          <h3>{{ $t('settings.apiConfig') }}</h3>
 
           <div class="setting-item">
-            <label for="api-url">API Base URL</label>
+            <label for="api-url">{{ $t('settings.apiBaseUrl') }}</label>
             <input
               id="api-url"
               type="text"
               v-model="settings.apiBaseUrl"
               placeholder="http://localhost:8080/api"
             />
-            <p class="hint">The base URL of your AI backend service.</p>
+            <p class="hint">{{ $t('settings.apiBaseUrlHint') }}</p>
           </div>
 
           <div class="setting-item">
-            <label for="model">Default Model</label>
+            <label for="model">{{ $t('settings.defaultModel') }}</label>
             <select id="model" v-model="settings.model">
-              <optgroup label="Built-in">
+              <optgroup :label="$t('settings.builtIn')">
                 <option v-for="m in BUILT_IN_MODELS" :key="m.id" :value="m.id">{{ m.name }}</option>
               </optgroup>
-              <optgroup v-if="settings.customModels?.length > 0" label="Custom">
+              <optgroup v-if="settings.customModels?.length > 0" :label="$t('settings.custom')">
                 <option v-for="m in settings.customModels" :key="m.id" :value="m.id">{{ m.name }}</option>
               </optgroup>
             </select>
@@ -120,23 +120,23 @@
         <!-- Custom Models -->
         <div class="setting-group">
           <div class="setting-group-header">
-            <h3>Custom Models</h3>
+            <h3>{{ $t('settings.customModels') }}</h3>
             <button
               type="button"
               class="group-add-btn"
               @click="openCustomModelForm"
-              aria-label="Add custom model"
+              :aria-label="$t('settings.addCustomModel')"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19"/>
                 <line x1="5" y1="12" x2="19" y2="12"/>
               </svg>
-              Add
+              {{ $t('settings.add') }}
             </button>
           </div>
 
           <div v-if="settings.customModels?.length === 0" class="custom-model-empty">
-            No custom models. Click "Add" to configure your own endpoint.
+            {{ $t('settings.noCustomModels') }}
           </div>
 
           <div v-else class="custom-model-list">
@@ -154,7 +154,7 @@
                 <button
                   type="button"
                   class="custom-model-action-btn"
-                  aria-label="Edit custom model"
+                  :aria-label="$t('settings.editCustomModel')"
                   title="Edit"
                   @click="editCustomModel(m)"
                 >
@@ -166,7 +166,7 @@
                 <button
                   type="button"
                   class="custom-model-action-btn delete"
-                  aria-label="Delete custom model"
+                  :aria-label="$t('settings.deleteCustomModel')"
                   title="Delete"
                   @click="removeCustomModel(m.id)"
                 >
@@ -186,34 +186,34 @@
         <div v-if="showCustomModelForm" class="custom-model-overlay" @click="closeCustomModelForm">
           <div ref="customModelFormRef" class="custom-model-form" @click.stop>
             <div class="custom-model-form-header">
-              <h4>{{ editingModelId ? 'Edit Custom Model' : 'Add Custom Model' }}</h4>
-              <p class="custom-model-form-hint">Configure a custom OpenAI-compatible endpoint.</p>
+              <h4>{{ editingModelId ? $t('settings.editModelTitle') : $t('settings.addModelTitle') }}</h4>
+              <p class="custom-model-form-hint">{{ $t('settings.modelFormHint') }}</p>
             </div>
 
             <div class="custom-model-form-body">
               <div class="form-field">
-                <label for="cm-name">Display Name</label>
-                <input id="cm-name" v-model="cmForm.name" type="text" placeholder="e.g., My Local LLM" />
+                <label for="cm-name">{{ $t('settings.displayName') }}</label>
+                <input id="cm-name" v-model="cmForm.name" type="text" :placeholder="$t('settings.displayNamePlaceholder')" />
               </div>
               <div class="form-field">
-                <label for="cm-model-id">Model ID</label>
-                <input id="cm-model-id" v-model="cmForm.modelId" type="text" placeholder="e.g., gpt-4, llama-3-70b" />
+                <label for="cm-model-id">{{ $t('settings.modelId') }}</label>
+                <input id="cm-model-id" v-model="cmForm.modelId" type="text" :placeholder="$t('settings.modelIdPlaceholder')" />
               </div>
               <div class="form-field">
-                <label for="cm-api-url">API URL (optional)</label>
-                <input id="cm-api-url" v-model="cmForm.apiUrl" type="text" placeholder="e.g., http://localhost:8080/api" />
-                <p class="hint">Leave empty to use the global API Base URL.</p>
+                <label for="cm-api-url">{{ $t('settings.apiUrlOptional') }}</label>
+                <input id="cm-api-url" v-model="cmForm.apiUrl" type="text" :placeholder="$t('settings.apiUrlPlaceholder')" />
+                <p class="hint">{{ $t('settings.apiUrlHint') }}</p>
               </div>
               <div class="form-field">
-                <label for="cm-api-key">API Key (optional)</label>
-                <input id="cm-api-key" v-model="cmForm.apiKey" type="password" placeholder="sk-..." />
-                <p class="hint">Stored with base64 encoding. Cleared on edit if left blank.</p>
+                <label for="cm-api-key">{{ $t('settings.apiKeyOptional') }}</label>
+                <input id="cm-api-key" v-model="cmForm.apiKey" type="password" :placeholder="$t('settings.apiKeyPlaceholder')" />
+                <p class="hint">{{ $t('settings.apiKeyHint') }}</p>
               </div>
             </div>
 
             <div class="custom-model-form-actions">
-              <button type="button" class="cm-btn cm-btn-cancel" aria-label="Cancel custom model edit" @click="closeCustomModelForm">Cancel</button>
-              <button type="button" class="cm-btn cm-btn-save" :aria-label="editingModelId ? 'Update custom model' : 'Add custom model'" @click="saveCustomModel">{{ editingModelId ? 'Update' : 'Add' }}</button>
+              <button type="button" class="cm-btn cm-btn-cancel" :aria-label="$t('settings.cancel')" @click="closeCustomModelForm">{{ $t('settings.cancel') }}</button>
+              <button type="button" class="cm-btn cm-btn-save" :aria-label="editingModelId ? $t('settings.update') : $t('settings.add')" @click="saveCustomModel">{{ editingModelId ? $t('settings.update') : $t('settings.add') }}</button>
             </div>
           </div>
         </div>
@@ -221,23 +221,23 @@
         <!-- Templates -->
         <div class="setting-group">
           <div class="setting-group-header">
-            <h3>Conversation Templates</h3>
+            <h3>{{ $t('settings.templates') }}</h3>
             <button
               type="button"
               class="group-add-btn"
               @click="openTemplateForm"
-              aria-label="Add custom template"
+              :aria-label="$t('settings.addTemplate')"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19"/>
                 <line x1="5" y1="12" x2="19" y2="12"/>
               </svg>
-              Add
+              {{ $t('settings.add') }}
             </button>
           </div>
 
           <div v-if="allTemplates.length === BUILT_IN_TEMPLATES.length" class="custom-model-empty">
-            No custom templates. Click "Add" to create your own.
+            {{ $t('settings.noCustomTemplates') }}
           </div>
 
           <div class="custom-model-list">
@@ -250,7 +250,7 @@
                 <span class="custom-model-name">
                   <span style="margin-right: 0.35rem;">{{ t.icon }}</span>
                   {{ t.name }}
-                  <span v-if="t.builtIn" class="template-built-in-badge">Built-in</span>
+                  <span v-if="t.builtIn" class="template-built-in-badge">{{ $t('settings.builtInBadge') }}</span>
                 </span>
                 <span class="custom-model-id">{{ t.description }}</span>
               </div>
@@ -258,7 +258,7 @@
                 <button
                   type="button"
                   class="custom-model-action-btn"
-                  aria-label="Edit template"
+                  :aria-label="$t('settings.editTemplate')"
                   title="Edit"
                   @click="editTemplate(t)"
                 >
@@ -270,7 +270,7 @@
                 <button
                   type="button"
                   class="custom-model-action-btn delete"
-                  aria-label="Delete template"
+                  :aria-label="$t('settings.deleteTemplate')"
                   title="Delete"
                   @click="removeTemplate(t.id)"
                 >
@@ -290,27 +290,27 @@
         <div v-if="showTemplateForm" class="custom-model-overlay" @click="closeTemplateForm">
           <div ref="templateFormRef" class="custom-model-form" @click.stop>
             <div class="custom-model-form-header">
-              <h4>{{ editingTemplateId ? 'Edit Template' : 'Add Template' }}</h4>
-              <p class="custom-model-form-hint">Create a reusable conversation template.</p>
+              <h4>{{ editingTemplateId ? $t('settings.editTemplateTitle') : $t('settings.addTemplateTitle') }}</h4>
+              <p class="custom-model-form-hint">{{ $t('settings.templateFormHint') }}</p>
             </div>
 
             <div class="custom-model-form-body">
               <div class="form-field">
-                <label for="tmpl-name">Name</label>
-                <input id="tmpl-name" v-model="tmplForm.name" type="text" placeholder="e.g., Bug Fixer" />
+                <label for="tmpl-name">{{ $t('settings.name') }}</label>
+                <input id="tmpl-name" v-model="tmplForm.name" type="text" :placeholder="$t('settings.namePlaceholder')" />
               </div>
               <div class="form-field" style="display: grid; grid-template-columns: 80px 1fr; gap: 0.75rem;">
                 <div>
-                  <label for="tmpl-icon">Icon</label>
-                  <input id="tmpl-icon" v-model="tmplForm.icon" type="text" placeholder="✨" style="text-align: center;" />
+                  <label for="tmpl-icon">{{ $t('settings.icon') }}</label>
+                  <input id="tmpl-icon" v-model="tmplForm.icon" type="text" :placeholder="$t('settings.iconPlaceholder')" style="text-align: center;" />
                 </div>
                 <div>
-                  <label for="tmpl-desc">Description</label>
-                  <input id="tmpl-desc" v-model="tmplForm.description" type="text" placeholder="Short description..." />
+                  <label for="tmpl-desc">{{ $t('settings.description') }}</label>
+                  <input id="tmpl-desc" v-model="tmplForm.description" type="text" :placeholder="$t('settings.descriptionPlaceholder')" />
                 </div>
               </div>
               <div class="form-field">
-                <label for="tmpl-prompt">System Prompt</label>
+                <label for="tmpl-prompt">{{ $t('settings.systemPrompt') }}</label>
                 <textarea
                   id="tmpl-prompt"
                   v-model="tmplForm.systemPrompt"
@@ -318,13 +318,13 @@
                   placeholder="e.g., You are a helpful coding assistant..."
                   style="width: 100%; padding: 0.55rem 0.75rem; border-radius: 0.5rem; border: 1px solid #424242; background: #2a2a2a; color: #ececec; font-size: 0.875rem; font-family: inherit; resize: vertical; outline: none;"
                 />
-                <p class="hint">Defines how the AI behaves in conversations started from this template.</p>
+                <p class="hint">{{ $t('settings.templatePromptHint') }}</p>
               </div>
             </div>
 
             <div class="custom-model-form-actions">
-              <button type="button" class="cm-btn cm-btn-cancel" aria-label="Cancel template edit" @click="closeTemplateForm">Cancel</button>
-              <button type="button" class="cm-btn cm-btn-save" :aria-label="editingTemplateId ? 'Update template' : 'Add template'" @click="saveTemplate">{{ editingTemplateId ? 'Update' : 'Add' }}</button>
+              <button type="button" class="cm-btn cm-btn-cancel" :aria-label="$t('settings.cancel')" @click="closeTemplateForm">{{ $t('settings.cancel') }}</button>
+              <button type="button" class="cm-btn cm-btn-save" :aria-label="editingTemplateId ? $t('settings.update') : $t('settings.add')" @click="saveTemplate">{{ editingTemplateId ? $t('settings.update') : $t('settings.add') }}</button>
             </div>
           </div>
         </div>
@@ -332,21 +332,21 @@
         <!-- Model Parameters -->
         <div class="setting-group">
           <div class="setting-group-header">
-            <h3>Model Parameters</h3>
+            <h3>{{ $t('settings.modelParams') }}</h3>
             <button
               type="button"
               class="group-reset-btn"
-              aria-label="Reset model parameters to defaults"
+              :aria-label="$t('settings.resetToDefault')"
               @click="handleResetModelParams"
-              title="Reset model parameters to defaults"
+              :title="$t('settings.resetToDefault')"
             >
-              Reset to default
+              {{ $t('settings.resetToDefaultShort') }}
             </button>
           </div>
 
           <div class="setting-item">
             <div class="slider-label-row">
-              <label>Temperature</label>
+              <label>{{ $t('settings.temperature') }}</label>
               <span class="slider-value">{{ Number(settings.temperature).toFixed(1) }}</span>
             </div>
             <input
@@ -358,14 +358,13 @@
               class="slider-input"
             />
             <p class="hint">
-              Controls randomness: 0 is deterministic, 2 is highly random.
-              Default is {{ DEFAULT_MODEL_PARAMS.temperature }}.
+              {{ $t('settings.temperatureHint', { default: DEFAULT_MODEL_PARAMS.temperature }) }}
             </p>
           </div>
 
           <div class="setting-item">
             <div class="slider-label-row">
-              <label>Max Tokens</label>
+              <label>{{ $t('settings.maxTokens') }}</label>
               <span class="slider-value">{{ settings.maxTokens }}</span>
             </div>
             <input
@@ -376,14 +375,13 @@
               class="number-input"
             />
             <p class="hint">
-              Maximum number of tokens to generate.
-              Default is {{ DEFAULT_MODEL_PARAMS.maxTokens }}.
+              {{ $t('settings.maxTokensHint', { default: DEFAULT_MODEL_PARAMS.maxTokens }) }}
             </p>
           </div>
 
           <div class="setting-item">
             <div class="slider-label-row">
-              <label>Top P</label>
+              <label>{{ $t('settings.topP') }}</label>
               <span class="slider-value">{{ Number(settings.topP).toFixed(2) }}</span>
             </div>
             <input
@@ -395,18 +393,17 @@
               class="slider-input"
             />
             <p class="hint">
-              Nucleus sampling: consider only the top probability mass.
-              Default is {{ DEFAULT_MODEL_PARAMS.topP }}.
+              {{ $t('settings.topPHint', { default: DEFAULT_MODEL_PARAMS.topP }) }}
             </p>
           </div>
         </div>
 
         <!-- System Prompt -->
         <div class="setting-group">
-          <h3>System Prompt</h3>
+          <h3>{{ $t('settings.systemPrompt') }}</h3>
 
           <div class="setting-item">
-            <label for="default-system-prompt">Default System Prompt</label>
+            <label for="default-system-prompt">{{ $t('settings.defaultSystemPrompt') }}</label>
             <textarea
               id="default-system-prompt"
               v-model="settings.defaultSystemPrompt"
@@ -414,15 +411,15 @@
               placeholder="e.g., You are a helpful coding assistant..."
             />
             <p class="hint">
-              Applied to all new conversations. Each conversation can override this independently.
+              {{ $t('settings.defaultSystemPromptHint') }}
             </p>
           </div>
         </div>
       </div>
 
       <div class="modal-footer">
-        <button type="button" class="reset-btn" aria-label="Reset all settings to defaults" @click="handleReset">Reset to Defaults</button>
-        <button type="button" class="save-btn" aria-label="Close settings" @click="close">Done</button>
+        <button type="button" class="reset-btn" :aria-label="$t('settings.resetAll')" @click="handleReset">{{ $t('settings.resetAll') }}</button>
+        <button type="button" class="save-btn" :aria-label="$t('settings.done')" @click="close">{{ $t('settings.done') }}</button>
       </div>
     </div>
   </div>
@@ -431,6 +428,9 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useSettings } from '@/composables/useSettings'
+import { useText } from '@/composables/useText'
+
+const { t } = useText()
 
 const emit = defineEmits(['close'])
 
@@ -536,13 +536,13 @@ function close() {
 }
 
 function handleReset() {
-  if (confirm('Reset all settings to defaults?')) {
+  if (confirm(t('settings.resetAllConfirm'))) {
     resetSettings()
   }
 }
 
 function handleResetModelParams() {
-  if (confirm('Reset model parameters to defaults?')) {
+  if (confirm(t('settings.resetParamsConfirm'))) {
     resetModelParams()
   }
 }
@@ -591,11 +591,11 @@ function saveCustomModel() {
   }
 
   if (!payload.name?.trim()) {
-    alert('Please enter a display name.')
+    alert(t('settings.enterDisplayName'))
     return
   }
   if (!payload.modelId?.trim()) {
-    alert('Please enter a model ID.')
+    alert(t('settings.enterModelId'))
     return
   }
 
@@ -610,7 +610,7 @@ function saveCustomModel() {
 
 function removeCustomModel(id) {
   const model = settings.value.customModels?.find((m) => m.id === id)
-  if (model && confirm(`Delete custom model "${model.name}"?`)) {
+  if (model && confirm(t('settings.deleteModelConfirm', { name: model.name }))) {
     deleteCustomModel(id)
   }
 }
@@ -657,7 +657,7 @@ function saveTemplate() {
   }
 
   if (!payload.name?.trim()) {
-    alert('Please enter a template name.')
+    alert(t('settings.enterTemplateName'))
     return
   }
 
@@ -671,7 +671,7 @@ function saveTemplate() {
 
 function removeTemplate(id) {
   const template = settings.value.customTemplates?.find((t) => t.id === id)
-  if (template && confirm(`Delete template "${template.name}"?`)) {
+  if (template && confirm(t('settings.deleteTemplateConfirm', { name: template.name }))) {
     deleteCustomTemplate(id)
   }
 }

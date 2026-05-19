@@ -11,7 +11,7 @@
           ref="searchInputRef"
           v-model="searchQuery"
           type="text"
-          placeholder="Search in conversation..."
+          :placeholder="$t('chatView.searchPlaceholder')"
           class="search-input"
           aria-label="Search in conversation"
           @keydown="handleSearchKeydown"
@@ -25,7 +25,7 @@
       <button
         class="search-nav-btn"
         :disabled="totalMatches === 0"
-        aria-label="Previous match"
+        :aria-label="$t('chatView.previousMatch')"
         title="Previous (Shift+Enter)"
         @click="prevMatch"
       >
@@ -36,7 +36,7 @@
       <button
         class="search-nav-btn"
         :disabled="totalMatches === 0"
-        aria-label="Next match"
+        :aria-label="$t('chatView.nextMatch')"
         title="Next (Enter)"
         @click="nextMatch"
       >
@@ -46,7 +46,7 @@
       </button>
       <button
         class="search-close-btn"
-        aria-label="Close search"
+        :aria-label="$t('chatView.closeSearch')"
         title="Close (Esc)"
         @click="closeSearch"
       >
@@ -61,7 +61,7 @@
     <button
       v-if="!showSearch && messages.length > 0"
       class="search-toggle-btn"
-      aria-label="Search in conversation"
+      :aria-label="$t('chatView.searchTitle')"
       title="Search in conversation (Ctrl/Cmd+F)"
       @click="openSearch"
     >
@@ -80,9 +80,9 @@
             <path d="M2 17l10 5 10-5"/>
             <path d="M2 12l10 5 10-5"/>
           </svg>
-          <span class="system-prompt-label">Role:</span>
+          <span class="system-prompt-label">{{ $t('chatView.roleLabel') }}</span>
           <span class="system-prompt-text" :title="systemPrompt">{{ systemPrompt }}</span>
-          <button class="system-prompt-edit-btn" aria-label="Edit system prompt" title="Edit system prompt" @click="openSystemPromptEdit">
+          <button class="system-prompt-edit-btn" :aria-label="$t('chatView.editSystemPrompt')" :title="$t('chatView.editSystemPrompt')" @click="openSystemPromptEdit">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
               <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
@@ -97,8 +97,8 @@
             <path d="M2 17l10 5 10-5"/>
             <path d="M2 12l10 5 10-5"/>
           </svg>
-          <span class="system-prompt-label">General Assistant</span>
-          <button class="system-prompt-edit-btn" aria-label="Edit system prompt" title="Edit system prompt" @click="openSystemPromptEdit">
+          <span class="system-prompt-label">{{ $t('chatView.generalAssistant') }}</span>
+          <button class="system-prompt-edit-btn" :aria-label="$t('chatView.editSystemPrompt')" :title="$t('chatView.editSystemPrompt')" @click="openSystemPromptEdit">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
               <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
@@ -116,10 +116,10 @@
           title="Select model"
           @change="handleModelChange"
         >
-          <optgroup label="Built-in">
+          <optgroup :label="$t('settings.builtIn')">
             <option v-for="m in builtInModels" :key="m.id" :value="m.id">{{ m.name }}</option>
           </optgroup>
-          <optgroup v-if="customModels.length > 0" label="Custom">
+          <optgroup v-if="customModels.length > 0" :label="$t('settings.custom')">
             <option v-for="m in customModels" :key="m.id" :value="m.id">{{ m.name }}</option>
           </optgroup>
         </select>
@@ -130,8 +130,8 @@
     <div v-if="showSystemPromptEdit" class="sp-edit-overlay" @click="closeSystemPromptEdit">
       <div class="sp-edit-modal" @click.stop>
         <div class="sp-edit-header">
-          <h3>Edit System Prompt</h3>
-          <p class="sp-edit-hint">Changes affect all future messages in this conversation.</p>
+          <h3>{{ $t('chatView.editSystemPromptTitle') }}</h3>
+          <p class="sp-edit-hint">{{ $t('chatView.editSystemPromptHint') }}</p>
         </div>
         <textarea
           ref="spTextareaRef"
@@ -141,8 +141,8 @@
           placeholder="e.g., You are a helpful coding assistant..."
         />
         <div class="sp-edit-actions">
-          <button class="sp-edit-btn sp-edit-cancel" aria-label="Cancel system prompt edit" @click="closeSystemPromptEdit">Cancel</button>
-          <button class="sp-edit-btn sp-edit-save" aria-label="Save system prompt" @click="saveSystemPrompt">Save</button>
+          <button class="sp-edit-btn sp-edit-cancel" :aria-label="$t('settings.cancel')" @click="closeSystemPromptEdit">{{ $t('settings.cancel') }}</button>
+          <button class="sp-edit-btn sp-edit-save" :aria-label="$t('chatView.save')" @click="saveSystemPrompt">{{ $t('chatView.save') }}</button>
         </div>
       </div>
     </div>
@@ -156,8 +156,8 @@
           <path d="M2 12l10 5 10-5"/>
         </svg>
       </div>
-      <h1 class="welcome-title">How can I help you today?</h1>
-      <p class="welcome-sub">Ask me anything — code, writing, analysis, or just chat.</p>
+      <h1 class="welcome-title">{{ $t('chatView.welcomeTitle') }}</h1>
+      <p class="welcome-sub">{{ $t('chatView.welcomeSub') }}</p>
     </div>
 
     <!-- Messages -->
@@ -165,13 +165,13 @@
       <button
         v-if="hiddenCount > 0"
         class="load-earlier-btn"
-        aria-label="Load earlier messages"
+        :aria-label="$t('chatView.loadEarlier')"
         @click="loadEarlier"
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="18 15 12 9 6 15"/>
         </svg>
-        Load earlier ({{ hiddenCount }} {{ hiddenCount === 1 ? 'message' : 'messages' }})
+        {{ $t('chatView.loadEarlierCount', { count: hiddenCount, messages: hiddenCount === 1 ? $t('message.messageSingular') : $t('message.messagePlural') }) }}
       </button>
       <MessageItem
         v-for="(msg, idx) in visibleMessages"

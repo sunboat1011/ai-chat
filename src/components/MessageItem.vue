@@ -16,7 +16,7 @@
 
       <div class="message-body">
         <div class="message-author">
-          {{ message.role === 'user' ? 'You' : 'AI Assistant' }}
+          {{ message.role === 'user' ? $t('message.user') : $t('message.assistant') }}
           <time
             v-if="message.timestamp"
             :datetime="isoTimestamp"
@@ -37,8 +37,8 @@
             @keydown="handleEditKeydown"
           />
           <div class="edit-actions">
-            <button class="edit-btn edit-cancel" aria-label="Cancel edit" @click="cancelEdit">Cancel</button>
-            <button class="edit-btn edit-save" aria-label="Save and submit edited message" @click="saveEdit">Save & Submit</button>
+            <button class="edit-btn edit-cancel" :aria-label="$t('message.cancelEdit')" @click="cancelEdit">{{ $t('message.cancelEdit') }}</button>
+            <button class="edit-btn edit-save" :aria-label="$t('message.saveAndSubmit')" @click="saveEdit">{{ $t('message.saveAndSubmit') }}</button>
           </div>
         </div>
 
@@ -58,25 +58,25 @@
           </div>
 
           <div class="message-actions">
-            <button v-if="message.role === 'user'" class="action-btn" aria-label="Edit message" @click="startEdit" title="Edit">
+            <button v-if="message.role === 'user'" class="action-btn" :aria-label="$t('message.edit')" @click="startEdit" title="Edit">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
                 <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
               </svg>
             </button>
-            <button class="action-btn" aria-label="Delete message" @click="confirmDelete" title="Delete">
+            <button class="action-btn" :aria-label="$t('message.delete')" @click="confirmDelete" title="Delete">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="3 6 5 6 21 6"/>
                 <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
               </svg>
             </button>
-            <button v-if="message.role === 'assistant'" class="action-btn" aria-label="Regenerate response" @click="handleRegenerate" title="Regenerate">
+            <button v-if="message.role === 'assistant'" class="action-btn" :aria-label="$t('message.regenerate')" @click="handleRegenerate" title="Regenerate">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="1 4 1 10 7 10"/>
                 <path d="M3.51 15a9 9 0 102.13-9.36L1 10"/>
               </svg>
             </button>
-            <button class="action-btn" :aria-label="copied ? 'Message copied' : 'Copy message'" @click="copyMessage" title="Copy">
+            <button class="action-btn" :aria-label="copied ? $t('message.copied') : $t('message.copy')" @click="copyMessage" title="Copy">
               <svg v-if="!copied" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
                 <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
@@ -85,7 +85,7 @@
                 <polyline points="20 6 9 17 4 12"/>
               </svg>
             </button>
-            <button class="action-btn" aria-label="Branch conversation from this message" @click="handleBranch" title="Branch from here">
+            <button class="action-btn" :aria-label="$t('message.branch')" @click="handleBranch" title="Branch from here">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="6" y1="3" x2="6" y2="15"/>
                 <circle cx="18" cy="6" r="3"/>
@@ -100,10 +100,10 @@
 
     <ConfirmModal
       :visible="showDeleteConfirm"
-      title="Delete Message"
-      message="Are you sure you want to delete this message? This action cannot be undone."
-      confirm-text="Delete"
-      cancel-text="Cancel"
+      :title="$t('message.deleteConfirmTitle')"
+      :message="$t('message.deleteConfirmMessage')"
+      :confirm-text="$t('message.deleteConfirmBtn')"
+      :cancel-text="$t('message.cancel')"
       @confirm="handleDeleteConfirm"
       @cancel="handleDeleteCancel"
     />
@@ -115,7 +115,10 @@ import { ref, computed, watch, nextTick } from 'vue'
 import { renderMarkdown, escapeHtmlText } from '@/utils/markdown'
 import { formatRelative, formatAbsolute, formatISOTime } from '@/utils/time'
 import { useNow } from '@/composables/useNow'
+import { useText } from '@/composables/useText'
 import ConfirmModal from './ConfirmModal.vue'
+
+const { t } = useText()
 
 const props = defineProps({
   message: { type: Object, required: true },
@@ -354,21 +357,21 @@ async function handleContentClick(e) {
   try {
     await navigator.clipboard.writeText(codeEl.textContent)
     btn.classList.add('copied')
-    btn.setAttribute('aria-label', 'Code copied')
+    btn.setAttribute('aria-label', t('message.codeCopied'))
     btn.innerHTML = `
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="20 6 9 17 4 12"/>
       </svg>
-      Copied!`
+      ${t('message.copiedBtn')}`
     setTimeout(() => {
       btn.classList.remove('copied')
-      btn.setAttribute('aria-label', 'Copy code')
+      btn.setAttribute('aria-label', t('message.copyCode'))
       btn.innerHTML = `
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
           <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
         </svg>
-        Copy`
+        ${t('message.copyCodeBtn')}`
     }, 2000)
   } catch {
     // silently ignore clipboard errors

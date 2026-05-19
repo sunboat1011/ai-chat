@@ -25,8 +25,8 @@
 
     <!-- Undo toast -->
     <div v-if="lastDeleted" class="undo-toast">
-      <span>Message deleted</span>
-      <button class="undo-btn" aria-label="Undo delete message" @click="handleUndoDelete">Undo</button>
+      <span>{{ $t('app.undoToast') }}</span>
+      <button class="undo-btn" :aria-label="$t('app.undo')" @click="handleUndoDelete">{{ $t('app.undo') }}</button>
     </div>
 
     <RoleSelectModal

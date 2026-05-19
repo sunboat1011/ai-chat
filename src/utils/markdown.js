@@ -1,6 +1,7 @@
 import { marked } from 'marked'
 import hljs from 'highlight.js'
 import DOMPurify from 'dompurify'
+import { t } from '@/composables/useText'
 
 /**
  * Configure marked with code highlighting renderer.
@@ -33,12 +34,12 @@ renderer.code = function (token) {
   return `<div class="code-block-wrapper" data-lang="${escapedLang}">
     <div class="code-block-header">
       <span class="lang-label">${escapedLang}</span>
-      <button class="copy-btn" data-action="copy-code" aria-label="Copy code">
+      <button class="copy-btn" data-action="copy-code" aria-label="${t('message.copyCode')}">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
           <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
         </svg>
-        Copy
+        ${t('message.copyCodeBtn')}
       </button>
     </div>
     <pre><code class="hljs language-${escapedLang}">${code}</code></pre>

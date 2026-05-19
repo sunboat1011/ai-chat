@@ -2,8 +2,8 @@
   <div class="role-modal-overlay" @click="handleOverlayClick">
     <div class="role-modal" @click.stop>
       <div class="modal-header">
-        <h2>Choose a Template</h2>
-        <p class="modal-subtitle">Select a preset template or create your own</p>
+        <h2>{{ $t('roleModal.title') }}</h2>
+        <p class="modal-subtitle">{{ $t('roleModal.subtitle') }}</p>
       </div>
 
       <div class="role-content">
@@ -14,7 +14,7 @@
             :key="template.id"
             type="button"
             :class="['preset-card', { active: selectedTemplateId === template.id }]"
-            :aria-label="`Select template: ${template.name}`"
+            :aria-label="$t('roleModal.selectTemplate', { name: template.name })"
             :aria-pressed="selectedTemplateId === template.id"
             @click="selectTemplate(template)"
           >
@@ -29,19 +29,19 @@
           <button
             type="button"
             :class="['preset-card', 'custom-card', { active: selectedTemplateId === '__custom__' }]"
-            aria-label="Use custom system prompt"
+            :aria-label="$t('roleModal.customAria')"
             :aria-pressed="selectedTemplateId === '__custom__'"
             @click="selectCustom"
           >
             <span class="preset-icon">✏️</span>
-            <span class="preset-name">Custom</span>
-            <span class="preset-desc">Write your own system prompt</span>
+            <span class="preset-name">{{ $t('roleModal.custom') }}</span>
+            <span class="preset-desc">{{ $t('roleModal.customDesc') }}</span>
           </button>
         </div>
 
         <!-- Custom prompt textarea -->
         <div v-if="selectedTemplateId === '__custom__' || showCustomArea" class="custom-area">
-          <label for="custom-prompt">System Prompt</label>
+          <label for="custom-prompt">{{ $t('roleModal.systemPrompt') }}</label>
           <textarea
             id="custom-prompt"
             v-model="customPrompt"
@@ -50,16 +50,16 @@
             class="custom-textarea"
           />
           <p class="hint">
-            The system prompt defines how the AI behaves throughout this conversation.
+            {{ $t('roleModal.systemPromptHint') }}
           </p>
         </div>
 
         <!-- Template detail preview -->
         <div v-else-if="selectedTemplate && selectedTemplate.systemPrompt" class="template-preview">
-          <label>System Prompt</label>
+          <label>{{ $t('roleModal.systemPrompt') }}</label>
           <p class="template-preview-text">{{ selectedTemplate.systemPrompt }}</p>
           <div v-if="selectedTemplate.messages && selectedTemplate.messages.length > 0" class="template-messages-preview">
-            <label>Initial Messages ({{ selectedTemplate.messages.length }})</label>
+            <label>{{ $t('roleModal.initialMessages') }} ({{ selectedTemplate.messages.length }})</label>
             <div
               v-for="(msg, idx) in selectedTemplate.messages"
               :key="idx"
@@ -73,15 +73,15 @@
       </div>
 
       <div class="modal-footer">
-        <button type="button" class="skip-btn" aria-label="Skip template selection" @click="handleSkip">Skip</button>
+        <button type="button" class="skip-btn" :aria-label="$t('roleModal.skip')" @click="handleSkip">{{ $t('roleModal.skip') }}</button>
         <button
           type="button"
           class="confirm-btn"
-          aria-label="Start chat with selected template"
+          :aria-label="$t('roleModal.startChatAria')"
           :disabled="selectedTemplateId === '__custom__' && !customPrompt.trim()"
           @click="handleConfirm"
         >
-          Start Chat
+          {{ $t('roleModal.startChat') }}
         </button>
       </div>
     </div>
