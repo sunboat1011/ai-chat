@@ -14,6 +14,8 @@
       <button
         :class="['send-btn', { active: inputValue.trim() && !disabled, streaming: isStreaming }]"
         :disabled="!inputValue.trim() || disabled"
+        :aria-label="isStreaming ? 'Stop generating' : 'Send message'"
+        :title="isStreaming ? 'Stop generating' : 'Send message'"
         @click="handleSend"
       >
         <svg v-if="!isStreaming" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">

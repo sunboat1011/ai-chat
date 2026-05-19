@@ -4,8 +4,8 @@
       <h3 class="confirm-title">{{ title }}</h3>
       <p v-if="message" class="confirm-message">{{ message }}</p>
       <div class="confirm-actions">
-        <button class="confirm-btn cancel" @click="handleCancel">{{ cancelText }}</button>
-        <button class="confirm-btn danger" @click="handleConfirm">{{ confirmText }}</button>
+        <button class="confirm-btn cancel" :aria-label="cancelText" @click="handleCancel">{{ cancelText }}</button>
+        <button class="confirm-btn danger" :aria-label="confirmText" @click="handleConfirm">{{ confirmText }}</button>
       </div>
     </div>
   </div>

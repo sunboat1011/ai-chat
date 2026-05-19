@@ -141,8 +141,8 @@
           placeholder="e.g., You are a helpful coding assistant..."
         />
         <div class="sp-edit-actions">
-          <button class="sp-edit-btn sp-edit-cancel" @click="closeSystemPromptEdit">Cancel</button>
-          <button class="sp-edit-btn sp-edit-save" @click="saveSystemPrompt">Save</button>
+          <button class="sp-edit-btn sp-edit-cancel" aria-label="Cancel system prompt edit" @click="closeSystemPromptEdit">Cancel</button>
+          <button class="sp-edit-btn sp-edit-save" aria-label="Save system prompt" @click="saveSystemPrompt">Save</button>
         </div>
       </div>
     </div>

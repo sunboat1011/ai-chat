@@ -14,6 +14,8 @@
             :key="template.id"
             type="button"
             :class="['preset-card', { active: selectedTemplateId === template.id }]"
+            :aria-label="`Select template: ${template.name}`"
+            :aria-pressed="selectedTemplateId === template.id"
             @click="selectTemplate(template)"
           >
             <span class="preset-icon">{{ template.icon }}</span>
@@ -27,6 +29,8 @@
           <button
             type="button"
             :class="['preset-card', 'custom-card', { active: selectedTemplateId === '__custom__' }]"
+            aria-label="Use custom system prompt"
+            :aria-pressed="selectedTemplateId === '__custom__'"
             @click="selectCustom"
           >
             <span class="preset-icon">✏️</span>
@@ -69,10 +73,11 @@
       </div>
 
       <div class="modal-footer">
-        <button type="button" class="skip-btn" @click="handleSkip">Skip</button>
+        <button type="button" class="skip-btn" aria-label="Skip template selection" @click="handleSkip">Skip</button>
         <button
           type="button"
           class="confirm-btn"
+          aria-label="Start chat with selected template"
           :disabled="selectedTemplateId === '__custom__' && !customPrompt.trim()"
           @click="handleConfirm"
         >

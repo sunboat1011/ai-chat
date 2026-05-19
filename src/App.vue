@@ -26,7 +26,7 @@
     <!-- Undo toast -->
     <div v-if="lastDeleted" class="undo-toast">
       <span>Message deleted</span>
-      <button class="undo-btn" @click="handleUndoDelete">Undo</button>
+      <button class="undo-btn" aria-label="Undo delete message" @click="handleUndoDelete">Undo</button>
     </div>
 
     <RoleSelectModal

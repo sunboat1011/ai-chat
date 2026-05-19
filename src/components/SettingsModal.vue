@@ -22,6 +22,8 @@
               <button
                 type="button"
                 :class="{ active: settings.theme === 'dark' }"
+                aria-label="Use dark theme"
+                :aria-pressed="settings.theme === 'dark'"
                 @click="settings.theme = 'dark'"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -32,6 +34,8 @@
               <button
                 type="button"
                 :class="{ active: settings.theme === 'light' }"
+                aria-label="Use light theme"
+                :aria-pressed="settings.theme === 'light'"
                 @click="settings.theme = 'light'"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -50,6 +54,8 @@
               <button
                 type="button"
                 :class="{ active: settings.theme === 'system' }"
+                aria-label="Use system theme"
+                :aria-pressed="settings.theme === 'system'"
                 @click="settings.theme = 'system'"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -71,6 +77,8 @@
                 type="button"
                 class="color-option"
                 :class="{ active: settings.accentColor === name }"
+                :aria-label="`Use ${name} accent color`"
+                :aria-pressed="settings.accentColor === name"
                 @click="settings.accentColor = name"
                 :title="name"
               >
@@ -204,8 +212,8 @@
             </div>
 
             <div class="custom-model-form-actions">
-              <button type="button" class="cm-btn cm-btn-cancel" @click="closeCustomModelForm">Cancel</button>
-              <button type="button" class="cm-btn cm-btn-save" @click="saveCustomModel">{{ editingModelId ? 'Update' : 'Add' }}</button>
+              <button type="button" class="cm-btn cm-btn-cancel" aria-label="Cancel custom model edit" @click="closeCustomModelForm">Cancel</button>
+              <button type="button" class="cm-btn cm-btn-save" :aria-label="editingModelId ? 'Update custom model' : 'Add custom model'" @click="saveCustomModel">{{ editingModelId ? 'Update' : 'Add' }}</button>
             </div>
           </div>
         </div>
@@ -315,8 +323,8 @@
             </div>
 
             <div class="custom-model-form-actions">
-              <button type="button" class="cm-btn cm-btn-cancel" @click="closeTemplateForm">Cancel</button>
-              <button type="button" class="cm-btn cm-btn-save" @click="saveTemplate">{{ editingTemplateId ? 'Update' : 'Add' }}</button>
+              <button type="button" class="cm-btn cm-btn-cancel" aria-label="Cancel template edit" @click="closeTemplateForm">Cancel</button>
+              <button type="button" class="cm-btn cm-btn-save" :aria-label="editingTemplateId ? 'Update template' : 'Add template'" @click="saveTemplate">{{ editingTemplateId ? 'Update' : 'Add' }}</button>
             </div>
           </div>
         </div>
@@ -328,6 +336,7 @@
             <button
               type="button"
               class="group-reset-btn"
+              aria-label="Reset model parameters to defaults"
               @click="handleResetModelParams"
               title="Reset model parameters to defaults"
             >
@@ -412,8 +421,8 @@
       </div>
 
       <div class="modal-footer">
-        <button type="button" class="reset-btn" @click="handleReset">Reset to Defaults</button>
-        <button type="button" class="save-btn" @click="close">Done</button>
+        <button type="button" class="reset-btn" aria-label="Reset all settings to defaults" @click="handleReset">Reset to Defaults</button>
+        <button type="button" class="save-btn" aria-label="Close settings" @click="close">Done</button>
       </div>
     </div>
   </div>
