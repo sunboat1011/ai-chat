@@ -12,6 +12,18 @@ export default defineConfig({
       '@': resolve(__dirname, 'src'),
     },
   },
+  build: {
+    outDir: 'dist',
+    chunkSizeWarningLimit: 500,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-vue': ['vue', 'vue-router'],
+          'vendor-markdown': ['marked', 'highlight.js', 'dompurify'],
+        },
+      },
+    },
+  },
   server: {
     port: 3000,
     proxy: {
