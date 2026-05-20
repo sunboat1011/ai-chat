@@ -353,6 +353,7 @@ import { ref, computed, nextTick, watch, onMounted, onBeforeUnmount } from 'vue'
 import MessageItem from '@/components/MessageItem.vue'
 import ChatInput from '@/components/ChatInput.vue'
 import { useSettings } from '@/composables/useSettings'
+import { track } from '@/composables/useAnalytics'
 
 const props = defineProps({
   messages: { type: Array, required: true },
@@ -393,6 +394,7 @@ function handleModelChange(e) {
   const modelId = e.target.value
   if (modelId && modelId !== settings.value.model) {
     settings.value.model = modelId
+    track('model_switch', { model: modelId })
   }
 }
 

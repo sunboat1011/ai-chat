@@ -2,6 +2,7 @@ import { ref } from 'vue'
 import { streamChat } from '@/api/chat'
 import { loadConversations, saveConversations, generateId, clearDraft } from '@/utils/storage'
 import { useSettings } from '@/composables'
+import { track } from '@/utils/analytics'
 
 /**
  * Composable that manages chat state: conversations, messages, streaming.
@@ -176,6 +177,7 @@ export function useChat() {
 
     // Call streaming API
     const modelConfig = getActiveModelConfig()
+    track('message_send', { model: modelConfig.model })
     abortController.value = streamChat({
       apiBaseUrl: modelConfig.apiBaseUrl,
       apiKey: modelConfig.apiKey,
@@ -243,6 +245,7 @@ export function useChat() {
 
     // Call streaming API with the same user content
     const modelConfig = getActiveModelConfig()
+    track('message_regenerate', { model: modelConfig.model })
     abortController.value = streamChat({
       apiBaseUrl: modelConfig.apiBaseUrl,
       apiKey: modelConfig.apiKey,
@@ -310,6 +313,7 @@ export function useChat() {
     conversations.value.unshift(newConv)
     saveConversations(conversations.value)
     setActiveConversation(newId)
+    track('conversation_branch', { sourceConvId: convId, newConvId: newId })
     return newConv
   }
 

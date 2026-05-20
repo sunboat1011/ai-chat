@@ -1,5 +1,6 @@
 import { t } from '@/composables/useText'
 import { showError, showWarning } from '@/composables/useErrorToast'
+import { trackError } from '@/composables/useAnalytics'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api'
 
@@ -168,6 +169,7 @@ export function streamChat({
             if (err.name === 'AbortError') return
             // Stream interrupted mid-flight — preserve partial content.
             showWarning(t('errors.streamInterrupted'))
+            trackError('api', { message: 'stream_interrupted', status: err.status })
             const wrapped = new Error(t('errors.streamInterrupted'))
             wrapped.cause = err
             wrapped.partialText = fullText
@@ -188,6 +190,7 @@ export function streamChat({
         friendly = err.message || t('errors.unknownError')
       }
       showError(friendly)
+      trackError('api', { message: friendly, status: err.status })
       const wrapped = new Error(friendly)
       wrapped.cause = err
       wrapped.status = err.status

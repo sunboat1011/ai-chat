@@ -7,7 +7,7 @@
       @select="handleSelectConversation"
       @delete="handleDeleteConversation"
       @new-chat="handleNewChat"
-      @open-settings="isSettingsOpen = true"
+      @open-settings="openSettings"
       @close-sidebar="closeSidebar"
     />
 
@@ -57,6 +57,7 @@ import RoleSelectModal from '@/components/RoleSelectModal.vue'
 import ErrorBoundary from '@/components/ErrorBoundary.vue'
 import ErrorToast from '@/components/ErrorToast.vue'
 import { useChat } from '@/composables/useChat'
+import { track } from '@/composables/useAnalytics'
 
 const router = useRouter()
 const isSettingsOpen = ref(false)
@@ -192,6 +193,11 @@ function handleUpdateSystemPrompt(systemPrompt) {
   if (activeConversation.value) {
     updateSystemPrompt(activeConversation.value, systemPrompt)
   }
+}
+
+function openSettings() {
+  isSettingsOpen.value = true
+  track('settings_open')
 }
 
 function closeSettings() {
