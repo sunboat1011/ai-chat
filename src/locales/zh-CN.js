@@ -193,4 +193,35 @@ export const zhCN = {
     confirm: 'Confirm',
     cancel: 'Cancel',
   },
+
+  // ─── Error Toast ───
+  errorToast: {
+    close: 'Close notification',
+    region: 'Notifications',
+  },
+
+  // ─── Errors (user-facing messages) ───
+  errors: {
+    networkFailed: 'Network connection failed. Please check your network and try again.',
+    cors: 'API endpoint is misconfigured — unable to reach the server.',
+    streamInterrupted: 'Connection interrupted. Partial response kept.',
+    unauthorized: 'Unauthorized (401). Please check your API key in Settings.',
+    forbidden: 'Access forbidden (403). Your API key may lack permission.',
+    notFound: 'API endpoint not found (404). Please check the API Base URL in Settings.',
+    rateLimited: 'Too many requests (429). Please wait a moment and try again.',
+    serverError: 'Server error ({status}). Please try again later.',
+    serviceUnavailable: 'Service unavailable (503). The server is temporarily down.',
+    httpGeneric: 'Request failed ({status}). Please try again.',
+    unhandledRejection: 'An unexpected error occurred. Please try again.',
+    unknownError: 'Something went wrong.',
+  },
+
+  // ─── Error Boundary ───
+  errorBoundary: {
+    title: 'Something went wrong',
+    message:
+      'The page encountered an error. Try refreshing — your conversations are saved locally.',
+    refresh: 'Refresh page',
+    reset: 'Dismiss and continue',
+  },
 }

@@ -9,19 +9,24 @@
       @open-settings="isSettingsOpen = true"
     />
 
-    <router-view
-      :messages="messages"
-      :is-loading="isLoading"
-      :active-conversation="activeConversation"
-      :system-prompt="activeConversation ? getConversationSystemPrompt(activeConversation) : ''"
-      @send="handleSendMessage"
-      @cancel="handleCancelStreaming"
-      @edit="handleEditMessage"
-      @delete="handleDeleteMessage"
-      @regenerate="handleRegenerateMessage"
-      @branch="handleBranchMessage"
-      @update-system-prompt="handleUpdateSystemPrompt"
-    />
+    <ErrorBoundary>
+      <router-view
+        :messages="messages"
+        :is-loading="isLoading"
+        :active-conversation="activeConversation"
+        :system-prompt="activeConversation ? getConversationSystemPrompt(activeConversation) : ''"
+        @send="handleSendMessage"
+        @cancel="handleCancelStreaming"
+        @edit="handleEditMessage"
+        @delete="handleDeleteMessage"
+        @regenerate="handleRegenerateMessage"
+        @branch="handleBranchMessage"
+        @update-system-prompt="handleUpdateSystemPrompt"
+      />
+    </ErrorBoundary>
+
+    <!-- Global error/notification toast stack -->
+    <ErrorToast />
 
     <!-- Undo toast -->
     <div v-if="lastDeleted" class="undo-toast">
@@ -44,6 +49,8 @@ import { useRouter } from 'vue-router'
 import Sidebar from '@/components/Sidebar.vue'
 import SettingsModal from '@/components/SettingsModal.vue'
 import RoleSelectModal from '@/components/RoleSelectModal.vue'
+import ErrorBoundary from '@/components/ErrorBoundary.vue'
+import ErrorToast from '@/components/ErrorToast.vue'
 import { useChat } from '@/composables/useChat'
 
 const router = useRouter()

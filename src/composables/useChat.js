@@ -196,7 +196,10 @@ export function useChat() {
         persistConversation()
       },
       onError: (err) => {
-        aiMessage.content = `**Error:** Failed to get response. ${err.message}`
+        // Preserve partial content if any was streamed before the error.
+        if (!aiMessage.content) {
+          aiMessage.content = `**Error:** ${err.message}`
+        }
         aiMessage.streaming = false
         isLoading.value = false
         persistConversation()
@@ -260,7 +263,9 @@ export function useChat() {
         persistConversation()
       },
       onError: (err) => {
-        newAiMessage.content = `**Error:** Failed to get response. ${err.message}`
+        if (!newAiMessage.content) {
+          newAiMessage.content = `**Error:** ${err.message}`
+        }
         newAiMessage.streaming = false
         isLoading.value = false
         persistConversation()

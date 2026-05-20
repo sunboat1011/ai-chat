@@ -1,3 +1,4 @@
 export { useSettings } from './useSettings'
 export { useNow } from './useNow'
 export { useText } from './useText'
+export { useErrorToast, showError, showWarning, showInfo, dismissToast } from './useErrorToast'
