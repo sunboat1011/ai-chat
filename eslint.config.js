@@ -31,6 +31,7 @@ export default [
         confirm: 'readonly',
         alert: 'readonly',
         Storage: 'readonly',
+        process: 'readonly',
       },
     },
     rules: {
@@ -40,7 +41,7 @@ export default [
     },
   },
   {
-    ignores: ['dist/', 'node_modules/'],
+    ignores: ['dist/', 'node_modules/', 'coverage/'],
   },
   prettier,
 ]

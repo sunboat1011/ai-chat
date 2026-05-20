@@ -44,7 +44,6 @@ function gzipSizeSync(filePath) {
 // ─── 1. 执行构建 ───
 log('info', 'Step 1: Running npm run build...')
 let buildOutput
-let buildHasWarning = false
 try {
   buildOutput = execSync('npm run build', {
     cwd: rootDir,
@@ -66,7 +65,6 @@ const warningLines = buildOutput
   .split('\n')
   .filter((line) => /warning/i.test(line) && !/chunk size warning/i.test(line))
 if (warningLines.length > 0) {
-  buildHasWarning = true
   log('warn', `Build produced ${warningLines.length} warning(s):`)
   warningLines.forEach((l) => console.log(`  ${l.trim()}`))
 } else {
