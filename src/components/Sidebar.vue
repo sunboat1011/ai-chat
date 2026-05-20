@@ -1,5 +1,5 @@
 <template>
-  <aside class="sidebar">
+  <aside :class="['sidebar', { 'mobile-open': mobileOpen }]">
     <div class="sidebar-header">
       <button
         class="new-chat-btn"
@@ -21,6 +21,24 @@
           <line x1="5" y1="12" x2="19" y2="12" />
         </svg>
         {{ $t('sidebar.newChat') }}
+      </button>
+      <button
+        v-if="mobileOpen"
+        class="sidebar-close-btn"
+        :aria-label="$t('sidebar.close')"
+        @click="$emit('close-sidebar')"
+      >
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
       </button>
     </div>
 
@@ -128,9 +146,10 @@ import { useNow } from '@/composables/useNow'
 const props = defineProps({
   conversations: { type: Array, required: true },
   activeConversation: { type: String, default: null },
+  mobileOpen: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['select', 'delete', 'new-chat', 'toggle-theme'])
+const emit = defineEmits(['select', 'delete', 'new-chat', 'toggle-theme', 'close-sidebar'])
 
 const searchQuery = ref('')
 const { now } = useNow()
@@ -323,5 +342,61 @@ function getLastActiveAt(conv) {
 .footer-btn:hover {
   background: var(--bg-secondary);
   color: var(--text-primary);
+}
+
+/* ─── Mobile Responsive ─── */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 50;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.3);
+    width: 280px;
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .sidebar-close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: 0.375rem;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+
+  .sidebar-close-btn:hover {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+  }
+
+  .conversation-item {
+    padding: 0.75rem;
+  }
+
+  .delete-btn {
+    opacity: 1;
+    width: 36px;
+    height: 36px;
+  }
 }
 </style>

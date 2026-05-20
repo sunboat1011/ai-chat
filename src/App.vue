@@ -3,11 +3,15 @@
     <Sidebar
       :conversations="conversations"
       :active-conversation="activeConversation"
+      :mobile-open="sidebarOpen"
       @select="handleSelectConversation"
       @delete="handleDeleteConversation"
       @new-chat="handleNewChat"
       @open-settings="isSettingsOpen = true"
+      @close-sidebar="closeSidebar"
     />
+
+    <div v-if="isMobile && sidebarOpen" class="sidebar-overlay" @click="closeSidebar"></div>
 
     <ErrorBoundary>
       <router-view
@@ -22,6 +26,7 @@
         @regenerate="handleRegenerateMessage"
         @branch="handleBranchMessage"
         @update-system-prompt="handleUpdateSystemPrompt"
+        @toggle-sidebar="toggleSidebar"
       />
     </ErrorBoundary>
 
@@ -44,7 +49,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { onMounted } from 'vue'
+import { onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import Sidebar from '@/components/Sidebar.vue'
 import SettingsModal from '@/components/SettingsModal.vue'
@@ -57,6 +62,8 @@ const router = useRouter()
 const isSettingsOpen = ref(false)
 const isRoleSelectOpen = ref(false)
 const pendingNewChat = ref(false)
+const sidebarOpen = ref(false)
+const isMobile = ref(window.innerWidth < 768)
 
 const {
   conversations,
@@ -82,11 +89,34 @@ const {
 
 onMounted(() => {
   init()
+  window.addEventListener('resize', checkMobile)
 })
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', checkMobile)
+})
+
+function checkMobile() {
+  isMobile.value = window.innerWidth < 768
+  if (!isMobile.value) {
+    sidebarOpen.value = false
+  }
+}
+
+function toggleSidebar() {
+  sidebarOpen.value = !sidebarOpen.value
+}
+
+function closeSidebar() {
+  sidebarOpen.value = false
+}
 
 function handleSelectConversation(id) {
   setActiveConversation(id)
   router.push(`/chat/${id}`)
+  if (isMobile.value) {
+    sidebarOpen.value = false
+  }
 }
 
 function handleNewChat() {
@@ -175,6 +205,16 @@ function closeSettings() {
   height: 100vh;
   width: 100vw;
   overflow: hidden;
+}
+
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 40;
 }
 
 .undo-toast {

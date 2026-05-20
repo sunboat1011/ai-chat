@@ -443,4 +443,55 @@ function handleOverlayClick(e) {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* ─── Mobile Responsive ─── */
+@media (max-width: 768px) {
+  .role-modal {
+    width: 100vw;
+    max-width: 100vw;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .preset-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .preset-card {
+    padding: 0.625rem 0.3rem;
+  }
+
+  .preset-icon {
+    font-size: 1.15rem;
+  }
+
+  .preset-name {
+    font-size: 0.75rem;
+  }
+
+  .preset-desc {
+    font-size: 0.625rem;
+  }
+
+  .modal-header {
+    padding: 1rem 1rem 0.5rem;
+  }
+
+  .modal-header h2 {
+    font-size: 1.1rem;
+  }
+
+  .role-content {
+    padding: 0.5rem 1rem;
+  }
+
+  .modal-footer {
+    padding: 0.875rem 1rem;
+  }
+
+  .template-msg-item {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+}
 </style>

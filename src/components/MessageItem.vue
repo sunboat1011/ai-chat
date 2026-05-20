@@ -654,4 +654,54 @@ async function handleContentClick(e) {
   opacity: 1;
   color: var(--text-secondary);
 }
+
+/* ─── Mobile Responsive ─── */
+@media (max-width: 768px) {
+  .message-wrapper {
+    padding: 0.875rem 0;
+  }
+
+  .message-wrapper.user {
+    margin: 0 -0.75rem;
+    padding: 0.875rem 0.75rem;
+  }
+
+  .message-content {
+    gap: 0.625rem;
+    padding: 0 0.75rem;
+  }
+
+  .avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 0.7rem;
+  }
+
+  .message-author {
+    font-size: 0.75rem;
+    margin-bottom: 0.375rem;
+  }
+
+  .markdown-body {
+    font-size: 0.875rem;
+    line-height: 1.65;
+  }
+
+  .message-actions {
+    opacity: 1;
+    gap: 0.375rem;
+    margin-top: 0.5rem;
+  }
+
+  .action-btn {
+    padding: 0.35rem;
+    min-width: 32px;
+    min-height: 32px;
+  }
+
+  .action-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+}
 </style>

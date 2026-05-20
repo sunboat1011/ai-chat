@@ -222,4 +222,29 @@ defineExpose({ focus })
   font-family: inherit;
   color: var(--text-secondary);
 }
+
+/* ─── Mobile Responsive ─── */
+@media (max-width: 768px) {
+  .chat-input-container {
+    padding: 0.625rem 0.75rem 0.875rem;
+  }
+
+  .input-wrapper {
+    padding: 0.5rem 0.625rem;
+  }
+
+  .chat-textarea {
+    font-size: 0.875rem;
+  }
+
+  .send-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .input-hint {
+    font-size: 0.625rem;
+    margin-top: 0.375rem;
+  }
+}
 </style>

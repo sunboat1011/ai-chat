@@ -18,6 +18,7 @@ export const zhCN = {
     noConversations: 'No conversations found',
     settings: 'Settings',
     deleteConversation: 'Delete conversation',
+    close: 'Close sidebar',
   },
 
   // ─── Chat Input ───
@@ -71,6 +72,7 @@ export const zhCN = {
     welcomeSub: 'Ask me anything — code, writing, analysis, or just chat.',
     loadEarlier: 'Load earlier',
     loadEarlierCount: 'Load earlier ({count} {messages})',
+    openSidebar: 'Open sidebar',
   },
 
   // ─── Role Select Modal ───

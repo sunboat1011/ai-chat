@@ -119,6 +119,27 @@
 
     <!-- Top bar: System Prompt + Model Selector -->
     <div class="chat-top-bar">
+      <button
+        v-if="activeConversation"
+        class="mobile-menu-btn"
+        :aria-label="$t('chatView.openSidebar')"
+        @click="$emit('toggle-sidebar')"
+      >
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
       <div v-if="systemPrompt" class="system-prompt-banner">
         <div class="system-prompt-content">
           <svg
@@ -349,6 +370,7 @@ const emit = defineEmits([
   'branch',
   'update-system-prompt',
   'select-model',
+  'toggle-sidebar',
 ])
 
 const messagesContainerRef = ref(null)
@@ -1034,5 +1056,101 @@ function scrollToBottom() {
 .sp-edit-save:hover {
   background: var(--accent-hover);
   border-color: var(--accent-hover);
+}
+
+/* ─── Mobile Responsive ─── */
+@media (max-width: 768px) {
+  .mobile-menu-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: 0.375rem;
+    flex-shrink: 0;
+    margin-right: 0.25rem;
+    transition: all 0.15s;
+  }
+
+  .mobile-menu-btn:hover {
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+  }
+
+  .chat-top-bar {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .system-prompt-content {
+    flex-wrap: wrap;
+    font-size: 0.6875rem;
+  }
+
+  .model-selector {
+    font-size: 0.6875rem;
+    padding: 0.25rem 1.5rem 0.25rem 0.5rem;
+    max-width: 10rem;
+  }
+
+  .search-toolbar {
+    position: fixed;
+    top: 0.5rem;
+    left: 0.5rem;
+    right: 0.5rem;
+    gap: 0.25rem;
+    padding: 0.35rem 0.4rem;
+  }
+
+  .search-input {
+    width: 8rem;
+    font-size: 0.75rem;
+    padding: 0.35rem 0.5rem 0.35rem 1.65rem;
+  }
+
+  .search-toggle-btn {
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 36px;
+    height: 36px;
+  }
+
+  .welcome-title {
+    font-size: 1.25rem;
+  }
+
+  .welcome-sub {
+    font-size: 0.875rem;
+    padding: 0 1rem;
+  }
+
+  .messages-container {
+    padding: 0.25rem 0;
+  }
+
+  .sp-edit-modal {
+    max-width: calc(100vw - 2rem);
+    padding: 1rem;
+  }
+
+  .sp-edit-actions {
+    flex-direction: column;
+  }
+
+  .sp-edit-btn {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-menu-btn {
+    display: none;
+  }
 }
 </style>

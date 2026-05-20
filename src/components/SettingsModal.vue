@@ -1516,4 +1516,50 @@ select {
   font-weight: 500;
   vertical-align: middle;
 }
+
+/* ─── Mobile Responsive ─── */
+@media (max-width: 768px) {
+  .settings-modal {
+    width: 100vw;
+    max-width: 100vw;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .settings-content {
+    max-height: calc(100vh - 130px);
+    padding: 1rem;
+  }
+
+  .theme-options {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .theme-options button {
+    padding: 0.5rem 0.3rem;
+    font-size: 0.75rem;
+  }
+
+  .color-options {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .custom-model-form {
+    width: calc(100vw - 2rem);
+    max-width: calc(100vw - 2rem);
+    padding: 1rem;
+  }
+
+  .modal-header {
+    padding: 0.875rem 1rem;
+  }
+
+  .modal-header h2 {
+    font-size: 1.1rem;
+  }
+
+  .modal-footer {
+    padding: 0.875rem 1rem;
+  }
+}
 </style>
