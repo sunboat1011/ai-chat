@@ -30,6 +30,7 @@ export default [
         atob: 'readonly',
         confirm: 'readonly',
         alert: 'readonly',
+        Storage: 'readonly',
       },
     },
     rules: {
