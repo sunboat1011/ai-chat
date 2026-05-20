@@ -1,9 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    './index.html',
-    './src/**/*.{vue,js,ts,jsx,tsx}',
-  ],
+  content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
   theme: {
     extend: {
       colors: {
@@ -33,7 +30,7 @@ export default {
         'fade-in': 'fadeIn 0.3s ease-in-out',
         'slide-up': 'slideUp 0.3s ease-out',
         'pulse-dot': 'pulseDot 1.5s ease-in-out infinite',
-        'typing': 'typing 1.5s infinite',
+        typing: 'typing 1.5s infinite',
       },
       keyframes: {
         fadeIn: {

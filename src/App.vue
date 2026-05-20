@@ -26,32 +26,26 @@
     <!-- Undo toast -->
     <div v-if="lastDeleted" class="undo-toast">
       <span>{{ $t('app.undoToast') }}</span>
-      <button class="undo-btn" :aria-label="$t('app.undo')" @click="handleUndoDelete">{{ $t('app.undo') }}</button>
+      <button class="undo-btn" :aria-label="$t('app.undo')" @click="handleUndoDelete">
+        {{ $t('app.undo') }}
+      </button>
     </div>
 
-    <RoleSelectModal
-      v-if="isRoleSelectOpen"
-      @confirm="handleRoleSelect"
-      @skip="handleRoleSkip"
-    />
+    <RoleSelectModal v-if="isRoleSelectOpen" @confirm="handleRoleSelect" @skip="handleRoleSkip" />
 
-    <SettingsModal
-      v-if="isSettingsOpen"
-      @close="closeSettings"
-    />
+    <SettingsModal v-if="isSettingsOpen" @close="closeSettings" />
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
-import { onMounted, provide } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import Sidebar from '@/components/Sidebar.vue'
 import SettingsModal from '@/components/SettingsModal.vue'
 import RoleSelectModal from '@/components/RoleSelectModal.vue'
 import { useChat } from '@/composables/useChat'
 
-const route = useRoute()
 const router = useRouter()
 const isSettingsOpen = ref(false)
 const isRoleSelectOpen = ref(false)

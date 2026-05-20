@@ -4,7 +4,9 @@
       <textarea
         ref="textareaRef"
         v-model="inputValue"
-        :placeholder="disabled ? $t('chatInput.placeholderGenerating') : $t('chatInput.placeholder')"
+        :placeholder="
+          disabled ? $t('chatInput.placeholderGenerating') : $t('chatInput.placeholder')
+        "
         :disabled="disabled"
         class="chat-textarea"
         rows="1"
@@ -19,15 +21,18 @@
         @click="handleSend"
       >
         <svg v-if="!isStreaming" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+          <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
         </svg>
         <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-          <rect x="6" y="6" width="12" height="12" rx="2"/>
+          <rect x="6" y="6" width="12" height="12" rx="2" />
         </svg>
       </button>
     </div>
 
-    <p class="input-hint" v-html="$t('chatInput.hint', { enter: 'Enter', shiftEnter: 'Shift + Enter' })"></p>
+    <p
+      class="input-hint"
+      v-html="$t('chatInput.hint', { enter: 'Enter', shiftEnter: 'Shift + Enter' })"
+    ></p>
   </div>
 </template>
 
@@ -60,9 +65,12 @@ onMounted(() => {
   restoreDraft()
 })
 
-watch(() => props.conversationId, () => {
-  restoreDraft()
-})
+watch(
+  () => props.conversationId,
+  () => {
+    restoreDraft()
+  }
+)
 
 function autoResize() {
   const el = textareaRef.value
@@ -127,7 +135,9 @@ defineExpose({ focus })
   border: 1px solid var(--border-color);
   border-radius: 0.75rem;
   padding: 0.75rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .input-wrapper:focus-within {

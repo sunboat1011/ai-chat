@@ -29,7 +29,8 @@ const BUILT_IN_TEMPLATES = [
     name: 'Code Reviewer',
     icon: '🔍',
     description: 'Review & improve code',
-    systemPrompt: 'You are a senior software engineer. Review code for bugs, performance issues, security vulnerabilities, and style violations. Provide constructive feedback with specific suggestions.',
+    systemPrompt:
+      'You are a senior software engineer. Review code for bugs, performance issues, security vulnerabilities, and style violations. Provide constructive feedback with specific suggestions.',
     messages: [],
     builtIn: true,
   },
@@ -38,7 +39,8 @@ const BUILT_IN_TEMPLATES = [
     name: 'English Translator',
     icon: '🌐',
     description: 'Translate to English',
-    systemPrompt: 'You are a professional translator. Translate the user\'s text into English accurately and naturally. Preserve tone and context. Only output the translated text, no extra explanation.',
+    systemPrompt:
+      "You are a professional translator. Translate the user's text into English accurately and naturally. Preserve tone and context. Only output the translated text, no extra explanation.",
     messages: [],
     builtIn: true,
   },
@@ -47,10 +49,15 @@ const BUILT_IN_TEMPLATES = [
     name: 'Weekly Report',
     icon: '📋',
     description: 'Write work reports',
-    systemPrompt: 'You are an expert at writing professional work reports. Help the user organize their weekly achievements, challenges, and plans into a clear, well-structured report.',
+    systemPrompt:
+      'You are an expert at writing professional work reports. Help the user organize their weekly achievements, challenges, and plans into a clear, well-structured report.',
     messages: [
       { role: 'user', content: '请帮我写一份周报，包含本周完成的工作、遇到的问题和下周计划。' },
-      { role: 'assistant', content: '好的，请告诉我本周你完成了哪些具体工作，遇到了什么问题，以及下周的计划是什么？我会帮你整理成一份专业的周报。' },
+      {
+        role: 'assistant',
+        content:
+          '好的，请告诉我本周你完成了哪些具体工作，遇到了什么问题，以及下周的计划是什么？我会帮你整理成一份专业的周报。',
+      },
     ],
     builtIn: true,
   },
@@ -59,7 +66,8 @@ const BUILT_IN_TEMPLATES = [
     name: 'Creative Writer',
     icon: '✍️',
     description: 'Storytelling & copywriting',
-    systemPrompt: 'You are a creative writing assistant. Help with storytelling, copywriting, and brainstorming. Be imaginative and inspiring.',
+    systemPrompt:
+      'You are a creative writing assistant. Help with storytelling, copywriting, and brainstorming. Be imaginative and inspiring.',
     messages: [],
     builtIn: true,
   },
@@ -68,7 +76,8 @@ const BUILT_IN_TEMPLATES = [
     name: 'Data Analyst',
     icon: '📊',
     description: 'Analysis & insights',
-    systemPrompt: 'You are a data analyst. Help interpret data, create visualizations (in text/Markdown), and derive actionable insights. Be precise with numbers.',
+    systemPrompt:
+      'You are a data analyst. Help interpret data, create visualizations (in text/Markdown), and derive actionable insights. Be precise with numbers.',
     messages: [],
     builtIn: true,
   },
@@ -194,10 +203,6 @@ function getAllModelOptions(customModels = []) {
   const builtins = BUILT_IN_MODELS.map((m) => ({ ...m, builtIn: true }))
   const customs = (customModels || []).map((m) => ({ ...m, builtIn: false }))
   return [...builtins, ...customs]
-}
-
-function isCustomModel(modelId, customModels = []) {
-  return customModels.some((m) => m.id === modelId)
 }
 
 function getCustomModel(modelId, customModels = []) {
@@ -334,7 +339,8 @@ export function useSettings() {
     if (updates.name !== undefined) updated.name = updates.name?.trim() || updated.name
     if (updates.icon !== undefined) updated.icon = updates.icon?.trim() || updated.icon
     if (updates.description !== undefined) updated.description = updates.description?.trim() || ''
-    if (updates.systemPrompt !== undefined) updated.systemPrompt = updates.systemPrompt?.trim() || ''
+    if (updates.systemPrompt !== undefined)
+      updated.systemPrompt = updates.systemPrompt?.trim() || ''
     if (updates.messages !== undefined) updated.messages = updates.messages || []
 
     const newList = [...list]

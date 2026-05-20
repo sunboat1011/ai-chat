@@ -4,7 +4,14 @@
       <div class="modal-header">
         <h2>{{ $t('settings.title') }}</h2>
         <button @click="close" class="close-btn" :aria-label="$t('settings.close')">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <path d="M18 6L6 18" />
             <path d="M6 6L18 18" />
           </svg>
@@ -26,8 +33,17 @@
                 :aria-pressed="settings.theme === 'dark'"
                 @click="settings.theme = 'dark'"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
                 </svg>
                 {{ $t('settings.dark') }}
               </button>
@@ -38,16 +54,25 @@
                 :aria-pressed="settings.theme === 'light'"
                 @click="settings.theme = 'light'"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="5"/>
-                  <line x1="12" y1="1" x2="12" y2="3"/>
-                  <line x1="12" y1="21" x2="12" y2="23"/>
-                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-                  <line x1="1" y1="12" x2="3" y2="12"/>
-                  <line x1="21" y1="12" x2="23" y2="12"/>
-                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="12" cy="12" r="5" />
+                  <line x1="12" y1="1" x2="12" y2="3" />
+                  <line x1="12" y1="21" x2="12" y2="23" />
+                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                  <line x1="1" y1="12" x2="3" y2="12" />
+                  <line x1="21" y1="12" x2="23" y2="12" />
+                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
                 </svg>
                 {{ $t('settings.light') }}
               </button>
@@ -58,10 +83,19 @@
                 :aria-pressed="settings.theme === 'system'"
                 @click="settings.theme = 'system'"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-                  <line x1="8" y1="21" x2="16" y2="21"/>
-                  <line x1="12" y1="17" x2="12" y2="21"/>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+                  <line x1="8" y1="21" x2="16" y2="21" />
+                  <line x1="12" y1="17" x2="12" y2="21" />
                 </svg>
                 {{ $t('settings.system') }}
               </button>
@@ -111,7 +145,9 @@
                 <option v-for="m in BUILT_IN_MODELS" :key="m.id" :value="m.id">{{ m.name }}</option>
               </optgroup>
               <optgroup v-if="settings.customModels?.length > 0" :label="$t('settings.custom')">
-                <option v-for="m in settings.customModels" :key="m.id" :value="m.id">{{ m.name }}</option>
+                <option v-for="m in settings.customModels" :key="m.id" :value="m.id">
+                  {{ m.name }}
+                </option>
               </optgroup>
             </select>
           </div>
@@ -127,9 +163,18 @@
               @click="openCustomModelForm"
               :aria-label="$t('settings.addCustomModel')"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19"/>
-                <line x1="5" y1="12" x2="19" y2="12"/>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
               </svg>
               {{ $t('settings.add') }}
             </button>
@@ -158,9 +203,18 @@
                   title="Edit"
                   @click="editCustomModel(m)"
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
                   </svg>
                 </button>
                 <button
@@ -170,11 +224,20 @@
                   title="Delete"
                   @click="removeCustomModel(m.id)"
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="3 6 5 6 21 6"/>
-                    <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/>
-                    <line x1="10" y1="11" x2="10" y2="17"/>
-                    <line x1="14" y1="11" x2="14" y2="17"/>
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6" />
+                    <line x1="10" y1="11" x2="10" y2="17" />
+                    <line x1="14" y1="11" x2="14" y2="17" />
                   </svg>
                 </button>
               </div>
@@ -186,34 +249,70 @@
         <div v-if="showCustomModelForm" class="custom-model-overlay" @click="closeCustomModelForm">
           <div ref="customModelFormRef" class="custom-model-form" @click.stop>
             <div class="custom-model-form-header">
-              <h4>{{ editingModelId ? $t('settings.editModelTitle') : $t('settings.addModelTitle') }}</h4>
+              <h4>
+                {{ editingModelId ? $t('settings.editModelTitle') : $t('settings.addModelTitle') }}
+              </h4>
               <p class="custom-model-form-hint">{{ $t('settings.modelFormHint') }}</p>
             </div>
 
             <div class="custom-model-form-body">
               <div class="form-field">
                 <label for="cm-name">{{ $t('settings.displayName') }}</label>
-                <input id="cm-name" v-model="cmForm.name" type="text" :placeholder="$t('settings.displayNamePlaceholder')" />
+                <input
+                  id="cm-name"
+                  v-model="cmForm.name"
+                  type="text"
+                  :placeholder="$t('settings.displayNamePlaceholder')"
+                />
               </div>
               <div class="form-field">
                 <label for="cm-model-id">{{ $t('settings.modelId') }}</label>
-                <input id="cm-model-id" v-model="cmForm.modelId" type="text" :placeholder="$t('settings.modelIdPlaceholder')" />
+                <input
+                  id="cm-model-id"
+                  v-model="cmForm.modelId"
+                  type="text"
+                  :placeholder="$t('settings.modelIdPlaceholder')"
+                />
               </div>
               <div class="form-field">
                 <label for="cm-api-url">{{ $t('settings.apiUrlOptional') }}</label>
-                <input id="cm-api-url" v-model="cmForm.apiUrl" type="text" :placeholder="$t('settings.apiUrlPlaceholder')" />
+                <input
+                  id="cm-api-url"
+                  v-model="cmForm.apiUrl"
+                  type="text"
+                  :placeholder="$t('settings.apiUrlPlaceholder')"
+                />
                 <p class="hint">{{ $t('settings.apiUrlHint') }}</p>
               </div>
               <div class="form-field">
                 <label for="cm-api-key">{{ $t('settings.apiKeyOptional') }}</label>
-                <input id="cm-api-key" v-model="cmForm.apiKey" type="password" :placeholder="$t('settings.apiKeyPlaceholder')" />
+                <input
+                  id="cm-api-key"
+                  v-model="cmForm.apiKey"
+                  type="password"
+                  :placeholder="$t('settings.apiKeyPlaceholder')"
+                />
                 <p class="hint">{{ $t('settings.apiKeyHint') }}</p>
               </div>
             </div>
 
             <div class="custom-model-form-actions">
-              <button type="button" class="cm-btn cm-btn-cancel" :aria-label="$t('settings.cancel')" @click="closeCustomModelForm">{{ $t('settings.cancel') }}</button>
-              <button type="button" class="cm-btn cm-btn-save" :aria-label="editingModelId ? $t('settings.update') : $t('settings.add')" @click="saveCustomModel">{{ editingModelId ? $t('settings.update') : $t('settings.add') }}</button>
+              <button
+                type="button"
+                class="cm-btn cm-btn-cancel"
+                :aria-label="$t('settings.cancel')"
+                @click="closeCustomModelForm"
+              >
+                {{ $t('settings.cancel') }}
+              </button>
+              <button
+                type="button"
+                class="cm-btn cm-btn-save"
+                :aria-label="editingModelId ? $t('settings.update') : $t('settings.add')"
+                @click="saveCustomModel"
+              >
+                {{ editingModelId ? $t('settings.update') : $t('settings.add') }}
+              </button>
             </div>
           </div>
         </div>
@@ -228,9 +327,18 @@
               @click="openTemplateForm"
               :aria-label="$t('settings.addTemplate')"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19"/>
-                <line x1="5" y1="12" x2="19" y2="12"/>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
               </svg>
               {{ $t('settings.add') }}
             </button>
@@ -241,16 +349,14 @@
           </div>
 
           <div class="custom-model-list">
-            <div
-              v-for="t in allTemplates"
-              :key="t.id"
-              class="custom-model-item"
-            >
+            <div v-for="t in allTemplates" :key="t.id" class="custom-model-item">
               <div class="custom-model-info">
                 <span class="custom-model-name">
-                  <span style="margin-right: 0.35rem;">{{ t.icon }}</span>
+                  <span style="margin-right: 0.35rem">{{ t.icon }}</span>
                   {{ t.name }}
-                  <span v-if="t.builtIn" class="template-built-in-badge">{{ $t('settings.builtInBadge') }}</span>
+                  <span v-if="t.builtIn" class="template-built-in-badge">{{
+                    $t('settings.builtInBadge')
+                  }}</span>
                 </span>
                 <span class="custom-model-id">{{ t.description }}</span>
               </div>
@@ -262,9 +368,18 @@
                   title="Edit"
                   @click="editTemplate(t)"
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
                   </svg>
                 </button>
                 <button
@@ -274,11 +389,20 @@
                   title="Delete"
                   @click="removeTemplate(t.id)"
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="3 6 5 6 21 6"/>
-                    <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/>
-                    <line x1="10" y1="11" x2="10" y2="17"/>
-                    <line x1="14" y1="11" x2="14" y2="17"/>
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6" />
+                    <line x1="10" y1="11" x2="10" y2="17" />
+                    <line x1="14" y1="11" x2="14" y2="17" />
                   </svg>
                 </button>
               </div>
@@ -290,23 +414,48 @@
         <div v-if="showTemplateForm" class="custom-model-overlay" @click="closeTemplateForm">
           <div ref="templateFormRef" class="custom-model-form" @click.stop>
             <div class="custom-model-form-header">
-              <h4>{{ editingTemplateId ? $t('settings.editTemplateTitle') : $t('settings.addTemplateTitle') }}</h4>
+              <h4>
+                {{
+                  editingTemplateId
+                    ? $t('settings.editTemplateTitle')
+                    : $t('settings.addTemplateTitle')
+                }}
+              </h4>
               <p class="custom-model-form-hint">{{ $t('settings.templateFormHint') }}</p>
             </div>
 
             <div class="custom-model-form-body">
               <div class="form-field">
                 <label for="tmpl-name">{{ $t('settings.name') }}</label>
-                <input id="tmpl-name" v-model="tmplForm.name" type="text" :placeholder="$t('settings.namePlaceholder')" />
+                <input
+                  id="tmpl-name"
+                  v-model="tmplForm.name"
+                  type="text"
+                  :placeholder="$t('settings.namePlaceholder')"
+                />
               </div>
-              <div class="form-field" style="display: grid; grid-template-columns: 80px 1fr; gap: 0.75rem;">
+              <div
+                class="form-field"
+                style="display: grid; grid-template-columns: 80px 1fr; gap: 0.75rem"
+              >
                 <div>
                   <label for="tmpl-icon">{{ $t('settings.icon') }}</label>
-                  <input id="tmpl-icon" v-model="tmplForm.icon" type="text" :placeholder="$t('settings.iconPlaceholder')" style="text-align: center;" />
+                  <input
+                    id="tmpl-icon"
+                    v-model="tmplForm.icon"
+                    type="text"
+                    :placeholder="$t('settings.iconPlaceholder')"
+                    style="text-align: center"
+                  />
                 </div>
                 <div>
                   <label for="tmpl-desc">{{ $t('settings.description') }}</label>
-                  <input id="tmpl-desc" v-model="tmplForm.description" type="text" :placeholder="$t('settings.descriptionPlaceholder')" />
+                  <input
+                    id="tmpl-desc"
+                    v-model="tmplForm.description"
+                    type="text"
+                    :placeholder="$t('settings.descriptionPlaceholder')"
+                  />
                 </div>
               </div>
               <div class="form-field">
@@ -316,15 +465,40 @@
                   v-model="tmplForm.systemPrompt"
                   rows="4"
                   placeholder="e.g., You are a helpful coding assistant..."
-                  style="width: 100%; padding: 0.55rem 0.75rem; border-radius: 0.5rem; border: 1px solid #424242; background: #2a2a2a; color: #ececec; font-size: 0.875rem; font-family: inherit; resize: vertical; outline: none;"
+                  style="
+                    width: 100%;
+                    padding: 0.55rem 0.75rem;
+                    border-radius: 0.5rem;
+                    border: 1px solid #424242;
+                    background: #2a2a2a;
+                    color: #ececec;
+                    font-size: 0.875rem;
+                    font-family: inherit;
+                    resize: vertical;
+                    outline: none;
+                  "
                 />
                 <p class="hint">{{ $t('settings.templatePromptHint') }}</p>
               </div>
             </div>
 
             <div class="custom-model-form-actions">
-              <button type="button" class="cm-btn cm-btn-cancel" :aria-label="$t('settings.cancel')" @click="closeTemplateForm">{{ $t('settings.cancel') }}</button>
-              <button type="button" class="cm-btn cm-btn-save" :aria-label="editingTemplateId ? $t('settings.update') : $t('settings.add')" @click="saveTemplate">{{ editingTemplateId ? $t('settings.update') : $t('settings.add') }}</button>
+              <button
+                type="button"
+                class="cm-btn cm-btn-cancel"
+                :aria-label="$t('settings.cancel')"
+                @click="closeTemplateForm"
+              >
+                {{ $t('settings.cancel') }}
+              </button>
+              <button
+                type="button"
+                class="cm-btn cm-btn-save"
+                :aria-label="editingTemplateId ? $t('settings.update') : $t('settings.add')"
+                @click="saveTemplate"
+              >
+                {{ editingTemplateId ? $t('settings.update') : $t('settings.add') }}
+              </button>
             </div>
           </div>
         </div>
@@ -418,8 +592,17 @@
       </div>
 
       <div class="modal-footer">
-        <button type="button" class="reset-btn" :aria-label="$t('settings.resetAll')" @click="handleReset">{{ $t('settings.resetAll') }}</button>
-        <button type="button" class="save-btn" :aria-label="$t('settings.done')" @click="close">{{ $t('settings.done') }}</button>
+        <button
+          type="button"
+          class="reset-btn"
+          :aria-label="$t('settings.resetAll')"
+          @click="handleReset"
+        >
+          {{ $t('settings.resetAll') }}
+        </button>
+        <button type="button" class="save-btn" :aria-label="$t('settings.done')" @click="close">
+          {{ $t('settings.done') }}
+        </button>
       </div>
     </div>
   </div>
@@ -442,8 +625,7 @@ let preOpenActiveElement = null
 
 function getFocusableElements(container) {
   if (!container) return []
-  const selector =
-    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+  const selector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
   return Array.from(container.querySelectorAll(selector)).filter(
     (el) => !el.disabled && el.offsetParent !== null
   )
@@ -754,13 +936,23 @@ onUnmounted(() => {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .modal-header {
@@ -841,7 +1033,8 @@ onUnmounted(() => {
   color: #888;
 }
 
-input, select {
+input,
+select {
   width: 100%;
   padding: 0.65rem 0.75rem;
   border-radius: 0.5rem;
@@ -850,10 +1043,13 @@ input, select {
   color: #ececec;
   font-size: 0.875rem;
   font-family: inherit;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
-input:focus, select:focus {
+input:focus,
+select:focus {
   outline: none;
   border-color: var(--accent-primary, #10a37f);
   box-shadow: 0 0 0 2px rgba(16, 163, 127, 0.2);
@@ -1056,7 +1252,9 @@ select {
   background: var(--accent-primary, #10a37f);
   border: 2px solid #ececec;
   cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
 }
 
 .slider-input::-webkit-slider-thumb:hover {
@@ -1082,7 +1280,9 @@ select {
   color: #ececec;
   font-size: 0.875rem;
   font-family: inherit;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .number-input:focus {
@@ -1255,7 +1455,9 @@ select {
   color: #ececec;
   font-size: 0.875rem;
   font-family: inherit;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .form-field input:focus {

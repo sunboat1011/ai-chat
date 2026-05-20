@@ -21,7 +21,11 @@
             <span class="preset-icon">{{ template.icon }}</span>
             <span class="preset-name">{{ template.name }}</span>
             <span class="preset-desc">{{ template.description }}</span>
-            <span v-if="template.messages && template.messages.length > 0" class="preset-badge" title="Has initial messages">
+            <span
+              v-if="template.messages && template.messages.length > 0"
+              class="preset-badge"
+              title="Has initial messages"
+            >
               {{ template.messages.length }} msg
             </span>
           </button>
@@ -58,8 +62,13 @@
         <div v-else-if="selectedTemplate && selectedTemplate.systemPrompt" class="template-preview">
           <label>{{ $t('roleModal.systemPrompt') }}</label>
           <p class="template-preview-text">{{ selectedTemplate.systemPrompt }}</p>
-          <div v-if="selectedTemplate.messages && selectedTemplate.messages.length > 0" class="template-messages-preview">
-            <label>{{ $t('roleModal.initialMessages') }} ({{ selectedTemplate.messages.length }})</label>
+          <div
+            v-if="selectedTemplate.messages && selectedTemplate.messages.length > 0"
+            class="template-messages-preview"
+          >
+            <label
+              >{{ $t('roleModal.initialMessages') }} ({{ selectedTemplate.messages.length }})</label
+            >
             <div
               v-for="(msg, idx) in selectedTemplate.messages"
               :key="idx"
@@ -73,7 +82,14 @@
       </div>
 
       <div class="modal-footer">
-        <button type="button" class="skip-btn" :aria-label="$t('roleModal.skip')" @click="handleSkip">{{ $t('roleModal.skip') }}</button>
+        <button
+          type="button"
+          class="skip-btn"
+          :aria-label="$t('roleModal.skip')"
+          @click="handleSkip"
+        >
+          {{ $t('roleModal.skip') }}
+        </button>
         <button
           type="button"
           class="confirm-btn"
@@ -180,13 +196,23 @@ function handleOverlayClick(e) {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .modal-header {
@@ -297,7 +323,9 @@ function handleOverlayClick(e) {
   resize: vertical;
   min-height: 80px;
   outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .custom-textarea:focus {

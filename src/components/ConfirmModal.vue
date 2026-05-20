@@ -4,15 +4,19 @@
       <h3 class="confirm-title">{{ title }}</h3>
       <p v-if="message" class="confirm-message">{{ message }}</p>
       <div class="confirm-actions">
-        <button class="confirm-btn cancel" :aria-label="cancelText" @click="handleCancel">{{ cancelText }}</button>
-        <button class="confirm-btn danger" :aria-label="confirmText" @click="handleConfirm">{{ confirmText }}</button>
+        <button class="confirm-btn cancel" :aria-label="cancelText" @click="handleCancel">
+          {{ cancelText }}
+        </button>
+        <button class="confirm-btn danger" :aria-label="confirmText" @click="handleConfirm">
+          {{ confirmText }}
+        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-const props = defineProps({
+defineProps({
   visible: { type: Boolean, required: true },
   title: { type: String, default: 'Confirm' },
   message: { type: String, default: '' },
@@ -57,13 +61,23 @@ function handleCancel() {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.96); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .confirm-title {

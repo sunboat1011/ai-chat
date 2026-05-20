@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import { streamChat, fetchConversations, createConversation as apiCreateConversation } from '@/api/chat'
+import { streamChat } from '@/api/chat'
 import { loadConversations, saveConversations, generateId, clearDraft } from '@/utils/storage'
 import { useSettings } from '@/composables'
 
@@ -64,7 +64,14 @@ export function useChat() {
   function createNewConversation(systemPrompt = '') {
     const id = generateId()
     const prompt = systemPrompt || settings.value.defaultSystemPrompt || ''
-    const conv = { id, title: 'New Chat', messages: [], createdAt: Date.now(), updatedAt: Date.now(), systemPrompt: prompt }
+    const conv = {
+      id,
+      title: 'New Chat',
+      messages: [],
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      systemPrompt: prompt,
+    }
     conversations.value.unshift(conv)
     saveConversations(conversations.value)
     setActiveConversation(id)
@@ -284,9 +291,8 @@ export function useChat() {
     const siblingCount = conversations.value.filter((c) =>
       (c.title || '').startsWith(`${baseTitle} (branch`)
     ).length
-    const branchTitle = siblingCount === 0
-      ? `${baseTitle} (branch)`
-      : `${baseTitle} (branch ${siblingCount + 1})`
+    const branchTitle =
+      siblingCount === 0 ? `${baseTitle} (branch)` : `${baseTitle} (branch ${siblingCount + 1})`
 
     const newConv = {
       id: newId,

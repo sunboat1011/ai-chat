@@ -2,14 +2,21 @@
   <div :class="['message-wrapper', message.role]">
     <div class="message-content">
       <div class="message-avatar">
-        <div v-if="message.role === 'user'" class="avatar user-avatar">
-          U
-        </div>
+        <div v-if="message.role === 'user'" class="avatar user-avatar">U</div>
         <div v-else class="avatar ai-avatar">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10a37f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-            <path d="M2 17l10 5 10-5"/>
-            <path d="M2 12l10 5 10-5"/>
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#10a37f"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+            <path d="M2 17l10 5 10-5" />
+            <path d="M2 12l10 5 10-5" />
           </svg>
         </div>
       </div>
@@ -37,8 +44,20 @@
             @keydown="handleEditKeydown"
           />
           <div class="edit-actions">
-            <button class="edit-btn edit-cancel" :aria-label="$t('message.cancelEdit')" @click="cancelEdit">{{ $t('message.cancelEdit') }}</button>
-            <button class="edit-btn edit-save" :aria-label="$t('message.saveAndSubmit')" @click="saveEdit">{{ $t('message.saveAndSubmit') }}</button>
+            <button
+              class="edit-btn edit-cancel"
+              :aria-label="$t('message.cancelEdit')"
+              @click="cancelEdit"
+            >
+              {{ $t('message.cancelEdit') }}
+            </button>
+            <button
+              class="edit-btn edit-save"
+              :aria-label="$t('message.saveAndSubmit')"
+              @click="saveEdit"
+            >
+              {{ $t('message.saveAndSubmit') }}
+            </button>
           </div>
         </div>
 
@@ -58,39 +77,124 @@
           </div>
 
           <div class="message-actions">
-            <button v-if="message.role === 'user'" class="action-btn" :aria-label="$t('message.edit')" @click="startEdit" title="Edit">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            <button
+              v-if="message.role === 'user'"
+              class="action-btn"
+              :aria-label="$t('message.edit')"
+              @click="startEdit"
+              title="Edit"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
               </svg>
             </button>
-            <button class="action-btn" :aria-label="$t('message.delete')" @click="confirmDelete" title="Delete">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="3 6 5 6 21 6"/>
-                <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+            <button
+              class="action-btn"
+              :aria-label="$t('message.delete')"
+              @click="confirmDelete"
+              title="Delete"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="3 6 5 6 21 6" />
+                <path
+                  d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"
+                />
               </svg>
             </button>
-            <button v-if="message.role === 'assistant'" class="action-btn" :aria-label="$t('message.regenerate')" @click="handleRegenerate" title="Regenerate">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="1 4 1 10 7 10"/>
-                <path d="M3.51 15a9 9 0 102.13-9.36L1 10"/>
+            <button
+              v-if="message.role === 'assistant'"
+              class="action-btn"
+              :aria-label="$t('message.regenerate')"
+              @click="handleRegenerate"
+              title="Regenerate"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="1 4 1 10 7 10" />
+                <path d="M3.51 15a9 9 0 102.13-9.36L1 10" />
               </svg>
             </button>
-            <button class="action-btn" :aria-label="copied ? $t('message.copied') : $t('message.copy')" @click="copyMessage" title="Copy">
-              <svg v-if="!copied" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+            <button
+              class="action-btn"
+              :aria-label="copied ? $t('message.copied') : $t('message.copy')"
+              @click="copyMessage"
+              title="Copy"
+            >
+              <svg
+                v-if="!copied"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
               </svg>
-              <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10a37f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12"/>
+              <svg
+                v-else
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#10a37f"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="20 6 9 17 4 12" />
               </svg>
             </button>
-            <button class="action-btn" :aria-label="$t('message.branch')" @click="handleBranch" title="Branch from here">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="6" y1="3" x2="6" y2="15"/>
-                <circle cx="18" cy="6" r="3"/>
-                <circle cx="6" cy="18" r="3"/>
-                <path d="M18 9a9 9 0 0 1-9 9"/>
+            <button
+              class="action-btn"
+              :aria-label="$t('message.branch')"
+              @click="handleBranch"
+              title="Branch from here"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <line x1="6" y1="3" x2="6" y2="15" />
+                <circle cx="18" cy="6" r="3" />
+                <circle cx="6" cy="18" r="3" />
+                <path d="M18 9a9 9 0 0 1-9 9" />
               </svg>
             </button>
           </div>
@@ -190,11 +294,7 @@ function highlightMatches() {
   const lowerQuery = query.toLowerCase()
 
   // Collect text nodes that contain the query
-  const walker = document.createTreeWalker(
-    contentRef.value,
-    NodeFilter.SHOW_TEXT,
-    null
-  )
+  const walker = document.createTreeWalker(contentRef.value, NodeFilter.SHOW_TEXT, null)
   const targets = []
   let node = walker.nextNode()
   while (node) {
@@ -235,12 +335,7 @@ function highlightMatches() {
 }
 
 watch(
-  () => [
-    props.searchQuery,
-    props.currentLocalMatchIndex,
-    renderedContent.value,
-    isEditing.value,
-  ],
+  () => [props.searchQuery, props.currentLocalMatchIndex, renderedContent.value, isEditing.value],
   highlightMatches,
   { flush: 'post', immediate: true }
 )
@@ -328,7 +423,9 @@ async function copyMessage() {
   try {
     await navigator.clipboard.writeText(props.message.content)
     copied.value = true
-    setTimeout(() => { copied.value = false }, 2000)
+    setTimeout(() => {
+      copied.value = false
+    }, 2000)
   } catch {
     // Fallback
     const textarea = document.createElement('textarea')
@@ -338,7 +435,9 @@ async function copyMessage() {
     document.execCommand('copy')
     document.body.removeChild(textarea)
     copied.value = true
-    setTimeout(() => { copied.value = false }, 2000)
+    setTimeout(() => {
+      copied.value = false
+    }, 2000)
   }
 }
 
@@ -546,7 +645,9 @@ async function handleContentClick(e) {
   font-weight: 400;
   color: var(--text-muted);
   opacity: 0.7;
-  transition: opacity 0.2s, color 0.2s;
+  transition:
+    opacity 0.2s,
+    color 0.2s;
 }
 
 .message-wrapper:hover .message-time {

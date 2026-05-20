@@ -42,7 +42,8 @@ export const zhCN = {
     cancelEdit: 'Cancel edit',
     saveAndSubmit: 'Save & Submit',
     deleteConfirmTitle: 'Delete Message',
-    deleteConfirmMessage: 'Are you sure you want to delete this message? This action cannot be undone.',
+    deleteConfirmMessage:
+      'Are you sure you want to delete this message? This action cannot be undone.',
     deleteConfirmBtn: 'Delete',
     cancel: 'Cancel',
     codeCopied: 'Code copied',
@@ -165,7 +166,8 @@ export const zhCN = {
     resetToDefault: 'Reset model parameters to defaults',
     resetToDefaultShort: 'Reset to default',
     temperature: 'Temperature',
-    temperatureHint: 'Controls randomness: 0 is deterministic, 2 is highly random. Default is {default}.',
+    temperatureHint:
+      'Controls randomness: 0 is deterministic, 2 is highly random. Default is {default}.',
     maxTokens: 'Max Tokens',
     maxTokensHint: 'Maximum number of tokens to generate. Default is {default}.',
     topP: 'Top P',
@@ -175,7 +177,8 @@ export const zhCN = {
     systemPrompt: 'System Prompt',
     defaultSystemPrompt: 'Default System Prompt',
     defaultSystemPromptPlaceholder: 'e.g., You are a helpful coding assistant...',
-    defaultSystemPromptHint: 'Applied to all new conversations. Each conversation can override this independently.',
+    defaultSystemPromptHint:
+      'Applied to all new conversations. Each conversation can override this independently.',
 
     // Footer
     resetAll: 'Reset all settings to defaults',

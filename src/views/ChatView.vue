@@ -3,9 +3,19 @@
     <!-- Search Toolbar -->
     <div v-if="showSearch && messages.length > 0" class="search-toolbar">
       <div class="search-input-wrap">
-        <svg class="search-input-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"/>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        <svg
+          class="search-input-icon"
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
         <input
           ref="searchInputRef"
@@ -29,8 +39,17 @@
         title="Previous (Shift+Enter)"
         @click="prevMatch"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="18 15 12 9 6 15"/>
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="18 15 12 9 6 15" />
         </svg>
       </button>
       <button
@@ -40,8 +59,17 @@
         title="Next (Enter)"
         @click="nextMatch"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="6 9 12 15 18 9"/>
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="6 9 12 15 18 9" />
         </svg>
       </button>
       <button
@@ -50,9 +78,18 @@
         title="Close (Esc)"
         @click="closeSearch"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"/>
-          <line x1="6" y1="6" x2="18" y2="18"/>
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
         </svg>
       </button>
     </div>
@@ -65,9 +102,18 @@
       title="Search in conversation (Ctrl/Cmd+F)"
       @click="openSearch"
     >
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="11" cy="11" r="8"/>
-        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
       </svg>
     </button>
 
@@ -75,33 +121,79 @@
     <div class="chat-top-bar">
       <div v-if="systemPrompt" class="system-prompt-banner">
         <div class="system-prompt-content">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-            <path d="M2 17l10 5 10-5"/>
-            <path d="M2 12l10 5 10-5"/>
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+            <path d="M2 17l10 5 10-5" />
+            <path d="M2 12l10 5 10-5" />
           </svg>
           <span class="system-prompt-label">{{ $t('chatView.roleLabel') }}</span>
           <span class="system-prompt-text" :title="systemPrompt">{{ systemPrompt }}</span>
-          <button class="system-prompt-edit-btn" :aria-label="$t('chatView.editSystemPrompt')" :title="$t('chatView.editSystemPrompt')" @click="openSystemPromptEdit">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          <button
+            class="system-prompt-edit-btn"
+            :aria-label="$t('chatView.editSystemPrompt')"
+            :title="$t('chatView.editSystemPrompt')"
+            @click="openSystemPromptEdit"
+          >
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
             </svg>
           </button>
         </div>
       </div>
       <div v-else-if="activeConversation" class="system-prompt-banner empty">
         <div class="system-prompt-content">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-            <path d="M2 17l10 5 10-5"/>
-            <path d="M2 12l10 5 10-5"/>
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+            <path d="M2 17l10 5 10-5" />
+            <path d="M2 12l10 5 10-5" />
           </svg>
           <span class="system-prompt-label">{{ $t('chatView.generalAssistant') }}</span>
-          <button class="system-prompt-edit-btn" :aria-label="$t('chatView.editSystemPrompt')" :title="$t('chatView.editSystemPrompt')" @click="openSystemPromptEdit">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          <button
+            class="system-prompt-edit-btn"
+            :aria-label="$t('chatView.editSystemPrompt')"
+            :title="$t('chatView.editSystemPrompt')"
+            @click="openSystemPromptEdit"
+          >
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
             </svg>
           </button>
         </div>
@@ -141,8 +233,20 @@
           placeholder="e.g., You are a helpful coding assistant..."
         />
         <div class="sp-edit-actions">
-          <button class="sp-edit-btn sp-edit-cancel" :aria-label="$t('settings.cancel')" @click="closeSystemPromptEdit">{{ $t('settings.cancel') }}</button>
-          <button class="sp-edit-btn sp-edit-save" :aria-label="$t('chatView.save')" @click="saveSystemPrompt">{{ $t('chatView.save') }}</button>
+          <button
+            class="sp-edit-btn sp-edit-cancel"
+            :aria-label="$t('settings.cancel')"
+            @click="closeSystemPromptEdit"
+          >
+            {{ $t('settings.cancel') }}
+          </button>
+          <button
+            class="sp-edit-btn sp-edit-save"
+            :aria-label="$t('chatView.save')"
+            @click="saveSystemPrompt"
+          >
+            {{ $t('chatView.save') }}
+          </button>
         </div>
       </div>
     </div>
@@ -150,10 +254,19 @@
     <!-- Empty State -->
     <div v-if="messages.length === 0" class="welcome-screen">
       <div class="welcome-logo">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#10a37f" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-          <path d="M2 17l10 5 10-5"/>
-          <path d="M2 12l10 5 10-5"/>
+        <svg
+          width="48"
+          height="48"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="#10a37f"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M12 2L2 7l10 5 10-5-10-5z" />
+          <path d="M2 17l10 5 10-5" />
+          <path d="M2 12l10 5 10-5" />
         </svg>
       </div>
       <h1 class="welcome-title">{{ $t('chatView.welcomeTitle') }}</h1>
@@ -168,10 +281,25 @@
         :aria-label="$t('chatView.loadEarlier')"
         @click="loadEarlier"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="18 15 12 9 6 15"/>
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="18 15 12 9 6 15" />
         </svg>
-        {{ $t('chatView.loadEarlierCount', { count: hiddenCount, messages: hiddenCount === 1 ? $t('message.messageSingular') : $t('message.messagePlural') }) }}
+        {{
+          $t('chatView.loadEarlierCount', {
+            count: hiddenCount,
+            messages:
+              hiddenCount === 1 ? $t('message.messageSingular') : $t('message.messagePlural'),
+          })
+        }}
       </button>
       <MessageItem
         v-for="(msg, idx) in visibleMessages"
@@ -212,7 +340,16 @@ const props = defineProps({
   systemPrompt: { type: String, default: '' },
 })
 
-const emit = defineEmits(['send', 'cancel', 'edit', 'delete', 'regenerate', 'branch', 'update-system-prompt', 'select-model'])
+const emit = defineEmits([
+  'send',
+  'cancel',
+  'edit',
+  'delete',
+  'regenerate',
+  'branch',
+  'update-system-prompt',
+  'select-model',
+])
 
 const messagesContainerRef = ref(null)
 const searchInputRef = ref(null)
@@ -224,10 +361,9 @@ const editingSystemPrompt = ref('')
 const spTextareaRef = ref(null)
 
 // ─── Model selector ───
-const { settings, getAllModels, BUILT_IN_MODELS } = useSettings()
+const { settings, BUILT_IN_MODELS } = useSettings()
 
 const currentModel = computed(() => settings.value.model)
-const allModels = computed(() => getAllModels())
 const builtInModels = computed(() => BUILT_IN_MODELS)
 const customModels = computed(() => settings.value.customModels || [])
 
@@ -252,13 +388,9 @@ const visibleMessages = computed(() => {
   return props.messages.slice(total - visibleCount.value)
 })
 
-const visibleStartIndex = computed(
-  () => props.messages.length - visibleMessages.value.length
-)
+const visibleStartIndex = computed(() => props.messages.length - visibleMessages.value.length)
 
-const hiddenCount = computed(
-  () => props.messages.length - visibleMessages.value.length
-)
+const hiddenCount = computed(() => props.messages.length - visibleMessages.value.length)
 
 async function loadEarlier() {
   if (isLoadingMore || hiddenCount.value === 0) return
@@ -266,10 +398,7 @@ async function loadEarlier() {
   const el = messagesContainerRef.value
   const prevScrollHeight = el?.scrollHeight ?? 0
   const prevScrollTop = el?.scrollTop ?? 0
-  visibleCount.value = Math.min(
-    visibleCount.value + LOAD_MORE_BATCH,
-    props.messages.length
-  )
+  visibleCount.value = Math.min(visibleCount.value + LOAD_MORE_BATCH, props.messages.length)
   await nextTick()
   if (el) {
     const delta = el.scrollHeight - prevScrollHeight
@@ -311,9 +440,7 @@ const matchCountsPerMessage = computed(() => {
   })
 })
 
-const totalMatches = computed(() =>
-  matchCountsPerMessage.value.reduce((a, b) => a + b, 0)
-)
+const totalMatches = computed(() => matchCountsPerMessage.value.reduce((a, b) => a + b, 0))
 
 function getLocalMatchIndex(messageIdx) {
   if (!searchQuery.value || totalMatches.value === 0) return -1
@@ -367,8 +494,7 @@ function nextMatch() {
 
 function prevMatch() {
   if (totalMatches.value === 0) return
-  currentMatchIndex.value =
-    (currentMatchIndex.value - 1 + totalMatches.value) % totalMatches.value
+  currentMatchIndex.value = (currentMatchIndex.value - 1 + totalMatches.value) % totalMatches.value
 }
 
 function openSearch() {
@@ -734,7 +860,9 @@ function scrollToBottom() {
   font-family: inherit;
   cursor: pointer;
   outline: none;
-  transition: border-color 0.15s, color 0.15s;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
   appearance: none;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
   background-repeat: no-repeat;
@@ -855,7 +983,9 @@ function scrollToBottom() {
   resize: vertical;
   min-height: 80px;
   outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .sp-edit-textarea:focus {
