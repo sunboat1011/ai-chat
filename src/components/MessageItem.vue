@@ -9,7 +9,7 @@
             height="20"
             viewBox="0 0 24 24"
             fill="none"
-            stroke="#10a37f"
+            stroke="#19c8b9"
             stroke-width="2"
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -167,7 +167,7 @@
                 height="14"
                 viewBox="0 0 24 24"
                 fill="none"
-                stroke="#10a37f"
+                stroke="#19c8b9"
                 stroke-width="2"
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -259,15 +259,12 @@ const renderedContent = computed(() => {
   if (!content) return ''
 
   if (role === 'user') {
-    // For user messages, escape HTML to prevent XSS, convert newlines
     return escapeHtmlText(content).replace(/\n/g, '<br>')
   }
 
-  // For AI messages, render markdown
   return renderMarkdown(content)
 })
 
-// Auto-scroll when streaming content updates
 watch(
   () => props.message.content,
   async () => {
@@ -285,7 +282,6 @@ watch(
 function highlightMatches() {
   if (!contentRef.value || isEditing.value) return
 
-  // Reset to clean rendered content so previous marks are cleared
   contentRef.value.innerHTML = renderedContent.value
 
   const query = props.searchQuery
@@ -293,7 +289,6 @@ function highlightMatches() {
 
   const lowerQuery = query.toLowerCase()
 
-  // Collect text nodes that contain the query
   const walker = document.createTreeWalker(contentRef.value, NodeFilter.SHOW_TEXT, null)
   const targets = []
   let node = walker.nextNode()
@@ -304,7 +299,6 @@ function highlightMatches() {
     node = walker.nextNode()
   }
 
-  // Wrap occurrences in <mark>; tag the n-th hit as current when it matches
   let localIndex = 0
   for (const textNode of targets) {
     const text = textNode.nodeValue
@@ -427,7 +421,6 @@ async function copyMessage() {
       copied.value = false
     }, 2000)
   } catch {
-    // Fallback
     const textarea = document.createElement('textarea')
     textarea.value = props.message.content
     document.body.appendChild(textarea)
@@ -441,10 +434,6 @@ async function copyMessage() {
   }
 }
 
-/**
- * Event-delegation handler for clicks inside rendered markdown.
- * Currently handles code-block copy buttons (replaces inline onclick).
- */
 async function handleContentClick(e) {
   const btn = e.target.closest('button[data-action="copy-code"]')
   if (!btn) return
@@ -508,24 +497,25 @@ async function handleContentClick(e) {
 }
 
 .avatar {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.8rem;
 }
 
 .user-avatar {
-  background: #6366f1;
-  color: white;
+  background: var(--accent-primary);
+  color: #fff;
+  box-shadow: 0 3px 0 0 #11a89b;
 }
 
 .ai-avatar {
   background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
+  border: 2px solid var(--accent-primary);
 }
 
 .message-body {
@@ -535,7 +525,7 @@ async function handleContentClick(e) {
 
 .message-author {
   font-size: 0.8125rem;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 0.5rem;
   color: var(--text-primary);
 }
@@ -556,13 +546,15 @@ async function handleContentClick(e) {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.3rem;
+  width: 32px;
+  height: 32px;
+  padding: 0;
   border: none;
   background: transparent;
-  color: var(--text-muted);
+  color: #c4b89e;
   cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.15s;
+  border-radius: 50%;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .action-btn:hover {
@@ -577,23 +569,26 @@ async function handleContentClick(e) {
 
 .edit-textarea {
   width: 100%;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: 0.5rem;
+  background: var(--bg-input);
+  border: 2.5px solid var(--border-color);
+  border-radius: 20px;
   padding: 0.75rem 1rem;
   color: var(--text-primary);
   font-size: 0.9375rem;
   font-family: inherit;
+  font-weight: 500;
   line-height: 1.5;
   resize: none;
   outline: none;
   min-height: 48px;
   max-height: 200px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 3px 0 0 var(--input-shadow);
 }
 
 .edit-textarea:focus {
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 2px rgba(16, 163, 127, 0.15);
+  border-color: var(--focus-yellow);
+  box-shadow: 0 3px 0 0 var(--focus-yellow-darker), 0 0 0 3px rgba(255, 204, 0, 0.15);
 }
 
 .edit-actions {
@@ -604,12 +599,14 @@ async function handleContentClick(e) {
 
 .edit-btn {
   padding: 0.4rem 0.875rem;
-  border-radius: 0.375rem;
+  border-radius: 50px;
   font-size: 0.8125rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s;
-  border: 1px solid transparent;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid transparent;
+  font-family: inherit;
+  letter-spacing: 0.02em;
 }
 
 .edit-cancel {
@@ -625,13 +622,21 @@ async function handleContentClick(e) {
 
 .edit-save {
   background: var(--accent-primary);
-  color: white;
+  color: #fff;
   border-color: var(--accent-primary);
+  box-shadow: 0 4px 0 0 #11a89b;
 }
 
 .edit-save:hover {
   background: var(--accent-hover);
   border-color: var(--accent-hover);
+  box-shadow: 0 5px 0 0 #11a89b;
+  transform: translateY(-1px);
+}
+
+.edit-save:active {
+  box-shadow: 0 1px 0 0 #11a89b;
+  transform: translateY(2px);
 }
 
 .message-author {
@@ -645,9 +650,7 @@ async function handleContentClick(e) {
   font-weight: 400;
   color: var(--text-muted);
   opacity: 0.7;
-  transition:
-    opacity 0.2s,
-    color 0.2s;
+  transition: opacity 0.2s, color 0.2s;
 }
 
 .message-wrapper:hover .message-time {
@@ -672,8 +675,8 @@ async function handleContentClick(e) {
   }
 
   .avatar {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     font-size: 0.7rem;
   }
 
@@ -694,9 +697,8 @@ async function handleContentClick(e) {
   }
 
   .action-btn {
-    padding: 0.35rem;
-    min-width: 32px;
-    min-height: 32px;
+    width: 36px;
+    height: 36px;
   }
 
   .action-btn svg {

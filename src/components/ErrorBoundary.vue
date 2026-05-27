@@ -76,14 +76,14 @@ function reset() {
 }
 
 .error-boundary__icon {
-  color: #dc2626;
+  color: #e05a5a;
   display: inline-flex;
   margin-bottom: 1rem;
 }
 
 .error-boundary__title {
   font-size: 1.25rem;
-  font-weight: 600;
+  font-weight: 700;
   margin: 0 0 0.5rem;
   color: var(--text-primary);
 }
@@ -93,6 +93,7 @@ function reset() {
   color: var(--text-secondary);
   margin: 0 0 1.5rem;
   line-height: 1.55;
+  font-weight: 500;
 }
 
 .error-boundary__actions {
@@ -104,12 +105,14 @@ function reset() {
 
 .error-boundary__btn {
   padding: 0.55rem 1.25rem;
-  border-radius: 0.5rem;
+  border-radius: 50px;
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  border: 1px solid transparent;
-  transition: all 0.15s;
+  border: 2px solid transparent;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: inherit;
+  letter-spacing: 0.02em;
 }
 
 .error-boundary__btn--secondary {
@@ -125,12 +128,19 @@ function reset() {
 
 .error-boundary__btn--primary {
   background: var(--accent-primary);
-  color: white;
+  color: #fff;
   border-color: var(--accent-primary);
+  box-shadow: 0 4px 0 0 #11a89b;
 }
 
 .error-boundary__btn--primary:hover {
   background: var(--accent-hover);
-  border-color: var(--accent-hover);
+  box-shadow: 0 5px 0 0 #11a89b;
+  transform: translateY(-1px);
+}
+
+.error-boundary__btn--primary:active {
+  box-shadow: 0 1px 0 0 #11a89b;
+  transform: translateY(2px);
 }
 </style>

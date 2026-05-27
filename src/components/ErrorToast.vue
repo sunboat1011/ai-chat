@@ -102,46 +102,46 @@ const { toasts, dismiss } = useErrorToast()
   min-width: 280px;
   max-width: 480px;
   padding: 0.625rem 0.75rem 0.625rem 0.875rem;
-  border-radius: 0.5rem;
+  border-radius: 20px;
   background: var(--bg-elevated);
-  border: 1px solid var(--border-color);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  border: 2px solid var(--border-color);
+  box-shadow: 0 4px 14px rgba(107, 92, 67, 0.15);
   font-size: 0.875rem;
   color: var(--text-primary);
   animation: toast-slide-in 0.2s ease-out;
+  font-weight: 500;
 }
 
 .toast--error {
-  border-color: #dc2626;
-  color: #fecaca;
-  background: rgba(220, 38, 38, 0.12);
+  border-color: #e05a5a;
+  color: #e05a5a;
+  background: rgba(224, 90, 90, 0.08);
 }
 
-html.light .toast--error {
-  color: #991b1b;
-  background: #fef2f2;
+html.dark .toast--error {
+  color: #e05a5a;
+  background: rgba(224, 90, 90, 0.12);
 }
 
 .toast--warning {
-  border-color: #d97706;
-  color: #fde68a;
-  background: rgba(217, 119, 6, 0.12);
+  border-color: #f5c31c;
+  color: #9a7a1a;
+  background: rgba(245, 195, 28, 0.1);
 }
 
-html.light .toast--warning {
-  color: #92400e;
-  background: #fffbeb;
+html.dark .toast--warning {
+  color: #f5c31c;
+  background: rgba(245, 195, 28, 0.12);
 }
 
 .toast--info {
-  border-color: #2563eb;
-  color: #bfdbfe;
-  background: rgba(37, 99, 235, 0.12);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  background: rgba(25, 200, 185, 0.08);
 }
 
-html.light .toast--info {
-  color: #1e40af;
-  background: #eff6ff;
+html.dark .toast--info {
+  background: rgba(25, 200, 185, 0.12);
 }
 
 .toast-icon {
@@ -163,22 +163,18 @@ html.light .toast--info {
   opacity: 0.7;
   cursor: pointer;
   padding: 0.25rem;
-  border-radius: 0.25rem;
+  border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition:
-    opacity 0.15s,
-    background 0.15s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 28px;
+  height: 28px;
 }
 
 .toast-close:hover {
   opacity: 1;
-  background: rgba(0, 0, 0, 0.1);
-}
-
-html.light .toast-close:hover {
-  background: rgba(0, 0, 0, 0.06);
+  background: rgba(0, 0, 0, 0.08);
 }
 
 @keyframes toast-slide-in {

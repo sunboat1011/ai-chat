@@ -219,7 +219,7 @@ function closeSettings() {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(42, 35, 24, 0.5);
   z-index: 40;
 }
 
@@ -233,29 +233,40 @@ function closeSettings() {
   align-items: center;
   gap: 1rem;
   padding: 0.625rem 1.25rem;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-color);
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-color);
+  border-radius: 20px;
+  box-shadow: 0 4px 14px rgba(107, 92, 67, 0.15);
   font-size: 0.875rem;
   color: var(--text-primary);
   animation: slideDown 0.2s ease-out;
+  font-weight: 500;
 }
 
 .undo-btn {
-  padding: 0.25rem 0.75rem;
+  padding: 0.35rem 0.875rem;
   border: none;
   background: var(--accent-primary);
-  color: white;
-  border-radius: 0.25rem;
+  color: #fff;
+  border-radius: 50px;
   font-size: 0.8125rem;
-  font-weight: 500;
+  font-weight: 700;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: inherit;
+  letter-spacing: 0.02em;
+  box-shadow: 0 3px 0 0 #11a89b;
 }
 
 .undo-btn:hover {
   background: var(--accent-hover);
+  box-shadow: 0 4px 0 0 #11a89b;
+  transform: translateY(-1px);
+}
+
+.undo-btn:active {
+  box-shadow: 0 1px 0 0 #11a89b;
+  transform: translateY(2px);
 }
 
 @keyframes slideDown {

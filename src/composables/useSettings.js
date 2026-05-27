@@ -97,10 +97,10 @@ const MODEL_PARAM_BOUNDS = {
 }
 
 const DEFAULT_SETTINGS = {
-  theme: 'dark',
+  theme: 'light',
   apiBaseUrl: import.meta.env.VITE_API_BASE_URL || '/api',
   model: 'claude-3-sonnet',
-  accentColor: 'green',
+  accentColor: 'mint',
   defaultSystemPrompt: '',
   customModels: [],
   customTemplates: [],
@@ -108,10 +108,10 @@ const DEFAULT_SETTINGS = {
 }
 
 const ACCENT_COLORS = {
-  green: '#10a37f',
-  blue: '#3b82f6',
-  purple: '#8b5cf6',
-  red: '#ef4444',
+  mint: '#19c8b9',
+  coral: '#e59266',
+  lavender: '#b77dee',
+  sunshine: '#f7cd67',
 }
 
 // ─── Module-level singleton state ───
@@ -159,7 +159,7 @@ function applyTheme(theme) {
 
 // ─── Apply accent color via CSS variables ───
 function applyAccentColor(color) {
-  const accent = ACCENT_COLORS[color] || ACCENT_COLORS.green
+  const accent = ACCENT_COLORS[color] || ACCENT_COLORS.mint
   const root = document.documentElement
   root.style.setProperty('--accent-primary', accent)
   root.style.setProperty('--accent-hover', shadeColor(accent, -20))

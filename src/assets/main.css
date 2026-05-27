@@ -2,43 +2,58 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Theme CSS Variables ─── */
+/* ─── Theme CSS Variables (Animal-Island Warm Palette) ─── */
 :root,
-html.dark {
-  --bg-primary: #212121;
-  --bg-secondary: #2f2f2f;
-  --bg-tertiary: #171717;
-  --bg-elevated: #353535;
-  --bg-input: #2a2a2a;
-  --bg-code: #1e1e1e;
-  --bg-code-header: #2a2a2a;
-  --text-primary: #ececec;
-  --text-secondary: #a0a0a0;
-  --text-muted: #6b6b6b;
-  --border-color: #424242;
-  --border-subtle: #2f2f2f;
-  --scrollbar-thumb: #424242;
-  --scrollbar-thumb-hover: #555;
-  --accent-primary: #10a37f;
-  --accent-hover: #0d8a6c;
-  --accent-light: #19c37d;
+html.light {
+  --bg-primary: #f8f8f0;
+  --bg-secondary: rgb(247, 243, 223);
+  --bg-tertiary: #f0ece2;
+  --bg-elevated: #fdfdf5;
+  --bg-input: rgb(247, 243, 223);
+  --bg-code: #2b2118;
+  --bg-code-header: #3d3028;
+  --text-primary: #725d42;
+  --text-secondary: #9f927d;
+  --text-muted: #8a7b66;
+  --border-color: #c4b89e;
+  --border-subtle: #e8e2d6;
+  --scrollbar-thumb: #c4b89e;
+  --scrollbar-thumb-hover: #a89878;
+  --accent-primary: #19c8b9;
+  --accent-hover: #3dd4c6;
+  --accent-light: #e6f9f6;
+  --btn-shadow: #bdaea0;
+  --input-shadow: #d4c9b4;
+  --focus-yellow: #ffcc00;
+  --focus-yellow-darker: #e0b800;
+  --sidebar-selected: #B7C6E5;
+  --sidebar-hover: #d6dff0;
 }
 
-html.light {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f7f7f8;
-  --bg-tertiary: #f0f0f0;
-  --bg-elevated: #ededed;
-  --bg-input: #ffffff;
-  --bg-code: #f5f5f5;
-  --bg-code-header: #ebebeb;
-  --text-primary: #1a1a1a;
-  --text-secondary: #5a5a5a;
-  --text-muted: #8a8a8a;
-  --border-color: #d0d0d0;
-  --border-subtle: #e5e5e5;
-  --scrollbar-thumb: #c4c4c4;
-  --scrollbar-thumb-hover: #a0a0a0;
+html.dark {
+  --bg-primary: #2a2318;
+  --bg-secondary: #3a3124;
+  --bg-tertiary: #1f1912;
+  --bg-elevated: #4a3f30;
+  --bg-input: #3a3124;
+  --bg-code: #1a1510;
+  --bg-code-header: #2a2318;
+  --text-primary: #e8dcc8;
+  --text-secondary: #b0a080;
+  --text-muted: #7a6a50;
+  --border-color: #4a3f30;
+  --border-subtle: #3a3124;
+  --scrollbar-thumb: #4a3f30;
+  --scrollbar-thumb-hover: #5a4f40;
+  --accent-primary: #19c8b9;
+  --accent-hover: #3dd4c6;
+  --accent-light: #e6f9f6;
+  --btn-shadow: #3a3124;
+  --input-shadow: #4a3f30;
+  --focus-yellow: #ffcc00;
+  --focus-yellow-darker: #e0b800;
+  --sidebar-selected: #B7C6E5;
+  --sidebar-hover: #d6dff0;
 }
 
 /* ─── Base Reset & Defaults ─── */
@@ -60,17 +75,22 @@ body,
 
 body {
   font-family:
-    'Inter',
-    system-ui,
+    'Nunito',
+    'Noto Sans SC',
+    'Zen Maru Gothic',
     -apple-system,
+    'PingFang SC',
+    'Hiragino Sans GB',
+    'Microsoft YaHei',
     sans-serif;
   background-color: var(--bg-primary);
   color: var(--text-primary);
+  font-weight: 500;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition:
-    background-color 0.2s ease,
-    color 0.2s ease;
+    background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ─── Scrollbar Styling ─── */
@@ -85,7 +105,7 @@ body {
 
 ::-webkit-scrollbar-thumb {
   background: var(--scrollbar-thumb);
-  border-radius: 3px;
+  border-radius: 12px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -96,6 +116,7 @@ body {
 .markdown-body {
   line-height: 1.7;
   font-size: 0.9375rem;
+  color: var(--text-primary);
 }
 
 .markdown-body p {
@@ -114,8 +135,9 @@ body {
 .markdown-body h6 {
   margin-top: 1.5rem;
   margin-bottom: 0.75rem;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.3;
+  color: var(--text-primary);
 }
 
 .markdown-body h1 {
@@ -134,6 +156,7 @@ body {
 .markdown-body a {
   color: var(--accent-primary);
   text-decoration: none;
+  font-weight: 600;
 }
 
 .markdown-body a:hover {
@@ -185,12 +208,12 @@ body {
 
 .markdown-body th {
   background: var(--bg-secondary);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .markdown-body img {
   max-width: 100%;
-  border-radius: 0.5rem;
+  border-radius: 1rem;
 }
 
 /* ─── Code Blocks ─── */
@@ -199,12 +222,13 @@ body {
   font-size: 0.875em;
   background: var(--bg-secondary);
   padding: 0.15em 0.4em;
-  border-radius: 4px;
+  border-radius: 8px;
+  color: var(--text-primary);
 }
 
 .markdown-body pre {
   margin: 1rem 0;
-  border-radius: 0.5rem;
+  border-radius: 20px;
   overflow: hidden;
   border: 1px solid var(--border-subtle);
 }
@@ -216,6 +240,7 @@ body {
   overflow-x: auto;
   font-size: 0.85rem;
   line-height: 1.6;
+  color: #e8d5bc;
 }
 
 /* ─── Code Block Header ─── */
@@ -227,7 +252,7 @@ body {
   background: var(--bg-code-header);
   border-bottom: 1px solid var(--border-subtle);
   font-size: 0.75rem;
-  color: var(--text-secondary);
+  color: #9f927d;
   font-family: 'Fira Code', monospace;
 }
 
@@ -238,20 +263,21 @@ body {
   padding: 0.25rem 0.6rem;
   border: none;
   background: transparent;
-  color: var(--text-secondary);
+  color: #9f927d;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 50px;
   font-size: 0.75rem;
-  transition: all 0.2s;
+  font-weight: 600;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .code-block-header .copy-btn:hover {
-  background: var(--bg-elevated);
-  color: var(--text-primary);
+  background: rgba(114, 93, 66, 0.2);
+  color: #e8d5bc;
 }
 
 .code-block-header .copy-btn.copied {
-  color: var(--accent-primary);
+  color: #6fba2c;
 }
 
 /* ─── Highlight.js Theme Override ─── */
@@ -260,10 +286,19 @@ body {
   padding: 0 !important;
 }
 
-html.light .hljs,
-html.light .markdown-body pre code {
-  color: #1a1a1a;
-}
+/* Token colors for warm dark code blocks */
+.hljs-comment { color: #6b5e50; }
+.hljs-string { color: #a8d4a0; }
+.hljs-keyword { color: #d4a0e0; }
+.hljs-built_in,
+.hljs-title.class_ { color: #80c0e0; }
+.hljs-function { color: #61afef; }
+.hljs-attr,
+.hljs-property { color: #e8c87a; }
+.hljs-tag { color: #f0a870; }
+.hljs-operator { color: #d4b896; }
+.hljs-number { color: #a8d4a0; }
+.hljs-literal { color: #d4a0e0; }
 
 /* ─── Typing Indicator ─── */
 .typing-indicator {
@@ -310,25 +345,149 @@ html.light .markdown-body pre code {
 
 /* ─── Search Highlight ─── */
 .search-highlight {
-  background: rgba(255, 213, 79, 0.45);
+  background: rgba(255, 204, 0, 0.35);
   color: inherit;
-  border-radius: 2px;
-  padding: 0 1px;
+  border-radius: 4px;
+  padding: 0 2px;
 }
 
 .search-highlight-current {
-  background: #ff9800;
-  color: #1a1a1a;
-  box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.6);
+  background: #ffcc00;
+  color: #725d42;
+  box-shadow: 0 0 0 1px rgba(255, 204, 0, 0.6);
 }
 
-html.light .search-highlight {
-  background: rgba(255, 235, 59, 0.55);
+html.dark .search-highlight {
+  background: rgba(255, 204, 0, 0.25);
 }
 
-html.light .search-highlight-current {
-  background: #ff9800;
-  color: #1a1a1a;
+html.dark .search-highlight-current {
+  background: #ffcc00;
+  color: #2a2318;
+}
+
+/* ─── Animal-Island Button Base (3D Press Effect) ─── */
+.animal-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  font-family: inherit;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 50px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  outline: none;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  box-shadow: 0 5px 0 0 var(--btn-shadow);
+}
+
+.animal-btn:hover:not(:disabled) {
+  box-shadow: 0 6px 0 0 var(--btn-shadow);
+  transform: translateY(-1px);
+}
+
+.animal-btn:active:not(:disabled) {
+  box-shadow: 0 1px 0 0 var(--btn-shadow);
+  transform: translateY(2px);
+}
+
+.animal-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  box-shadow: none;
+}
+
+.animal-btn:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+/* Primary button variant */
+.animal-btn-primary {
+  color: #794f27;
+  background: #f8f8f0;
+  border-color: #f8f8f0;
+}
+
+html.dark .animal-btn-primary {
+  color: #e8dcc8;
+  background: #4a3f30;
+  border-color: #4a3f30;
+}
+
+/* Danger button variant */
+.animal-btn-danger {
+  color: #fff;
+  background: #e05a5a;
+  border-color: #e05a5a;
+  box-shadow: 0 5px 0 0 #c94444;
+}
+
+.animal-btn-danger:hover:not(:disabled) {
+  box-shadow: 0 6px 0 0 #c94444;
+}
+
+.animal-btn-danger:active:not(:disabled) {
+  box-shadow: 0 1px 0 0 #c94444;
+}
+
+/* ─── Animal-Island Input Base ─── */
+.animal-input {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border: 2.5px solid var(--border-color);
+  border-radius: 50px;
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-family: inherit;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 3px 0 0 var(--input-shadow);
+  outline: none;
+}
+
+.animal-input:hover:not(:disabled) {
+  border-color: #a89878;
+}
+
+.animal-input:focus {
+  border-color: var(--focus-yellow);
+  box-shadow: 0 3px 0 0 var(--focus-yellow-darker), 0 0 0 3px rgba(255, 204, 0, 0.15);
+}
+
+.animal-input::placeholder {
+  color: #c4b89e;
+  font-weight: 400;
+}
+
+.animal-input:disabled {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+  box-shadow: none;
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ─── Animal-Island Card Base ─── */
+.animal-card {
+  border-radius: 20px;
+  background: var(--bg-secondary);
+  padding: 16px 24px;
+  color: var(--text-primary);
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+/* ─── Animal-Island Modal Blob Clip-Path ─── */
+.animal-modal-clip {
+  clip-path: url(#animal-modal-clip);
 }
 
 /* ─── Mobile Responsive ─── */
@@ -341,11 +500,9 @@ html.light .search-highlight-current {
   .markdown-body h1 {
     font-size: 1.4rem;
   }
-
   .markdown-body h2 {
     font-size: 1.2rem;
   }
-
   .markdown-body h3 {
     font-size: 1.05rem;
   }

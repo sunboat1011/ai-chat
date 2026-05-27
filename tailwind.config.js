@@ -5,26 +5,35 @@ export default {
     extend: {
       colors: {
         sidebar: {
-          DEFAULT: '#171717',
-          hover: '#2F2F2F',
-          active: '#3D3D3D',
+          DEFAULT: '#f0ece2',
+          hover: '#d6dff0',
+          active: '#B7C6E5',
         },
         chat: {
-          bg: '#212121',
-          input: '#2F2F2F',
-          user: '#2F2F2F',
+          bg: '#f8f8f0',
+          input: 'rgb(247, 243, 223)',
+          user: 'rgb(247, 243, 223)',
           ai: 'transparent',
-          border: '#424242',
+          border: '#c4b89e',
         },
         accent: {
-          DEFAULT: '#10a37f',
-          hover: '#0d8a6c',
-          light: '#19c37d',
+          DEFAULT: '#19c8b9',
+          hover: '#3dd4c6',
+          light: '#e6f9f6',
         },
       },
       fontFamily: {
         mono: ['"Fira Code"', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
-        sans: ['"Inter"', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: [
+          '"Nunito"',
+          '"Noto Sans SC"',
+          '"Zen Maru Gothic"',
+          '-apple-system',
+          '"PingFang SC"',
+          '"Hiragino Sans GB"',
+          '"Microsoft YaHei"',
+          'sans-serif',
+        ],
       },
       animation: {
         'fade-in': 'fadeIn 0.3s ease-in-out',

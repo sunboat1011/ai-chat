@@ -173,7 +173,7 @@ function handleOverlayClick(e) {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(42, 35, 24, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -185,34 +185,25 @@ function handleOverlayClick(e) {
   width: 520px;
   max-width: 90vw;
   max-height: 85vh;
-  background: var(--bg-secondary, #2f2f2f);
-  border-radius: 0.75rem;
+  background: var(--bg-secondary);
+  border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-  color: var(--text-primary, #ececec);
+  box-shadow: 0 10px 30px rgba(107, 92, 67, 0.25);
+  color: var(--text-primary);
   animation: slideUp 0.25s ease-out;
   display: flex;
   flex-direction: column;
+  border: 2px solid var(--border-color);
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .modal-header {
@@ -222,14 +213,20 @@ function handleOverlayClick(e) {
 
 .modal-header h2 {
   font-size: 1.25rem;
-  font-weight: 600;
+  font-weight: 700;
   margin: 0 0 0.25rem;
+  color: #794f27;
+}
+
+html.dark .modal-header h2 {
+  color: #e8dcc8;
 }
 
 .modal-subtitle {
   font-size: 0.8125rem;
-  color: var(--text-secondary, #a0a0a0);
+  color: var(--text-secondary);
   margin: 0;
+  font-weight: 500;
 }
 
 .role-content {
@@ -250,24 +247,29 @@ function handleOverlayClick(e) {
   align-items: center;
   gap: 0.25rem;
   padding: 0.75rem 0.4rem;
-  border: 1px solid var(--border-color, #424242);
-  border-radius: 0.5rem;
-  background: var(--bg-input, #2a2a2a);
-  color: var(--text-primary, #ececec);
+  border: 2px solid var(--border-color);
+  border-radius: 20px;
+  background: var(--bg-input);
+  color: var(--text-primary);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: center;
   position: relative;
+  font-weight: 500;
+  box-shadow: 0 2px 0 0 var(--input-shadow);
 }
 
 .preset-card:hover {
-  border-color: var(--accent-primary, #10a37f);
-  background: var(--bg-elevated, #353535);
+  border-color: var(--accent-primary);
+  background: var(--bg-elevated);
+  box-shadow: 0 3px 0 0 var(--accent-primary);
+  transform: translateY(-1px);
 }
 
 .preset-card.active {
-  border-color: var(--accent-primary, #10a37f);
-  background: rgba(16, 163, 127, 0.1);
+  border-color: var(--accent-primary);
+  background: var(--accent-light);
+  box-shadow: 0 3px 0 0 #11a89b;
 }
 
 .preset-icon {
@@ -277,13 +279,14 @@ function handleOverlayClick(e) {
 
 .preset-name {
   font-size: 0.78rem;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .preset-desc {
   font-size: 0.65rem;
-  color: var(--text-secondary, #a0a0a0);
+  color: var(--text-secondary);
   line-height: 1.2;
+  font-weight: 500;
 }
 
 .preset-badge {
@@ -291,11 +294,11 @@ function handleOverlayClick(e) {
   top: 4px;
   right: 4px;
   font-size: 0.6rem;
-  padding: 1px 4px;
-  background: var(--accent-primary, #10a37f);
-  color: white;
-  border-radius: 0.25rem;
-  font-weight: 500;
+  padding: 2px 5px;
+  background: var(--accent-primary);
+  color: #fff;
+  border-radius: 8px;
+  font-weight: 700;
 }
 
 .custom-area {
@@ -305,73 +308,75 @@ function handleOverlayClick(e) {
 .custom-area label {
   display: block;
   font-size: 0.8125rem;
-  font-weight: 500;
+  font-weight: 600;
   margin-bottom: 0.4rem;
-  color: var(--text-secondary, #a0a0a0);
+  color: var(--text-secondary);
 }
 
 .custom-textarea {
   width: 100%;
   padding: 0.65rem 0.75rem;
-  border-radius: 0.5rem;
-  border: 1px solid var(--border-color, #424242);
-  background: var(--bg-input, #2a2a2a);
-  color: var(--text-primary, #ececec);
+  border-radius: 20px;
+  border: 2.5px solid var(--border-color);
+  background: var(--bg-input);
+  color: var(--text-primary);
   font-size: 0.875rem;
   font-family: inherit;
+  font-weight: 500;
   line-height: 1.5;
   resize: vertical;
   min-height: 80px;
   outline: none;
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 3px 0 0 var(--input-shadow);
 }
 
 .custom-textarea:focus {
-  outline: none;
-  border-color: var(--accent-primary, #10a37f);
-  box-shadow: 0 0 0 2px rgba(16, 163, 127, 0.2);
+  border-color: var(--focus-yellow);
+  box-shadow: 0 3px 0 0 var(--focus-yellow-darker), 0 0 0 3px rgba(255, 204, 0, 0.15);
 }
 
 .custom-textarea::placeholder {
-  color: var(--text-muted, #6b6b6b);
+  color: #c4b89e;
+  font-weight: 400;
 }
 
 .hint {
   margin-top: 0.4rem;
   font-size: 0.75rem;
-  color: var(--text-muted, #6b6b6b);
+  color: var(--text-muted);
+  font-weight: 500;
 }
 
 /* ─── Template preview ─── */
 .template-preview {
   margin-top: 1rem;
   padding: 0.75rem;
-  border-radius: 0.5rem;
-  background: var(--bg-input, #2a2a2a);
-  border: 1px solid var(--border-color, #424242);
+  border-radius: 20px;
+  background: var(--bg-input);
+  border: 2px solid var(--border-color);
 }
 
 .template-preview label {
   display: block;
   font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--text-secondary, #a0a0a0);
+  font-weight: 600;
+  color: var(--text-secondary);
   margin-bottom: 0.35rem;
 }
 
 .template-preview-text {
   font-size: 0.8125rem;
-  color: var(--text-primary, #ececec);
+  color: var(--text-primary);
   line-height: 1.5;
   margin: 0;
+  font-weight: 500;
 }
 
 .template-messages-preview {
   margin-top: 0.75rem;
   padding-top: 0.75rem;
-  border-top: 1px solid var(--border-color, #424242);
+  border-top: 2px solid var(--border-subtle);
 }
 
 .template-msg-item {
@@ -383,24 +388,25 @@ function handleOverlayClick(e) {
 
 .template-msg-role {
   flex-shrink: 0;
-  font-weight: 600;
-  color: var(--accent-primary, #10a37f);
+  font-weight: 700;
+  color: var(--accent-primary);
   text-transform: capitalize;
   min-width: 3.5rem;
 }
 
 .template-msg-content {
-  color: var(--text-secondary, #a0a0a0);
+  color: var(--text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  font-weight: 500;
 }
 
 .modal-footer {
   padding: 1rem 1.5rem;
-  border-top: 1px solid var(--border-color, #424242);
+  border-top: 2px solid var(--border-subtle);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -410,33 +416,46 @@ function handleOverlayClick(e) {
 .skip-btn {
   padding: 0.55rem 1rem;
   background: transparent;
-  color: var(--text-secondary, #a0a0a0);
-  border: 1px solid var(--border-color, #424242);
-  border-radius: 0.5rem;
+  color: var(--text-secondary);
+  border: 2px solid var(--border-color);
+  border-radius: 50px;
   font-size: 0.8125rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: inherit;
+  letter-spacing: 0.02em;
 }
 
 .skip-btn:hover {
-  background: var(--bg-elevated, #353535);
-  color: var(--text-primary, #ececec);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
 }
 
 .confirm-btn {
   padding: 0.55rem 1.5rem;
-  background: var(--accent-primary, #10a37f);
-  color: white;
+  background: var(--accent-primary);
+  color: #fff;
   border: none;
-  border-radius: 0.5rem;
-  font-weight: 500;
+  border-radius: 50px;
+  font-weight: 700;
   font-size: 0.8125rem;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: inherit;
+  letter-spacing: 0.02em;
+  box-shadow: 0 4px 0 0 #11a89b;
 }
 
 .confirm-btn:hover:not(:disabled) {
-  background: var(--accent-hover, #0d8a6c);
+  background: var(--accent-hover);
+  box-shadow: 0 5px 0 0 #11a89b;
+  transform: translateY(-1px);
+}
+
+.confirm-btn:active:not(:disabled) {
+  box-shadow: 0 1px 0 0 #11a89b;
+  transform: translateY(2px);
 }
 
 .confirm-btn:disabled {
@@ -451,6 +470,7 @@ function handleOverlayClick(e) {
     max-width: 100vw;
     max-height: 100vh;
     border-radius: 0;
+    border: none;
   }
 
   .preset-grid {

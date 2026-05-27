@@ -17,9 +17,9 @@ describe('composables/useSettings', () => {
     it('returns the default settings when localStorage is empty', async () => {
       const { useSettings } = await freshImport()
       const { settings } = useSettings()
-      expect(settings.value.theme).toBe('dark')
+      expect(settings.value.theme).toBe('light')
       expect(settings.value.model).toBe('claude-3-sonnet')
-      expect(settings.value.accentColor).toBe('green')
+      expect(settings.value.accentColor).toBe('mint')
       expect(settings.value.temperature).toBe(1.0)
       expect(settings.value.maxTokens).toBe(2048)
       expect(settings.value.topP).toBe(1.0)
@@ -27,31 +27,31 @@ describe('composables/useSettings', () => {
       expect(settings.value.customTemplates).toEqual([])
     })
 
-    it('applies the dark theme to <html> on init', async () => {
+    it('applies the light theme to <html> on init', async () => {
       await freshImport()
-      expect(document.documentElement.classList.contains('dark')).toBe(true)
-      expect(document.documentElement.getAttribute('data-theme')).toBe('dark')
+      expect(document.documentElement.classList.contains('light')).toBe(true)
+      expect(document.documentElement.getAttribute('data-theme')).toBe('light')
     })
 
     it('loads persisted settings from localStorage', async () => {
       localStorage.setItem(
         'ai-chat-settings',
-        JSON.stringify({ theme: 'light', accentColor: 'blue', temperature: 0.5 })
+        JSON.stringify({ theme: 'dark', accentColor: 'coral', temperature: 0.5 })
       )
       const { useSettings } = await freshImport()
       const { settings } = useSettings()
-      expect(settings.value.theme).toBe('light')
-      expect(settings.value.accentColor).toBe('blue')
+      expect(settings.value.theme).toBe('dark')
+      expect(settings.value.accentColor).toBe('coral')
       expect(settings.value.temperature).toBe(0.5)
       // Untouched keys fall back to defaults
       expect(settings.value.model).toBe('claude-3-sonnet')
     })
 
-    it('applies the light theme class when persisted theme is light', async () => {
-      localStorage.setItem('ai-chat-settings', JSON.stringify({ theme: 'light' }))
+    it('applies the dark theme class when persisted theme is dark', async () => {
+      localStorage.setItem('ai-chat-settings', JSON.stringify({ theme: 'dark' }))
       await freshImport()
-      expect(document.documentElement.classList.contains('light')).toBe(true)
-      expect(document.documentElement.classList.contains('dark')).toBe(false)
+      expect(document.documentElement.classList.contains('dark')).toBe(true)
+      expect(document.documentElement.classList.contains('light')).toBe(false)
     })
 
     it('falls back to defaults on corrupted JSON', async () => {
@@ -59,7 +59,7 @@ describe('composables/useSettings', () => {
       const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
       const { useSettings } = await freshImport()
       const { settings } = useSettings()
-      expect(settings.value.theme).toBe('dark')
+      expect(settings.value.theme).toBe('light')
       expect(errorSpy).toHaveBeenCalled()
     })
   })
@@ -68,44 +68,44 @@ describe('composables/useSettings', () => {
     it('saveSettings merges into current state and writes to localStorage', async () => {
       const { useSettings } = await freshImport()
       const { saveSettings, settings } = useSettings()
-      saveSettings({ accentColor: 'purple', temperature: 0.7 })
+      saveSettings({ accentColor: 'lavender', temperature: 0.7 })
       // Allow the deep watcher to flush
       await Promise.resolve()
-      expect(settings.value.accentColor).toBe('purple')
+      expect(settings.value.accentColor).toBe('lavender')
       expect(settings.value.temperature).toBe(0.7)
       // Persist immediately via watch
       await new Promise((r) => setTimeout(r, 0))
       const stored = JSON.parse(localStorage.getItem('ai-chat-settings'))
-      expect(stored.accentColor).toBe('purple')
+      expect(stored.accentColor).toBe('lavender')
       expect(stored.temperature).toBe(0.7)
     })
 
     it('switching theme toggles the html class', async () => {
       const { useSettings } = await freshImport()
       const { saveSettings } = useSettings()
-      saveSettings({ theme: 'light' })
-      await new Promise((r) => setTimeout(r, 0))
-      expect(document.documentElement.classList.contains('light')).toBe(true)
       saveSettings({ theme: 'dark' })
       await new Promise((r) => setTimeout(r, 0))
       expect(document.documentElement.classList.contains('dark')).toBe(true)
+      saveSettings({ theme: 'light' })
+      await new Promise((r) => setTimeout(r, 0))
+      expect(document.documentElement.classList.contains('light')).toBe(true)
     })
 
     it('resetSettings restores all defaults', async () => {
       const { useSettings } = await freshImport()
       const { saveSettings, resetSettings, settings } = useSettings()
-      saveSettings({ theme: 'light', temperature: 0.2 })
+      saveSettings({ theme: 'dark', temperature: 0.2 })
       resetSettings()
-      expect(settings.value.theme).toBe('dark')
+      expect(settings.value.theme).toBe('light')
       expect(settings.value.temperature).toBe(1.0)
     })
 
     it('resetModelParams restores only model-parameter defaults', async () => {
       const { useSettings } = await freshImport()
       const { saveSettings, resetModelParams, settings } = useSettings()
-      saveSettings({ accentColor: 'red', temperature: 0.2, maxTokens: 500, topP: 0.5 })
+      saveSettings({ accentColor: 'sunshine', temperature: 0.2, maxTokens: 500, topP: 0.5 })
       resetModelParams()
-      expect(settings.value.accentColor).toBe('red')
+      expect(settings.value.accentColor).toBe('sunshine')
       expect(settings.value.temperature).toBe(1.0)
       expect(settings.value.maxTokens).toBe(2048)
       expect(settings.value.topP).toBe(1.0)

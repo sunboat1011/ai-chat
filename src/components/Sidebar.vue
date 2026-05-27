@@ -172,16 +172,14 @@ function getLastActiveAt(conv) {
 
 <style scoped>
 .sidebar {
-  width: 260px;
+  width: 220px;
   background: var(--bg-tertiary);
   display: flex;
   flex-direction: column;
   height: 100%;
   flex-shrink: 0;
-  border-right: 1px solid var(--border-subtle);
-  transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease;
+  border-right: 2px solid var(--border-subtle);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sidebar-header {
@@ -192,19 +190,35 @@ function getLastActiveAt(conv) {
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.65rem 0.75rem;
-  border: 1px solid var(--border-color);
-  border-radius: 0.5rem;
-  background: transparent;
-  color: var(--text-primary);
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0 20px;
+  height: 45px;
+  border: 2px solid transparent;
+  border-radius: 50px;
+  background: var(--bg-secondary);
+  color: #794f27;
   font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 5px 0 0 var(--btn-shadow);
+  font-family: inherit;
+}
+
+html.dark .new-chat-btn {
+  color: #e8dcc8;
 }
 
 .new-chat-btn:hover {
-  background: var(--bg-secondary);
+  box-shadow: 0 6px 0 0 var(--btn-shadow);
+  transform: translateY(-1px);
+}
+
+.new-chat-btn:active {
+  box-shadow: 0 1px 0 0 var(--btn-shadow);
+  transform: translateY(2px);
 }
 
 .sidebar-search {
@@ -217,28 +231,33 @@ function getLastActiveAt(conv) {
   left: 1.5rem;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--text-muted);
+  color: #c4b89e;
   pointer-events: none;
 }
 
 .search-input {
   width: 100%;
   padding: 0.55rem 0.75rem 0.55rem 2.25rem;
-  border: 1px solid var(--border-color);
-  border-radius: 0.5rem;
-  background: transparent;
+  border: 2.5px solid var(--border-color);
+  border-radius: 50px;
+  background: var(--bg-input);
   color: var(--text-primary);
   font-size: 0.8125rem;
+  font-family: inherit;
+  font-weight: 500;
   outline: none;
-  transition: border-color 0.2s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 3px 0 0 var(--input-shadow);
 }
 
 .search-input::placeholder {
-  color: var(--text-muted);
+  color: #c4b89e;
+  font-weight: 400;
 }
 
 .search-input:focus {
-  border-color: var(--accent-primary);
+  border-color: var(--focus-yellow);
+  box-shadow: 0 3px 0 0 var(--focus-yellow-darker), 0 0 0 3px rgba(255, 204, 0, 0.15);
 }
 
 .conversation-list {
@@ -251,19 +270,22 @@ function getLastActiveAt(conv) {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  padding: 0.6rem 0.75rem;
-  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 12px;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: all 0.15s;
   margin-bottom: 2px;
+  color: #8a7b66;
 }
 
 .conversation-item:hover {
-  background: var(--bg-secondary);
+  background: var(--sidebar-hover);
+  color: var(--text-primary);
 }
 
 .conversation-item.active {
-  background: var(--bg-elevated);
+  background: var(--sidebar-selected);
+  color: #fff;
 }
 
 .conv-info {
@@ -276,15 +298,15 @@ function getLastActiveAt(conv) {
 
 .conv-title {
   font-size: 0.8125rem;
+  font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: var(--text-primary);
 }
 
 .conv-time {
   font-size: 0.6875rem;
-  color: var(--text-muted);
+  opacity: 0.8;
 }
 
 .delete-btn {
@@ -292,14 +314,14 @@ function getLastActiveAt(conv) {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   margin-top: 0.15rem;
   border: none;
   background: transparent;
-  color: var(--text-secondary);
+  color: inherit;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 8px;
   transition: all 0.15s;
 }
 
@@ -308,20 +330,20 @@ function getLastActiveAt(conv) {
 }
 
 .delete-btn:hover {
-  background: var(--bg-elevated);
-  color: #ef4444;
+  background: rgba(224, 90, 90, 0.15);
+  color: #e05a5a;
 }
 
 .empty-state {
   padding: 2rem 1rem;
   text-align: center;
-  color: var(--text-muted);
+  color: #c4b89e;
   font-size: 0.8125rem;
 }
 
 .sidebar-footer {
   padding: 0.75rem;
-  border-top: 1px solid var(--border-subtle);
+  border-top: 2px solid var(--border-subtle);
 }
 
 .footer-btn {
@@ -329,18 +351,20 @@ function getLastActiveAt(conv) {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  padding: 0.6rem 0.75rem;
+  padding: 0.5rem 0.75rem;
   border: none;
   background: transparent;
-  color: var(--text-secondary);
+  color: #8a7b66;
   font-size: 0.8125rem;
+  font-weight: 600;
   cursor: pointer;
-  border-radius: 0.5rem;
+  border-radius: 12px;
   transition: all 0.15s;
+  font-family: inherit;
 }
 
 .footer-btn:hover {
-  background: var(--bg-secondary);
+  background: var(--sidebar-hover);
   color: var(--text-primary);
 }
 
@@ -354,8 +378,8 @@ function getLastActiveAt(conv) {
     z-index: 50;
     transform: translateX(-100%);
     transition: transform 0.25s ease;
-    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.3);
-    width: 280px;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+    width: 240px;
   }
 
   .sidebar.mobile-open {
@@ -377,15 +401,15 @@ function getLastActiveAt(conv) {
     height: 36px;
     border: none;
     background: transparent;
-    color: var(--text-secondary);
+    color: #8a7b66;
     cursor: pointer;
-    border-radius: 0.375rem;
+    border-radius: 12px;
     flex-shrink: 0;
     transition: all 0.15s;
   }
 
   .sidebar-close-btn:hover {
-    background: var(--bg-secondary);
+    background: var(--sidebar-hover);
     color: var(--text-primary);
   }
 
@@ -397,6 +421,7 @@ function getLastActiveAt(conv) {
     opacity: 1;
     width: 36px;
     height: 36px;
+    border-radius: 8px;
   }
 }
 </style>

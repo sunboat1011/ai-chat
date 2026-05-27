@@ -280,7 +280,7 @@
           height="48"
           viewBox="0 0 24 24"
           fill="none"
-          stroke="#10a37f"
+          stroke="#19c8b9"
           stroke-width="1.5"
           stroke-linecap="round"
           stroke-linejoin="round"
@@ -646,7 +646,7 @@ function scrollToBottom() {
   background: var(--bg-primary);
   min-width: 0;
   position: relative;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ─── Search Toolbar ─── */
@@ -659,10 +659,10 @@ function scrollToBottom() {
   align-items: center;
   gap: 0.35rem;
   padding: 0.35rem 0.5rem;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-color);
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-color);
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(107, 92, 67, 0.15);
   animation: slideInFromTop 0.18s ease-out;
 }
 
@@ -674,29 +674,34 @@ function scrollToBottom() {
 
 .search-input-icon {
   position: absolute;
-  left: 0.5rem;
-  color: var(--text-muted);
+  left: 0.75rem;
+  color: #c4b89e;
   pointer-events: none;
 }
 
 .search-input {
   width: 14rem;
-  padding: 0.4rem 0.6rem 0.4rem 1.85rem;
-  border: 1px solid var(--border-color);
-  border-radius: 0.375rem;
+  padding: 0.4rem 0.75rem 0.4rem 2rem;
+  border: 2.5px solid var(--border-color);
+  border-radius: 50px;
   background: var(--bg-input);
   color: var(--text-primary);
   font-size: 0.8125rem;
+  font-family: inherit;
+  font-weight: 500;
   outline: none;
-  transition: border-color 0.15s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 0 0 var(--input-shadow);
 }
 
 .search-input::placeholder {
-  color: var(--text-muted);
+  color: #c4b89e;
+  font-weight: 400;
 }
 
 .search-input:focus {
-  border-color: var(--accent-primary);
+  border-color: var(--focus-yellow);
+  box-shadow: 0 2px 0 0 var(--focus-yellow-darker), 0 0 0 3px rgba(255, 204, 0, 0.15);
 }
 
 .match-count {
@@ -705,10 +710,11 @@ function scrollToBottom() {
   font-size: 0.75rem;
   color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
+  font-weight: 600;
 }
 
 .match-count.no-match {
-  color: #ef4444;
+  color: #e05a5a;
 }
 
 .search-nav-btn,
@@ -716,20 +722,20 @@ function scrollToBottom() {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   padding: 0;
   border: none;
   background: transparent;
-  color: var(--text-secondary);
+  color: #c4b89e;
   cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.15s;
+  border-radius: 50%;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .search-nav-btn:hover:not(:disabled),
 .search-close-btn:hover {
-  background: var(--bg-secondary);
+  background: var(--bg-elevated);
   color: var(--text-primary);
 }
 
@@ -746,21 +752,29 @@ function scrollToBottom() {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border: 1px solid var(--border-subtle);
+  width: 36px;
+  height: 36px;
+  border: 2px solid var(--border-color);
   background: var(--bg-secondary);
   color: var(--text-secondary);
-  border-radius: 0.375rem;
+  border-radius: 50%;
   cursor: pointer;
-  opacity: 0.7;
-  transition: all 0.15s;
+  opacity: 0.8;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 3px 0 0 var(--btn-shadow);
 }
 
 .search-toggle-btn:hover {
   background: var(--bg-elevated);
   color: var(--text-primary);
   opacity: 1;
+  box-shadow: 0 4px 0 0 var(--btn-shadow);
+  transform: translateY(-1px);
+}
+
+.search-toggle-btn:active {
+  box-shadow: 0 1px 0 0 var(--btn-shadow);
+  transform: translateY(2px);
 }
 
 @keyframes slideInFromTop {
@@ -785,21 +799,23 @@ function scrollToBottom() {
 }
 
 .welcome-logo {
-  width: 72px;
-  height: 72px;
+  width: 80px;
+  height: 80px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid var(--border-subtle);
-  border-radius: 1rem;
-  background: var(--bg-code);
+  border: 2px solid var(--accent-primary);
+  border-radius: 50%;
+  background: var(--bg-secondary);
+  box-shadow: 0 4px 0 0 var(--btn-shadow);
 }
 
 .welcome-title {
   font-size: 1.5rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-primary);
   text-align: center;
+  letter-spacing: 0.02em;
 }
 
 .welcome-sub {
@@ -807,6 +823,7 @@ function scrollToBottom() {
   color: var(--text-secondary);
   text-align: center;
   max-width: 36rem;
+  font-weight: 500;
 }
 
 .messages-container {
@@ -829,20 +846,31 @@ function scrollToBottom() {
   width: 100%;
   max-width: 14rem;
   margin: 0.75rem auto 0.25rem;
-  padding: 0.5rem 0.9rem;
-  border: 1px solid var(--border-subtle);
+  padding: 0.5rem 1.2rem;
+  border: 2px solid var(--border-color);
   background: var(--bg-secondary);
   color: var(--text-secondary);
   font-size: 0.8125rem;
-  border-radius: 0.5rem;
+  font-weight: 600;
+  border-radius: 50px;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 0 0 var(--btn-shadow);
+  font-family: inherit;
+  letter-spacing: 0.02em;
 }
 
 .load-earlier-btn:hover {
   background: var(--bg-elevated);
   color: var(--text-primary);
-  border-color: var(--border-color);
+  border-color: #a89878;
+  box-shadow: 0 5px 0 0 var(--btn-shadow);
+  transform: translateY(-1px);
+}
+
+.load-earlier-btn:active {
+  box-shadow: 0 1px 0 0 var(--btn-shadow);
+  transform: translateY(2px);
 }
 
 .load-earlier-btn svg {
@@ -858,7 +886,7 @@ function scrollToBottom() {
   gap: 0.75rem;
   padding: 0.5rem 1rem;
   background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 2px solid var(--border-subtle);
 }
 
 .system-prompt-banner {
@@ -875,32 +903,33 @@ function scrollToBottom() {
 }
 
 .model-selector {
-  padding: 0.3rem 1.8rem 0.3rem 0.6rem;
-  border-radius: 0.375rem;
-  border: 1px solid var(--border-subtle);
+  padding: 0.35rem 1.8rem 0.35rem 0.75rem;
+  border-radius: 50px;
+  border: 2px solid var(--border-color);
   background: var(--bg-input);
   color: var(--text-secondary);
   font-size: 0.75rem;
   font-family: inherit;
+  font-weight: 600;
   cursor: pointer;
   outline: none;
-  transition:
-    border-color 0.15s,
-    color 0.15s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   appearance: none;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23c4b89e' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
   background-repeat: no-repeat;
-  background-position: right 0.45rem center;
+  background-position: right 0.55rem center;
   max-width: 12rem;
+  box-shadow: 0 2px 0 0 var(--input-shadow);
 }
 
 .model-selector:hover {
-  border-color: var(--border-color);
+  border-color: #a89878;
   color: var(--text-primary);
 }
 
 .model-selector:focus {
-  border-color: var(--accent-primary);
+  border-color: var(--focus-yellow);
+  box-shadow: 0 2px 0 0 var(--focus-yellow-darker), 0 0 0 3px rgba(255, 204, 0, 0.15);
 }
 
 .model-selector option,
@@ -916,6 +945,7 @@ function scrollToBottom() {
   gap: 0.4rem;
   font-size: 0.75rem;
   color: var(--text-secondary);
+  font-weight: 500;
 }
 
 .system-prompt-content svg {
@@ -924,7 +954,7 @@ function scrollToBottom() {
 }
 
 .system-prompt-label {
-  font-weight: 500;
+  font-weight: 600;
   flex-shrink: 0;
 }
 
@@ -941,14 +971,14 @@ function scrollToBottom() {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
   border: none;
   background: transparent;
-  color: var(--text-muted);
+  color: #c4b89e;
   cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.15s;
+  border-radius: 50%;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .system-prompt-edit-btn:hover {
@@ -963,7 +993,7 @@ function scrollToBottom() {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(42, 35, 24, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -975,50 +1005,58 @@ function scrollToBottom() {
   width: 480px;
   max-width: 90vw;
   background: var(--bg-secondary);
-  border-radius: 0.75rem;
-  padding: 1.25rem 1.5rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 10px 30px rgba(107, 92, 67, 0.25);
   color: var(--text-primary);
   animation: slideUp 0.25s ease-out;
+  border: 2px solid var(--border-color);
 }
 
 .sp-edit-header h3 {
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 1.1rem;
+  font-weight: 700;
   margin: 0 0 0.25rem;
+  color: #794f27;
+}
+
+html.dark .sp-edit-header h3 {
+  color: #e8dcc8;
 }
 
 .sp-edit-hint {
   font-size: 0.75rem;
   color: var(--text-secondary);
   margin: 0 0 0.75rem;
+  font-weight: 500;
 }
 
 .sp-edit-textarea {
   width: 100%;
   padding: 0.65rem 0.75rem;
-  border-radius: 0.5rem;
-  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  border: 2.5px solid var(--border-color);
   background: var(--bg-input);
   color: var(--text-primary);
   font-size: 0.875rem;
   font-family: inherit;
+  font-weight: 500;
   line-height: 1.5;
   resize: vertical;
   min-height: 80px;
   outline: none;
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 3px 0 0 var(--input-shadow);
 }
 
 .sp-edit-textarea:focus {
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 2px rgba(16, 163, 127, 0.2);
+  border-color: var(--focus-yellow);
+  box-shadow: 0 3px 0 0 var(--focus-yellow-darker), 0 0 0 3px rgba(255, 204, 0, 0.15);
 }
 
 .sp-edit-textarea::placeholder {
-  color: var(--text-muted);
+  color: #c4b89e;
+  font-weight: 400;
 }
 
 .sp-edit-actions {
@@ -1029,13 +1067,15 @@ function scrollToBottom() {
 }
 
 .sp-edit-btn {
-  padding: 0.45rem 1rem;
-  border-radius: 0.375rem;
+  padding: 0.5rem 1.1rem;
+  border-radius: 50px;
   font-size: 0.8125rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s;
-  border: 1px solid transparent;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid transparent;
+  font-family: inherit;
+  letter-spacing: 0.02em;
 }
 
 .sp-edit-cancel {
@@ -1051,13 +1091,21 @@ function scrollToBottom() {
 
 .sp-edit-save {
   background: var(--accent-primary);
-  color: white;
+  color: #fff;
   border-color: var(--accent-primary);
+  box-shadow: 0 4px 0 0 #11a89b;
 }
 
 .sp-edit-save:hover {
   background: var(--accent-hover);
   border-color: var(--accent-hover);
+  box-shadow: 0 5px 0 0 #11a89b;
+  transform: translateY(-1px);
+}
+
+.sp-edit-save:active {
+  box-shadow: 0 1px 0 0 #11a89b;
+  transform: translateY(2px);
 }
 
 /* ─── Mobile Responsive ─── */
@@ -1066,13 +1114,13 @@ function scrollToBottom() {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     border: none;
     background: transparent;
     color: var(--text-secondary);
     cursor: pointer;
-    border-radius: 0.375rem;
+    border-radius: 12px;
     flex-shrink: 0;
     margin-right: 0.25rem;
     transition: all 0.15s;
@@ -1107,6 +1155,7 @@ function scrollToBottom() {
     right: 0.5rem;
     gap: 0.25rem;
     padding: 0.35rem 0.4rem;
+    border-radius: 16px;
   }
 
   .search-input {
@@ -1118,8 +1167,8 @@ function scrollToBottom() {
   .search-toggle-btn {
     top: 0.5rem;
     right: 0.5rem;
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
   }
 
   .welcome-title {
@@ -1138,6 +1187,7 @@ function scrollToBottom() {
   .sp-edit-modal {
     max-width: calc(100vw - 2rem);
     padding: 1rem;
+    border-radius: 16px;
   }
 
   .sp-edit-actions {

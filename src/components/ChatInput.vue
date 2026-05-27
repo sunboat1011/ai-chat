@@ -132,17 +132,16 @@ defineExpose({ focus })
   display: flex;
   align-items: flex-end;
   background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 0.75rem;
-  padding: 0.75rem;
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
+  border: 2.5px solid var(--border-color);
+  border-radius: 50px;
+  padding: 0.75rem 1rem;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 3px 0 0 var(--input-shadow);
 }
 
 .input-wrapper:focus-within {
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 2px rgba(16, 163, 127, 0.15);
+  border-color: var(--focus-yellow);
+  box-shadow: 0 3px 0 0 var(--focus-yellow-darker), 0 0 0 3px rgba(255, 204, 0, 0.15);
 }
 
 .chat-textarea {
@@ -153,6 +152,7 @@ defineExpose({ focus })
   color: var(--text-primary);
   font-size: 0.9375rem;
   font-family: inherit;
+  font-weight: 500;
   line-height: 1.5;
   resize: none;
   max-height: 200px;
@@ -161,7 +161,8 @@ defineExpose({ focus })
 }
 
 .chat-textarea::placeholder {
-  color: var(--text-muted);
+  color: #c4b89e;
+  font-weight: 400;
 }
 
 .chat-textarea:disabled {
@@ -172,33 +173,49 @@ defineExpose({ focus })
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border: none;
-  border-radius: 0.5rem;
+  border-radius: 50%;
   background: transparent;
-  color: var(--text-muted);
+  color: #c4b89e;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
 }
 
 .send-btn.active {
   background: var(--accent-primary);
-  color: white;
+  color: #fff;
+  box-shadow: 0 3px 0 0 #11a89b;
 }
 
 .send-btn.active:hover {
   background: var(--accent-hover);
+  box-shadow: 0 4px 0 0 #11a89b;
+  transform: translateY(-1px);
+}
+
+.send-btn.active:active {
+  box-shadow: 0 1px 0 0 #11a89b;
+  transform: translateY(2px);
 }
 
 .send-btn.streaming {
-  background: #ef4444;
-  color: white;
+  background: #e05a5a;
+  color: #fff;
+  box-shadow: 0 3px 0 0 #c94444;
 }
 
 .send-btn.streaming:hover {
-  background: #dc2626;
+  background: #e87878;
+  box-shadow: 0 4px 0 0 #c94444;
+  transform: translateY(-1px);
+}
+
+.send-btn.streaming:active {
+  box-shadow: 0 1px 0 0 #c94444;
+  transform: translateY(2px);
 }
 
 .send-btn:disabled {
@@ -208,7 +225,7 @@ defineExpose({ focus })
 .input-hint {
   text-align: center;
   font-size: 0.6875rem;
-  color: var(--text-muted);
+  color: #c4b89e;
   margin-top: 0.5rem;
 }
 
@@ -217,7 +234,7 @@ defineExpose({ focus })
   padding: 0.1rem 0.35rem;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  border-radius: 3px;
+  border-radius: 8px;
   font-size: 0.625rem;
   font-family: inherit;
   color: var(--text-secondary);
@@ -230,7 +247,7 @@ defineExpose({ focus })
   }
 
   .input-wrapper {
-    padding: 0.5rem 0.625rem;
+    padding: 0.5rem 0.75rem;
   }
 
   .chat-textarea {
@@ -238,8 +255,8 @@ defineExpose({ focus })
   }
 
   .send-btn {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
   }
 
   .input-hint {
