@@ -1,63 +1,81 @@
 <template>
   <div class="app-layout">
-    <Sidebar
-      :conversations="conversations"
-      :active-conversation="activeConversation"
-      :mobile-open="sidebarOpen"
-      @select="handleSelectConversation"
-      @delete="handleDeleteConversation"
-      @new-chat="handleNewChat"
-      @open-settings="openSettings"
-      @close-sidebar="closeSidebar"
-    />
-
-    <div v-if="isMobile && sidebarOpen" class="sidebar-overlay" @click="closeSidebar"></div>
-
-    <ErrorBoundary>
-      <router-view
-        :messages="messages"
-        :is-loading="isLoading"
+    <template v-if="isLoggedIn">
+      <Sidebar
+        :conversations="conversations"
         :active-conversation="activeConversation"
-        :system-prompt="activeConversation ? getConversationSystemPrompt(activeConversation) : ''"
-        @send="handleSendMessage"
-        @cancel="handleCancelStreaming"
-        @edit="handleEditMessage"
-        @delete="handleDeleteMessage"
-        @regenerate="handleRegenerateMessage"
-        @branch="handleBranchMessage"
-        @update-system-prompt="handleUpdateSystemPrompt"
-        @toggle-sidebar="toggleSidebar"
+        :mobile-open="sidebarOpen"
+        :current-user="currentUser"
+        @select="handleSelectConversation"
+        @delete="handleDeleteConversation"
+        @new-chat="handleNewChat"
+        @open-settings="openSettings"
+        @close-sidebar="closeSidebar"
+        @logout="handleLogout"
       />
-    </ErrorBoundary>
 
-    <!-- Global error/notification toast stack -->
-    <ErrorToast />
+      <div v-if="isMobile && sidebarOpen" class="sidebar-overlay" @click="closeSidebar"></div>
 
-    <!-- Undo toast -->
-    <div v-if="lastDeleted" class="undo-toast">
-      <span>{{ $t('app.undoToast') }}</span>
-      <button class="undo-btn" :aria-label="$t('app.undo')" @click="handleUndoDelete">
-        {{ $t('app.undo') }}
-      </button>
-    </div>
+      <ErrorBoundary>
+        <router-view
+          :messages="messages"
+          :is-loading="isLoading"
+          :active-conversation="activeConversation"
+          :system-prompt="activeConversation ? getConversationSystemPrompt(activeConversation) : ''"
+          @send="handleSendMessage"
+          @cancel="handleCancelStreaming"
+          @edit="handleEditMessage"
+          @delete="handleDeleteMessage"
+          @regenerate="handleRegenerateMessage"
+          @branch="handleBranchMessage"
+          @update-system-prompt="handleUpdateSystemPrompt"
+          @toggle-sidebar="toggleSidebar"
+        />
+      </ErrorBoundary>
 
-    <RoleSelectModal v-if="isRoleSelectOpen" @confirm="handleRoleSelect" @skip="handleRoleSkip" />
+      <!-- Global error/notification toast stack -->
+      <ErrorToast />
 
-    <SettingsModal v-if="isSettingsOpen" @close="closeSettings" />
+      <!-- Undo toast -->
+      <div v-if="lastDeleted" class="undo-toast">
+        <span>{{ $t('app.undoToast') }}</span>
+        <button class="undo-btn" :aria-label="$t('app.undo')" @click="handleUndoDelete">
+          {{ $t('app.undo') }}
+        </button>
+      </div>
+
+      <RoleSelectModal v-if="isRoleSelectOpen" @confirm="handleRoleSelect" @skip="handleRoleSkip" />
+
+      <SettingsModal v-if="isSettingsOpen" @close="closeSettings" />
+
+      <ConfirmModal
+        v-if="logoutConfirmOpen"
+        :visible="true"
+        :title="$t('auth.logoutConfirmTitle')"
+        :message="$t('auth.logoutConfirmMessage')"
+        :confirm-text="$t('auth.logoutConfirmBtn')"
+        :cancel-text="$t('message.cancel')"
+        @confirm="doLogout"
+        @cancel="logoutConfirmOpen = false"
+      />
+    </template>
+
+    <router-view v-else />
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { onMounted, onBeforeUnmount } from 'vue'
+import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import Sidebar from '@/components/Sidebar.vue'
 import SettingsModal from '@/components/SettingsModal.vue'
 import RoleSelectModal from '@/components/RoleSelectModal.vue'
 import ErrorBoundary from '@/components/ErrorBoundary.vue'
 import ErrorToast from '@/components/ErrorToast.vue'
+import ConfirmModal from '@/components/ConfirmModal.vue'
 import { useChat } from '@/composables/useChat'
 import { track } from '@/composables/useAnalytics'
+import { getToken, removeToken, getUser, isTokenExpired } from '@/utils/token.js'
 
 const router = useRouter()
 const isSettingsOpen = ref(false)
@@ -65,6 +83,19 @@ const isRoleSelectOpen = ref(false)
 const pendingNewChat = ref(false)
 const sidebarOpen = ref(false)
 const isMobile = ref(window.innerWidth < 768)
+const logoutConfirmOpen = ref(false)
+const hasInited = ref(false)
+
+// Use ref instead of computed because localStorage is not reactive.
+// The value is refreshed on mount and on every route change.
+const isLoggedIn = ref(false)
+const currentUser = ref(getUser())
+
+function checkAuth() {
+  const token = getToken()
+  isLoggedIn.value = !!token && !isTokenExpired()
+  currentUser.value = getUser()
+}
 
 const {
   conversations,
@@ -89,9 +120,25 @@ const {
 } = useChat()
 
 onMounted(() => {
-  init()
+  checkAuth()
+  if (isLoggedIn.value && !hasInited.value) {
+    init()
+    hasInited.value = true
+  }
   window.addEventListener('resize', checkMobile)
 })
+
+// Re-check auth state on every route change (e.g. after login/logout)
+watch(
+  () => router.currentRoute.value.path,
+  () => {
+    checkAuth()
+    if (isLoggedIn.value && !hasInited.value) {
+      init()
+      hasInited.value = true
+    }
+  }
+)
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', checkMobile)
@@ -202,6 +249,18 @@ function openSettings() {
 
 function closeSettings() {
   isSettingsOpen.value = false
+}
+
+function handleLogout() {
+  logoutConfirmOpen.value = true
+}
+
+function doLogout() {
+  logoutConfirmOpen.value = false
+  removeToken()
+  checkAuth()
+  hasInited.value = false
+  router.push('/login')
 }
 </script>
 

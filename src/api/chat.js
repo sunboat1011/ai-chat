@@ -1,3 +1,12 @@
+/**
+ * TODO-025: Replace native fetch calls below with `request()` from `@/api/request.js`
+ * once authentication is wired up. All non-SSE JSON endpoints should use the
+ * unified request interceptor (auto token injection + response unwrapping).
+ *
+ * SSE streaming (`streamChat`) will keep using raw fetch because it reads
+ * `response.body.getReader()`; it will manually attach the Authorization header.
+ */
+
 import { t } from '@/composables/useText'
 import { showError, showWarning } from '@/composables/useErrorToast'
 import { trackError } from '@/composables/useAnalytics'

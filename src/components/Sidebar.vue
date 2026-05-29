@@ -107,6 +107,22 @@
     </nav>
 
     <div class="sidebar-footer">
+      <div v-if="currentUser" class="user-info">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
+        </svg>
+        <span class="user-name">{{ currentUser.username }}</span>
+      </div>
       <button
         class="footer-btn"
         :aria-label="$t('sidebar.settings')"
@@ -134,6 +150,27 @@
         </svg>
         {{ $t('sidebar.settings') }}
       </button>
+      <button
+        class="footer-btn logout-btn"
+        :aria-label="$t('auth.logout')"
+        @click="$emit('logout')"
+      >
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+          <polyline points="16 17 21 12 16 7" />
+          <line x1="21" y1="12" x2="9" y2="12" />
+        </svg>
+        {{ $t('auth.logout') }}
+      </button>
     </div>
   </aside>
 </template>
@@ -147,9 +184,18 @@ const props = defineProps({
   conversations: { type: Array, required: true },
   activeConversation: { type: String, default: null },
   mobileOpen: { type: Boolean, default: false },
+  currentUser: { type: Object, default: null },
 })
 
-const emit = defineEmits(['select', 'delete', 'new-chat', 'toggle-theme', 'close-sidebar'])
+const emit = defineEmits([
+  'select',
+  'delete',
+  'new-chat',
+  'toggle-theme',
+  'close-sidebar',
+  'open-settings',
+  'logout',
+])
 
 const searchQuery = ref('')
 const { now } = useNow()
@@ -366,6 +412,28 @@ html.dark .new-chat-btn {
 .footer-btn:hover {
   background: var(--sidebar-hover);
   color: var(--text-primary);
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  margin-bottom: 0.25rem;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.user-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.logout-btn:hover {
+  color: #e05a5a;
+  background: rgba(224, 90, 90, 0.1);
 }
 
 /* ─── Mobile Responsive ─── */
