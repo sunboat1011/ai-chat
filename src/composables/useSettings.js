@@ -189,15 +189,6 @@ function encodeApiKey(key) {
   }
 }
 
-function decodeApiKey(encoded) {
-  if (!encoded) return ''
-  try {
-    return atob(encoded)
-  } catch {
-    return ''
-  }
-}
-
 // ─── Custom model helpers ───
 function getAllModelOptions(customModels = []) {
   const builtins = BUILT_IN_MODELS.map((m) => ({ ...m, builtIn: true }))
@@ -363,15 +354,13 @@ export function useSettings() {
     const custom = getCustomModel(modelId, settings.value.customModels)
     if (custom) {
       return {
-        model: custom.modelId,
+        modelId: custom.modelId,
         apiBaseUrl: custom.apiUrl || settings.value.apiBaseUrl,
-        apiKey: decodeApiKey(custom.apiKey),
       }
     }
     return {
-      model: modelId,
+      modelId,
       apiBaseUrl: settings.value.apiBaseUrl,
-      apiKey: '',
     }
   }
 

@@ -1,12 +1,15 @@
 /**
- * TODO-025: Replace native fetch calls below with `request()` from `@/api/request.js`
- * once authentication is wired up. All non-SSE JSON endpoints should use the
- * unified request interceptor (auto token injection + response unwrapping).
+ * API layer — chat and conversation endpoints.
  *
- * SSE streaming (`streamChat`) will keep using raw fetch because it reads
- * `response.body.getReader()`; it will manually attach the Authorization header.
+ * Non-SSE JSON calls use `request()` from `@/api/request.js` for automatic
+ * token injection + response unwrapping.
+ *
+ * SSE streaming (`streamChat`) keeps using raw `fetch` because it reads
+ * `response.body.getReader()`; it manually attaches the Authorization header.
  */
 
+import { request } from './request.js'
+import { getToken } from '@/utils/token.js'
 import { t } from '@/composables/useText'
 import { showError, showWarning } from '@/composables/useErrorToast'
 import { trackError } from '@/composables/useAnalytics'
@@ -15,11 +18,9 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api'
 
 /**
  * Translate a fetch / HTTP error into a user-facing message.
- * Network errors (TypeError, AbortError-not-included) and HTTP non-2xx are normalized here.
+ * Used only for the raw-fetch SSE path (`streamChat`).
  */
 function describeError(err, context = {}) {
-  // Network-level failure: fetch throws TypeError on connection refusal,
-  // DNS failure, CORS preflight failure, etc.
   if (err instanceof TypeError) {
     const msg = String(err.message || '').toLowerCase()
     if (msg.includes('cors')) {
@@ -28,7 +29,6 @@ function describeError(err, context = {}) {
     return t('errors.networkFailed')
   }
 
-  // HTTP errors carry a `status` property attached below.
   const status = context.status || err.status
   if (status === 401) return t('errors.unauthorized')
   if (status === 403) return t('errors.forbidden')
@@ -42,49 +42,26 @@ function describeError(err, context = {}) {
 }
 
 /**
- * Wrap a fetch call so that non-2xx responses throw with a `.status` property
- * and the result can be uniformly handled by callers.
- */
-async function fetchWithStatus(url, init) {
-  let res
-  try {
-    res = await fetch(url, init)
-  } catch (err) {
-    if (err.name === 'AbortError') throw err
-    // Re-throw network errors with normalized shape
-    const wrapped = new Error(describeError(err))
-    wrapped.cause = err
-    wrapped.isNetworkError = true
-    throw wrapped
-  }
-  if (!res.ok) {
-    const errText = await res.text().catch(() => '')
-    const wrapped = new Error(`HTTP ${res.status}: ${errText}`)
-    wrapped.status = res.status
-    wrapped.friendlyMessage = describeError(wrapped, { status: res.status })
-    throw wrapped
-  }
-  return res
-}
-
-/**
  * Send a message to the AI backend with SSE streaming.
  *
  * @param {Object}   options
- * @param {string}   options.message    - User message content
- * @param {string}   options.conversationId - Existing conversation ID (optional for new chat)
- * @param {Function} options.onChunk    - Called with each text chunk as it arrives
- * @param {Function} options.onDone     - Called when the stream finishes (receives full response)
- * @param {Function} options.onError    - Called on network / parse error
- * @returns {AbortController} - Call .abort() on this to cancel the request
+ * @param {string}   options.message         - User message content
+ * @param {string}   options.conversationId  - Existing conversation ID
+ * @param {string}   options.modelId         - Model ID to use
+ * @param {string}   [options.systemPrompt]  - System prompt override
+ * @param {number}   [options.temperature]   - Sampling temperature
+ * @param {number}   [options.maxTokens]     - Max tokens to generate
+ * @param {number}   [options.topP]          - Top-P sampling
+ * @param {Function} [options.onChunk]       - Called with each text chunk
+ * @param {Function} [options.onDone]        - Called when stream finishes
+ * @param {Function} [options.onError]       - Called on network / parse error
+ * @returns {AbortController} - Call .abort() to cancel the request
  */
 export function streamChat({
-  apiBaseUrl,
-  apiKey,
-  model,
   message,
-  systemPrompt,
   conversationId,
+  modelId,
+  systemPrompt,
   temperature,
   maxTokens,
   topP,
@@ -92,10 +69,9 @@ export function streamChat({
   onDone,
   onError,
 }) {
-  const API_BASE = apiBaseUrl || import.meta.env.VITE_API_BASE_URL || '/api'
   const controller = new AbortController()
 
-  const body = { message, conversationId, model }
+  const body = { conversationId, message, modelId }
   if (systemPrompt && systemPrompt.trim()) {
     body.systemPrompt = systemPrompt.trim()
   }
@@ -109,14 +85,18 @@ export function streamChat({
     body.topP = topP
   }
 
-  const headers = { 'Content-Type': 'application/json' }
-  if (apiKey) {
-    headers['Authorization'] = `Bearer ${apiKey}`
+  const headers = {
+    'Content-Type': 'application/json',
+    Accept: 'text/event-stream',
+  }
+  const token = getToken()
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
   }
 
   let receivedAny = false
 
-  fetch(`${API_BASE}/chat`, {
+  fetch(`${API_BASE}/chat/stream`, {
     method: 'POST',
     headers,
     body: JSON.stringify(body),
@@ -210,86 +190,72 @@ export function streamChat({
 }
 
 /**
- * Fetch conversation history from the backend.
+ * List conversations (paginated).
+ *
+ * @param {number} [page=0] - Page number (0-based)
+ * @param {number} [size=20] - Page size
+ * @returns {Promise<{content: Array, page: number, size: number, totalElements: number, totalPages: number, hasNext: boolean}>}
  */
-export async function fetchConversation(conversationId) {
-  try {
-    const res = await fetchWithStatus(`${API_BASE}/conversation/${conversationId}`)
-    return await res.json()
-  } catch (err) {
-    if (err.name !== 'AbortError') {
-      showError(err.friendlyMessage || err.message || t('errors.unknownError'))
-    }
-    throw err
-  }
-}
-
-/**
- * List all conversations.
- */
-export async function fetchConversations() {
-  try {
-    const res = await fetchWithStatus(`${API_BASE}/conversations`)
-    return await res.json()
-  } catch (err) {
-    if (err.name !== 'AbortError') {
-      showError(err.friendlyMessage || err.message || t('errors.unknownError'))
-    }
-    throw err
-  }
+export async function fetchConversations(page = 0, size = 20) {
+  return request(`/conversations?page=${page}&size=${size}`)
 }
 
 /**
  * Create a new conversation.
+ *
+ * @param {Object} params
+ * @param {string} [params.title]        - Conversation title
+ * @param {string} [params.systemPrompt] - System prompt
+ * @param {string} [params.modelId]      - Model ID
+ * @param {number} [params.temperature]  - Temperature
+ * @param {number} [params.maxTokens]    - Max tokens
+ * @param {number} [params.topP]         - Top-P
+ * @returns {Promise<Object>} ConversationResponse
  */
-export async function createConversation(title = 'New Chat') {
-  try {
-    const res = await fetchWithStatus(`${API_BASE}/conversations`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title }),
-    })
-    return await res.json()
-  } catch (err) {
-    if (err.name !== 'AbortError') {
-      showError(err.friendlyMessage || err.message || t('errors.unknownError'))
-    }
-    throw err
-  }
+export async function createConversation(params = {}) {
+  const body = {}
+  if (params.title !== undefined) body.title = params.title
+  if (params.systemPrompt !== undefined) body.systemPrompt = params.systemPrompt
+  if (params.modelId !== undefined) body.modelId = params.modelId
+  if (params.temperature !== undefined) body.temperature = params.temperature
+  if (params.maxTokens !== undefined) body.maxTokens = params.maxTokens
+  if (params.topP !== undefined) body.topP = params.topP
+
+  return request('/conversations', { method: 'POST', body })
+}
+
+/**
+ * Get a single conversation with its messages.
+ *
+ * @param {string} conversationId
+ * @param {number} [page=0] - Message page number
+ * @param {number} [size=50] - Messages per page
+ * @returns {Promise<{conversation: Object, messages: Object}>}
+ */
+export async function fetchConversation(conversationId, page = 0, size = 50) {
+  return request(`/conversations/${conversationId}?page=${page}&size=${size}`)
+}
+
+/**
+ * Rename (update) a conversation.
+ *
+ * @param {string} conversationId
+ * @param {string} title - New title
+ * @returns {Promise<Object>} Updated ConversationResponse
+ */
+export async function renameConversation(conversationId, title) {
+  return request(`/conversations/${conversationId}`, {
+    method: 'PUT',
+    body: { title },
+  })
 }
 
 /**
  * Delete a conversation.
+ *
+ * @param {string} conversationId
+ * @returns {Promise<null>}
  */
 export async function deleteConversation(conversationId) {
-  try {
-    const res = await fetchWithStatus(`${API_BASE}/conversation/${conversationId}`, {
-      method: 'DELETE',
-    })
-    return await res.json()
-  } catch (err) {
-    if (err.name !== 'AbortError') {
-      showError(err.friendlyMessage || err.message || t('errors.unknownError'))
-    }
-    throw err
-  }
-}
-
-/**
- * Rename a conversation.
- */
-export async function renameConversation(conversationId, title) {
-  try {
-    const res = await fetchWithStatus(`${API_BASE}/conversation/${conversationId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title }),
-    })
-    return await res.json()
-  } catch (err) {
-    if (err.name !== 'AbortError') {
-      showError(err.friendlyMessage || err.message || t('errors.unknownError'))
-    }
-    throw err
-  }
+  return request(`/conversations/${conversationId}`, { method: 'DELETE' })
 }

@@ -177,11 +177,9 @@ export function useChat() {
 
     // Call streaming API
     const modelConfig = getActiveModelConfig()
-    track('message_send', { model: modelConfig.model })
+    track('message_send', { model: modelConfig.modelId })
     abortController.value = streamChat({
-      apiBaseUrl: modelConfig.apiBaseUrl,
-      apiKey: modelConfig.apiKey,
-      model: modelConfig.model,
+      modelId: modelConfig.modelId,
       message: userContent.trim(),
       systemPrompt,
       conversationId: convId,
@@ -245,11 +243,9 @@ export function useChat() {
 
     // Call streaming API with the same user content
     const modelConfig = getActiveModelConfig()
-    track('message_regenerate', { model: modelConfig.model })
+    track('message_regenerate', { model: modelConfig.modelId })
     abortController.value = streamChat({
-      apiBaseUrl: modelConfig.apiBaseUrl,
-      apiKey: modelConfig.apiKey,
-      model: modelConfig.model,
+      modelId: modelConfig.modelId,
       message: userContent,
       systemPrompt,
       conversationId: convId,

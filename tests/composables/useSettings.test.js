@@ -159,11 +159,10 @@ describe('composables/useSettings', () => {
       const { useSettings } = await freshImport()
       const { getActiveModelConfig } = useSettings()
       const cfg = getActiveModelConfig()
-      expect(cfg.model).toBe('claude-3-sonnet')
-      expect(cfg.apiKey).toBe('')
+      expect(cfg.modelId).toBe('claude-3-sonnet')
     })
 
-    it('getActiveModelConfig overlays custom model fields and decodes API key', async () => {
+    it('getActiveModelConfig overlays custom model fields', async () => {
       const { useSettings } = await freshImport()
       const { addCustomModel, saveSettings, getActiveModelConfig } = useSettings()
       const m = addCustomModel({
@@ -174,9 +173,8 @@ describe('composables/useSettings', () => {
       })
       saveSettings({ model: m.id })
       const cfg = getActiveModelConfig()
-      expect(cfg.model).toBe('gpt-4-x')
+      expect(cfg.modelId).toBe('gpt-4-x')
       expect(cfg.apiBaseUrl).toBe('https://h.example/api')
-      expect(cfg.apiKey).toBe('sk-abc')
     })
 
     it('getAllModels includes built-ins and custom flagged appropriately', async () => {
