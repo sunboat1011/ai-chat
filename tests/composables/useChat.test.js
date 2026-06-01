@@ -1,23 +1,31 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
-// ─── Mock the streaming API so tests don't need fetch ───
+// ─── Mock the API layer so tests don't need fetch ───
 const streamMock = vi.fn()
+
 vi.mock('@/api/chat', () => ({
   streamChat: (opts) => {
     streamMock(opts)
     return { abort: vi.fn() }
   },
+  fetchConversations: vi.fn(() => Promise.reject(new Error('offline'))),
+  createConversation: vi.fn(() => Promise.reject(new Error('offline'))),
+  fetchConversation: vi.fn(() => Promise.reject(new Error('offline'))),
+  updateConversation: vi.fn(() => Promise.reject(new Error('offline'))),
+  deleteConversation: vi.fn(() => Promise.reject(new Error('offline'))),
+}))
+
+vi.mock('@/composables/useErrorToast', () => ({
+  showWarning: vi.fn(),
+  showError: vi.fn(),
+}))
+
+vi.mock('@/composables/useText', () => ({
+  t: vi.fn((key) => key),
 }))
 
 async function freshImport() {
   vi.resetModules()
-  // Re-mock after resetModules
-  vi.doMock('@/api/chat', () => ({
-    streamChat: (opts) => {
-      streamMock(opts)
-      return { abort: vi.fn() }
-    },
-  }))
   return await import('@/composables/useChat')
 }
 
@@ -31,7 +39,7 @@ describe('composables/useChat', () => {
     it('creates a conversation with default fields and activates it', async () => {
       const { useChat } = await freshImport()
       const chat = useChat()
-      const conv = chat.createNewConversation()
+      const conv = await chat.createNewConversation()
       expect(conv.title).toBe('New Chat')
       expect(conv.messages).toEqual([])
       expect(typeof conv.id).toBe('string')
@@ -44,7 +52,7 @@ describe('composables/useChat', () => {
     it('persists the new conversation to localStorage', async () => {
       const { useChat } = await freshImport()
       const chat = useChat()
-      chat.createNewConversation()
+      await chat.createNewConversation()
       const stored = JSON.parse(localStorage.getItem('ai-chat-conversations'))
       expect(stored).toHaveLength(1)
     })
@@ -52,15 +60,15 @@ describe('composables/useChat', () => {
     it('uses an explicit system prompt when provided', async () => {
       const { useChat } = await freshImport()
       const chat = useChat()
-      const conv = chat.createNewConversation('You are X')
+      const conv = await chat.createNewConversation('You are X')
       expect(conv.systemPrompt).toBe('You are X')
     })
 
     it('unshifts new conversations so the newest sits at the top', async () => {
       const { useChat } = await freshImport()
       const chat = useChat()
-      const first = chat.createNewConversation()
-      const second = chat.createNewConversation()
+      const first = await chat.createNewConversation()
+      const second = await chat.createNewConversation()
       expect(chat.conversations.value[0].id).toBe(second.id)
       expect(chat.conversations.value[1].id).toBe(first.id)
     })
@@ -70,7 +78,7 @@ describe('composables/useChat', () => {
     it('appends a user message, AI placeholder, and triggers streamChat', async () => {
       const { useChat } = await freshImport()
       const chat = useChat()
-      chat.createNewConversation()
+      await chat.createNewConversation()
       await chat.sendMessage('hello world')
       expect(chat.messages.value).toHaveLength(2)
       expect(chat.messages.value[0].role).toBe('user')
@@ -93,7 +101,7 @@ describe('composables/useChat', () => {
     it('auto-generates a title from the first user message', async () => {
       const { useChat } = await freshImport()
       const chat = useChat()
-      chat.createNewConversation()
+      await chat.createNewConversation()
       await chat.sendMessage('this is the first message')
       const conv = chat.conversations.value[0]
       expect(conv.title).toBe('this is the first message')
@@ -102,7 +110,7 @@ describe('composables/useChat', () => {
     it('truncates and appends ellipsis when title exceeds 40 characters', async () => {
       const { useChat } = await freshImport()
       const chat = useChat()
-      chat.createNewConversation()
+      await chat.createNewConversation()
       const long = 'a'.repeat(60)
       await chat.sendMessage(long)
       const conv = chat.conversations.value[0]
@@ -113,7 +121,7 @@ describe('composables/useChat', () => {
     it('ignores blank input', async () => {
       const { useChat } = await freshImport()
       const chat = useChat()
-      chat.createNewConversation()
+      await chat.createNewConversation()
       await chat.sendMessage('   ')
       expect(chat.messages.value).toEqual([])
       expect(streamMock).not.toHaveBeenCalled()
@@ -122,7 +130,7 @@ describe('composables/useChat', () => {
     it('does not start a new stream while one is loading', async () => {
       const { useChat } = await freshImport()
       const chat = useChat()
-      chat.createNewConversation()
+      await chat.createNewConversation()
       await chat.sendMessage('first')
       // Simulate ongoing stream
       expect(chat.isLoading.value).toBe(true)
@@ -135,7 +143,7 @@ describe('composables/useChat', () => {
     it('appends streamed content to the AI message and clears streaming on done', async () => {
       const { useChat } = await freshImport()
       const chat = useChat()
-      chat.createNewConversation()
+      await chat.createNewConversation()
       await chat.sendMessage('q')
       const { onChunk, onDone } = streamMock.mock.calls[0][0]
       onChunk('Hello ', 'Hello ')
@@ -149,7 +157,7 @@ describe('composables/useChat', () => {
     it('preserves partial content on error when content already streamed', async () => {
       const { useChat } = await freshImport()
       const chat = useChat()
-      chat.createNewConversation()
+      await chat.createNewConversation()
       await chat.sendMessage('q')
       const { onChunk, onError } = streamMock.mock.calls[0][0]
       onChunk('partial', 'partial')
@@ -162,7 +170,7 @@ describe('composables/useChat', () => {
     it('inserts an **Error:** placeholder when nothing was streamed', async () => {
       const { useChat } = await freshImport()
       const chat = useChat()
-      chat.createNewConversation()
+      await chat.createNewConversation()
       await chat.sendMessage('q')
       const { onError } = streamMock.mock.calls[0][0]
       onError(new Error('network down'))
@@ -174,7 +182,7 @@ describe('composables/useChat', () => {
     it('removes the message and stores the deleted record for undo', async () => {
       const { useChat } = await freshImport()
       const chat = useChat()
-      chat.createNewConversation()
+      await chat.createNewConversation()
       await chat.sendMessage('hi')
       const aiId = chat.messages.value[1].id
       // Mark stream done so isLoading clears
@@ -187,7 +195,7 @@ describe('composables/useChat', () => {
     it('undoDelete restores the removed message at its original index', async () => {
       const { useChat } = await freshImport()
       const chat = useChat()
-      chat.createNewConversation()
+      await chat.createNewConversation()
       await chat.sendMessage('hi')
       streamMock.mock.calls[0][0].onDone('answer')
       const userId = chat.messages.value[0].id
@@ -203,7 +211,7 @@ describe('composables/useChat', () => {
     it('clearUndo wipes the pending undo record', async () => {
       const { useChat } = await freshImport()
       const chat = useChat()
-      chat.createNewConversation()
+      await chat.createNewConversation()
       await chat.sendMessage('hi')
       streamMock.mock.calls[0][0].onDone('answer')
       chat.deleteMessage(chat.messages.value[1].id)
@@ -216,12 +224,12 @@ describe('composables/useChat', () => {
     it('creates a new conversation copying messages up to and including target', async () => {
       const { useChat } = await freshImport()
       const chat = useChat()
-      chat.createNewConversation()
+      await chat.createNewConversation()
       await chat.sendMessage('one')
       streamMock.mock.calls[0][0].onDone('answer1')
       const branchTargetId = chat.messages.value[1].id
 
-      const branch = chat.branchFromMessage(branchTargetId)
+      const branch = await chat.branchFromMessage(branchTargetId)
       expect(branch).not.toBeNull()
       expect(branch.title).toContain('(branch)')
       expect(branch.messages).toHaveLength(2)
@@ -234,10 +242,10 @@ describe('composables/useChat', () => {
     it('returns null when message id is not found', async () => {
       const { useChat } = await freshImport()
       const chat = useChat()
-      chat.createNewConversation()
+      await chat.createNewConversation()
       await chat.sendMessage('one')
       streamMock.mock.calls[0][0].onDone('a')
-      expect(chat.branchFromMessage('not-here')).toBeNull()
+      expect(await chat.branchFromMessage('not-here')).toBeNull()
     })
   })
 
@@ -245,7 +253,7 @@ describe('composables/useChat', () => {
     it('truncates from the edited message and re-triggers sendMessage', async () => {
       const { useChat } = await freshImport()
       const chat = useChat()
-      chat.createNewConversation()
+      await chat.createNewConversation()
       await chat.sendMessage('first')
       streamMock.mock.calls[0][0].onDone('a1')
       streamMock.mockClear()
@@ -264,16 +272,16 @@ describe('composables/useChat', () => {
     it('updates and reads back the conversation system prompt', async () => {
       const { useChat } = await freshImport()
       const chat = useChat()
-      const conv = chat.createNewConversation()
-      chat.updateSystemPrompt(conv.id, 'You are Z')
+      const conv = await chat.createNewConversation()
+      await chat.updateSystemPrompt(conv.id, 'You are Z')
       expect(chat.getConversationSystemPrompt(conv.id)).toBe('You are Z')
     })
 
     it('forwards the conversation system prompt to streamChat', async () => {
       const { useChat } = await freshImport()
       const chat = useChat()
-      const conv = chat.createNewConversation('You are W')
-      chat.setActiveConversation(conv.id)
+      const conv = await chat.createNewConversation('You are W')
+      await chat.setActiveConversation(conv.id)
       await chat.sendMessage('hi')
       expect(streamMock.mock.calls[0][0].systemPrompt).toBe('You are W')
     })
@@ -283,10 +291,10 @@ describe('composables/useChat', () => {
     it('removes the conversation and switches active to the next one', async () => {
       const { useChat } = await freshImport()
       const chat = useChat()
-      const a = chat.createNewConversation()
-      const b = chat.createNewConversation()
+      const a = await chat.createNewConversation()
+      const b = await chat.createNewConversation()
       // b is now active (most recent)
-      chat.deleteConversation(b.id)
+      await chat.deleteConversation(b.id)
       expect(chat.conversations.value).toHaveLength(1)
       expect(chat.activeConversation.value).toBe(a.id)
     })
@@ -294,8 +302,8 @@ describe('composables/useChat', () => {
     it('sets active to null when last conversation is deleted', async () => {
       const { useChat } = await freshImport()
       const chat = useChat()
-      const a = chat.createNewConversation()
-      chat.deleteConversation(a.id)
+      const a = await chat.createNewConversation()
+      await chat.deleteConversation(a.id)
       expect(chat.conversations.value).toHaveLength(0)
       expect(chat.activeConversation.value).toBeNull()
     })
@@ -314,7 +322,7 @@ describe('composables/useChat', () => {
       localStorage.setItem('ai-chat-conversations', JSON.stringify(legacy))
       const { useChat } = await freshImport()
       const chat = useChat()
-      chat.init()
+      await chat.init()
       const conv = chat.conversations.value[0]
       expect(conv.systemPrompt).toBe('')
       expect(conv.updatedAt).toBeDefined()

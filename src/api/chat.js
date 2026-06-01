@@ -237,16 +237,22 @@ export async function fetchConversation(conversationId, page = 0, size = 50) {
 }
 
 /**
- * Rename (update) a conversation.
+ * Update a conversation (title and/or systemPrompt).
  *
  * @param {string} conversationId
- * @param {string} title - New title
+ * @param {Object} payload
+ * @param {string} [payload.title] - New title
+ * @param {string} [payload.systemPrompt] - New system prompt
  * @returns {Promise<Object>} Updated ConversationResponse
  */
-export async function renameConversation(conversationId, title) {
+export async function updateConversation(conversationId, payload = {}) {
+  const body = {}
+  if (payload.title !== undefined) body.title = payload.title
+  if (payload.systemPrompt !== undefined) body.systemPrompt = payload.systemPrompt
+
   return request(`/conversations/${conversationId}`, {
     method: 'PUT',
-    body: { title },
+    body,
   })
 }
 

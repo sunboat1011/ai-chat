@@ -85,6 +85,7 @@ const sidebarOpen = ref(false)
 const isMobile = ref(window.innerWidth < 768)
 const logoutConfirmOpen = ref(false)
 const hasInited = ref(false)
+const isInitializing = ref(false)
 
 // Use ref instead of computed because localStorage is not reactive.
 // The value is refreshed on mount and on every route change.
@@ -119,10 +120,12 @@ const {
   branchFromMessage,
 } = useChat()
 
-onMounted(() => {
+onMounted(async () => {
   checkAuth()
   if (isLoggedIn.value && !hasInited.value) {
-    init()
+    isInitializing.value = true
+    await init()
+    isInitializing.value = false
     hasInited.value = true
   }
   window.addEventListener('resize', checkMobile)
@@ -131,10 +134,12 @@ onMounted(() => {
 // Re-check auth state on every route change (e.g. after login/logout)
 watch(
   () => router.currentRoute.value.path,
-  () => {
+  async () => {
     checkAuth()
     if (isLoggedIn.value && !hasInited.value) {
-      init()
+      isInitializing.value = true
+      await init()
+      isInitializing.value = false
       hasInited.value = true
     }
   }
@@ -159,8 +164,8 @@ function closeSidebar() {
   sidebarOpen.value = false
 }
 
-function handleSelectConversation(id) {
-  setActiveConversation(id)
+async function handleSelectConversation(id) {
+  await setActiveConversation(id)
   router.push(`/chat/${id}`)
   if (isMobile.value) {
     sidebarOpen.value = false
@@ -172,32 +177,32 @@ function handleNewChat() {
   pendingNewChat.value = true
 }
 
-function handleRoleSelect(templatePayload) {
+async function handleRoleSelect(templatePayload) {
   isRoleSelectOpen.value = false
   if (!pendingNewChat.value) return
   pendingNewChat.value = false
 
   const hasMessages = templatePayload.messages && templatePayload.messages.length > 0
   if (hasMessages) {
-    const conv = createConversationFromTemplate(templatePayload)
+    const conv = await createConversationFromTemplate(templatePayload)
     router.push(`/chat/${conv.id}`)
   } else {
-    const conv = createNewConversation(templatePayload.systemPrompt || '')
+    const conv = await createNewConversation(templatePayload.systemPrompt || '')
     router.push(`/chat/${conv.id}`)
   }
 }
 
-function handleRoleSkip() {
+async function handleRoleSkip() {
   isRoleSelectOpen.value = false
   if (pendingNewChat.value) {
-    const conv = createNewConversation()
+    const conv = await createNewConversation()
     pendingNewChat.value = false
     router.push(`/chat/${conv.id}`)
   }
 }
 
-function handleDeleteConversation(id) {
-  deleteConversation(id)
+async function handleDeleteConversation(id) {
+  await deleteConversation(id)
   if (!activeConversation.value) {
     router.push('/')
   } else {
@@ -225,8 +230,8 @@ async function handleRegenerateMessage(messageId) {
   await regenerateMessage(messageId)
 }
 
-function handleBranchMessage(messageId) {
-  const newConv = branchFromMessage(messageId)
+async function handleBranchMessage(messageId) {
+  const newConv = await branchFromMessage(messageId)
   if (newConv) {
     router.push(`/chat/${newConv.id}`)
   }
@@ -236,9 +241,9 @@ function handleUndoDelete() {
   undoDelete()
 }
 
-function handleUpdateSystemPrompt(systemPrompt) {
+async function handleUpdateSystemPrompt(systemPrompt) {
   if (activeConversation.value) {
-    updateSystemPrompt(activeConversation.value, systemPrompt)
+    await updateSystemPrompt(activeConversation.value, systemPrompt)
   }
 }
 

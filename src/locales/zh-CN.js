@@ -214,6 +214,8 @@ export const zhCN = {
     serverError: 'Server error ({status}). Please try again later.',
     serviceUnavailable: 'Service unavailable (503). The server is temporarily down.',
     httpGeneric: 'Request failed ({status}). Please try again.',
+    offlineMode: 'Currently in offline mode. Data is saved locally only.',
+    deleteFailed: 'Failed to delete conversation. Please try again.',
     unhandledRejection: 'An unexpected error occurred. Please try again.',
     unknownError: 'Something went wrong.',
   },

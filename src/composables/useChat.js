@@ -1,37 +1,66 @@
 import { ref } from 'vue'
-import { streamChat } from '@/api/chat'
+import {
+  streamChat,
+  fetchConversations,
+  createConversation,
+  fetchConversation,
+  updateConversation as apiUpdateConversation,
+  deleteConversation as apiDeleteConversation,
+} from '@/api/chat'
 import { loadConversations, saveConversations, generateId, clearDraft } from '@/utils/storage'
+import { adaptConversation, adaptMessage } from '@/utils/adapter'
 import { useSettings } from '@/composables'
 import { track } from '@/utils/analytics'
+import { showWarning, showError } from '@/composables/useErrorToast'
+import { t } from '@/composables/useText'
 
 /**
  * Composable that manages chat state: conversations, messages, streaming.
  *
- * NOTE: In production you'd use a state-management library (Pinia).
- * For simplicity this composable uses reactive refs.
+ * Backend-first with localStorage fallback (offline mode).
+ * All conversation CRUD operations hit the backend API first;
+ * on network failure they fall back to localStorage and show a warning.
  */
 export function useChat() {
   const { settings, getActiveModelConfig } = useSettings()
-  const conversations = ref(loadConversations())
+
+  // Start with empty array; init() will load from backend or localStorage
+  const conversations = ref([])
   const activeConversation = ref(null)
   const messages = ref([])
   const isLoading = ref(false)
   const abortController = ref(null)
+  const isOfflineMode = ref(false)
 
   // ─── Delete undo ───
   const lastDeleted = ref(null)
   let undoTimer = null
 
+  // ─── Concurrency control for setActiveConversation ───
+  let lastFetchId = 0
+
   // ─── Initialize ───
-  function init() {
+  async function init() {
+    // Try backend first
+    try {
+      const result = await fetchConversations(0, 100)
+      conversations.value = (result.content || []).map(adaptConversation)
+      saveConversations(conversations.value)
+      isOfflineMode.value = false
+    } catch {
+      // Backend unavailable — fall back to localStorage
+      conversations.value = loadConversations()
+      isOfflineMode.value = true
+      showWarning(t('errors.offlineMode'))
+    }
+
+    // Migrate old local data (only affects fields that may be missing)
     let needsSave = false
     for (const conv of conversations.value) {
-      // Migrate old conversations: add systemPrompt field if missing
       if (!('systemPrompt' in conv)) {
         conv.systemPrompt = ''
         needsSave = true
       }
-      // Migrate: ensure all messages have timestamps
       if (conv.messages && conv.messages.length > 0) {
         conv.messages.forEach((msg, idx) => {
           if (!msg.timestamp) {
@@ -40,7 +69,6 @@ export function useChat() {
           }
         })
       }
-      // Migrate: ensure updatedAt exists
       if (!conv.updatedAt) {
         const lastMsg = conv.messages?.[conv.messages.length - 1]
         conv.updatedAt = lastMsg?.timestamp || conv.createdAt || Date.now()
@@ -50,21 +78,76 @@ export function useChat() {
     if (needsSave) {
       saveConversations(conversations.value)
     }
+
     if (!activeConversation.value && conversations.value.length > 0) {
-      setActiveConversation(conversations.value[0].id)
+      await setActiveConversation(conversations.value[0].id)
     }
   }
 
   // ─── Conversation Management ───
-  function setActiveConversation(id) {
+  async function setActiveConversation(id) {
     activeConversation.value = id
+    const fetchId = ++lastFetchId
+
+    // Try backend first
+    if (!isOfflineMode.value) {
+      try {
+        const result = await fetchConversation(id)
+        if (fetchId !== lastFetchId) return // Stale request, ignore
+
+        const conv = adaptConversation(result.conversation)
+        conv.messages = (result.messages?.content || []).map(adaptMessage)
+
+        // Update local cache
+        const idx = conversations.value.findIndex((c) => c.id === id)
+        if (idx !== -1) {
+          conversations.value[idx] = conv
+        } else {
+          conversations.value.push(conv)
+        }
+        saveConversations(conversations.value)
+
+        messages.value = conv.messages
+        return
+      } catch {
+        if (fetchId !== lastFetchId) return
+        isOfflineMode.value = true
+        showWarning(t('errors.offlineMode'))
+      }
+    }
+
+    // Fallback: load from local cache
     const conv = conversations.value.find((c) => c.id === id)
-    messages.value = conv ? conv.messages : []
+    messages.value = conv ? [...conv.messages] : []
   }
 
-  function createNewConversation(systemPrompt = '') {
-    const id = generateId()
+  async function createNewConversation(systemPrompt = '') {
     const prompt = systemPrompt || settings.value.defaultSystemPrompt || ''
+
+    // Try backend first
+    if (!isOfflineMode.value) {
+      try {
+        const conv = await createConversation({
+          systemPrompt: prompt,
+          modelId: settings.value.model,
+          temperature: settings.value.temperature,
+          maxTokens: settings.value.maxTokens,
+          topP: settings.value.topP,
+        })
+        const adapted = adaptConversation(conv)
+        adapted.messages = []
+        conversations.value.unshift(adapted)
+        saveConversations(conversations.value)
+        await setActiveConversation(adapted.id)
+        return adapted
+      } catch {
+        isOfflineMode.value = true
+        showWarning(t('errors.offlineMode'))
+      }
+    }
+
+    // Fallback: local creation
+    const id = generateId()
     const conv = {
       id,
       title: 'New Chat',
@@ -75,12 +158,11 @@ export function useChat() {
     }
     conversations.value.unshift(conv)
     saveConversations(conversations.value)
-    setActiveConversation(id)
+    await setActiveConversation(id)
     return conv
   }
 
-  function createConversationFromTemplate(template) {
-    const id = generateId()
+  async function createConversationFromTemplate(template) {
     const prompt = template.systemPrompt || settings.value.defaultSystemPrompt || ''
     const initialMessages = (template.messages || []).map((m) => ({
       id: generateId(),
@@ -88,10 +170,36 @@ export function useChat() {
       content: m.content,
       timestamp: Date.now(),
     }))
-    const title = template.name || 'New Chat'
+
+    // Try backend first
+    if (!isOfflineMode.value) {
+      try {
+        const conv = await createConversation({
+          title: template.name || 'New Chat',
+          systemPrompt: prompt,
+          modelId: settings.value.model,
+          temperature: settings.value.temperature,
+          maxTokens: settings.value.maxTokens,
+          topP: settings.value.topP,
+        })
+        const adapted = adaptConversation(conv)
+        adapted.messages = initialMessages
+        conversations.value.unshift(adapted)
+        saveConversations(conversations.value)
+        await setActiveConversation(adapted.id)
+        return adapted
+      } catch {
+        isOfflineMode.value = true
+        showWarning(t('errors.offlineMode'))
+      }
+    }
+
+    // Fallback: local creation
+    const id = generateId()
+    const baseTitle = template.name || 'New Chat'
     const conv = {
       id,
-      title,
+      title: baseTitle,
       messages: initialMessages,
       createdAt: Date.now(),
       updatedAt: Date.now(),
@@ -99,34 +207,71 @@ export function useChat() {
     }
     conversations.value.unshift(conv)
     saveConversations(conversations.value)
-    setActiveConversation(id)
+    await setActiveConversation(id)
     return conv
   }
 
-  function deleteConversation(id) {
+  async function deleteConversation(id) {
+    // Try backend first; on failure DO NOT delete locally (consistency)
+    if (!isOfflineMode.value) {
+      try {
+        await apiDeleteConversation(id)
+      } catch {
+        showError(t('errors.deleteFailed'))
+        return
+      }
+    }
+
+    // Backend succeeded or offline mode: proceed with local deletion
     conversations.value = conversations.value.filter((c) => c.id !== id)
     saveConversations(conversations.value)
     clearDraft(id)
+
     if (activeConversation.value === id) {
       activeConversation.value = conversations.value[0]?.id ?? null
       messages.value = conversations.value[0]?.messages ?? []
     }
   }
 
-  function updateConversationTitle(id, title) {
+  /**
+   * Update conversation metadata (title and/or systemPrompt).
+   * Syncs to backend; on failure stays in offline mode but keeps local changes.
+   */
+  async function updateConversation(id, payload) {
     const conv = conversations.value.find((c) => c.id === id)
-    if (conv) {
-      conv.title = title
-      saveConversations(conversations.value)
+    if (!conv) return
+
+    // Update local state immediately for responsiveness
+    if (payload.title !== undefined) conv.title = payload.title
+    if (payload.systemPrompt !== undefined) conv.systemPrompt = payload.systemPrompt
+    saveConversations(conversations.value)
+
+    // Sync to backend
+    if (!isOfflineMode.value) {
+      try {
+        const updated = await apiUpdateConversation(id, payload)
+        const idx = conversations.value.findIndex((c) => c.id === id)
+        if (idx !== -1) {
+          const adapted = adaptConversation(updated)
+          // Preserve local messages (backend response may not include them)
+          adapted.messages = conv.messages
+          conversations.value[idx] = adapted
+          saveConversations(conversations.value)
+        }
+      } catch {
+        isOfflineMode.value = true
+        showWarning(t('errors.offlineMode'))
+      }
     }
   }
 
-  function updateSystemPrompt(id, systemPrompt) {
-    const conv = conversations.value.find((c) => c.id === id)
-    if (conv) {
-      conv.systemPrompt = systemPrompt
-      saveConversations(conversations.value)
-    }
+  // Backward-compatible wrappers
+  async function updateConversationTitle(id, title) {
+    return updateConversation(id, { title })
+  }
+
+  async function updateSystemPrompt(id, systemPrompt) {
+    return updateConversation(id, { systemPrompt })
   }
 
   function getConversationSystemPrompt(id) {
@@ -140,7 +285,7 @@ export function useChat() {
 
     // Ensure there's an active conversation
     if (!activeConversation.value) {
-      createNewConversation()
+      await createNewConversation()
     }
 
     const convId = activeConversation.value
@@ -158,7 +303,7 @@ export function useChat() {
     // Auto-generate title from first message
     if (messages.value.length === 1) {
       const title = userContent.trim().slice(0, 40) + (userContent.length > 40 ? '...' : '')
-      updateConversationTitle(convId, title)
+      await updateConversationTitle(convId, title)
     }
 
     // Prepare AI message placeholder
@@ -193,6 +338,7 @@ export function useChat() {
         aiMessage.content = fullText
         aiMessage.streaming = false
         isLoading.value = false
+        // Backend auto-saves; just update local cache
         persistConversation()
       },
       onError: (err) => {
@@ -275,7 +421,7 @@ export function useChat() {
   }
 
   // ─── Branch from Message ───
-  function branchFromMessage(messageId) {
+  async function branchFromMessage(messageId) {
     if (isLoading.value) return null
     const convId = activeConversation.value
     const conv = conversations.value.find((c) => c.id === convId)
@@ -290,7 +436,6 @@ export function useChat() {
       streaming: false,
     }))
 
-    const newId = generateId()
     const baseTitle = (conv.title || 'New Chat').replace(/\s*\(branch( \d+)?\)$/i, '')
     const siblingCount = conversations.value.filter((c) =>
       (c.title || '').startsWith(`${baseTitle} (branch`)
@@ -298,6 +443,32 @@ export function useChat() {
     const branchTitle =
       siblingCount === 0 ? `${baseTitle} (branch)` : `${baseTitle} (branch ${siblingCount + 1})`
 
+    // Try backend first
+    if (!isOfflineMode.value) {
+      try {
+        const newConv = await createConversation({
+          title: branchTitle,
+          systemPrompt: conv.systemPrompt || '',
+          modelId: settings.value.model,
+          temperature: settings.value.temperature,
+          maxTokens: settings.value.maxTokens,
+          topP: settings.value.topP,
+        })
+        const adapted = adaptConversation(newConv)
+        adapted.messages = branchedMessages
+        conversations.value.unshift(adapted)
+        saveConversations(conversations.value)
+        await setActiveConversation(adapted.id)
+        track('conversation_branch', { sourceConvId: convId, newConvId: adapted.id })
+        return adapted
+      } catch {
+        isOfflineMode.value = true
+        showWarning(t('errors.offlineMode'))
+      }
+    }
+
+    // Fallback: local creation
+    const newId = generateId()
     const newConv = {
       id: newId,
       title: branchTitle,
@@ -308,7 +479,7 @@ export function useChat() {
     }
     conversations.value.unshift(newConv)
     saveConversations(conversations.value)
-    setActiveConversation(newId)
+    await setActiveConversation(newId)
     track('conversation_branch', { sourceConvId: convId, newConvId: newId })
     return newConv
   }
@@ -393,12 +564,14 @@ export function useChat() {
     activeConversation,
     messages,
     isLoading,
+    isOfflineMode,
     lastDeleted,
     init,
     setActiveConversation,
     createNewConversation,
     createConversationFromTemplate,
     deleteConversation,
+    updateConversation,
     updateConversationTitle,
     updateSystemPrompt,
     getConversationSystemPrompt,
