@@ -74,6 +74,7 @@ import ErrorBoundary from '@/components/ErrorBoundary.vue'
 import ErrorToast from '@/components/ErrorToast.vue'
 import ConfirmModal from '@/components/ConfirmModal.vue'
 import { useChat } from '@/composables/useChat'
+import { useSettings } from '@/composables/useSettings'
 import { track } from '@/composables/useAnalytics'
 import { getToken, removeToken, getUser, isTokenExpired } from '@/utils/token.js'
 
@@ -86,6 +87,8 @@ const isMobile = ref(window.innerWidth < 768)
 const logoutConfirmOpen = ref(false)
 const hasInited = ref(false)
 const isInitializing = ref(false)
+
+const { loadModels, loadSettingsFromBackend } = useSettings()
 
 // Use ref instead of computed because localStorage is not reactive.
 // The value is refreshed on mount and on every route change.
@@ -120,13 +123,26 @@ const {
   branchFromMessage,
 } = useChat()
 
+async function initApp() {
+  if (isInitializing.value || hasInited.value) return
+  isInitializing.value = true
+  try {
+    await init()
+    // Parallel load models and settings from backend
+    await Promise.all([
+      loadModels().catch((err) => console.warn('Failed to load models:', err)),
+      loadSettingsFromBackend().catch((err) => console.warn('Failed to load settings:', err)),
+    ])
+    hasInited.value = true
+  } finally {
+    isInitializing.value = false
+  }
+}
+
 onMounted(async () => {
   checkAuth()
-  if (isLoggedIn.value && !hasInited.value) {
-    isInitializing.value = true
-    await init()
-    isInitializing.value = false
-    hasInited.value = true
+  if (isLoggedIn.value) {
+    await initApp()
   }
   window.addEventListener('resize', checkMobile)
 })
@@ -136,11 +152,8 @@ watch(
   () => router.currentRoute.value.path,
   async () => {
     checkAuth()
-    if (isLoggedIn.value && !hasInited.value) {
-      isInitializing.value = true
-      await init()
-      isInitializing.value = false
-      hasInited.value = true
+    if (isLoggedIn.value) {
+      await initApp()
     }
   }
 )

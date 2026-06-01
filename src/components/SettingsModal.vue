@@ -142,10 +142,10 @@
             <label for="model">{{ $t('settings.defaultModel') }}</label>
             <select id="model" v-model="settings.model">
               <optgroup :label="$t('settings.builtIn')">
-                <option v-for="m in BUILT_IN_MODELS" :key="m.id" :value="m.id">{{ m.name }}</option>
+                <option v-for="m in builtInModels" :key="m.id" :value="m.id">{{ m.name }}</option>
               </optgroup>
-              <optgroup v-if="settings.customModels?.length > 0" :label="$t('settings.custom')">
-                <option v-for="m in settings.customModels" :key="m.id" :value="m.id">
+              <optgroup v-if="customModels.length > 0" :label="$t('settings.custom')">
+                <option v-for="m in customModels" :key="m.id" :value="m.id">
                   {{ m.name }}
                 </option>
               </optgroup>
@@ -180,20 +180,20 @@
             </button>
           </div>
 
-          <div v-if="settings.customModels?.length === 0" class="custom-model-empty">
+          <div v-if="customModels.length === 0" class="custom-model-empty">
             {{ $t('settings.noCustomModels') }}
           </div>
 
           <div v-else class="custom-model-list">
             <div
-              v-for="m in settings.customModels"
+              v-for="m in customModels"
               :key="m.id"
               class="custom-model-item"
               :class="{ active: settings.model === m.id }"
             >
               <div class="custom-model-info">
                 <span class="custom-model-name">{{ m.name }}</span>
-                <span class="custom-model-id">{{ m.modelId }}</span>
+                <span class="custom-model-id">{{ m.modelName || m.modelId }}</span>
               </div>
               <div class="custom-model-actions">
                 <button
@@ -275,6 +275,26 @@
                 />
               </div>
               <div class="form-field">
+                <label for="cm-model-name">{{ $t('settings.modelName') }}</label>
+                <input
+                  id="cm-model-name"
+                  v-model="cmForm.modelName"
+                  type="text"
+                  :placeholder="$t('settings.modelNamePlaceholder')"
+                />
+                <p class="hint">{{ $t('settings.modelNameHint') }}</p>
+              </div>
+              <div class="form-field">
+                <label for="cm-provider">{{ $t('settings.provider') }}</label>
+                <select id="cm-provider" v-model="cmForm.provider">
+                  <option value="openai">OpenAI</option>
+                  <option value="anthropic">Anthropic</option>
+                  <option value="ollama">Ollama</option>
+                  <option value="zhipuai">Zhipu AI</option>
+                  <option value="custom">Custom</option>
+                </select>
+              </div>
+              <div class="form-field">
                 <label for="cm-api-url">{{ $t('settings.apiUrlOptional') }}</label>
                 <input
                   id="cm-api-url"
@@ -309,9 +329,10 @@
                 type="button"
                 class="cm-btn cm-btn-save"
                 :aria-label="editingModelId ? $t('settings.update') : $t('settings.add')"
+                :disabled="isSavingModel"
                 @click="saveCustomModel"
               >
-                {{ editingModelId ? $t('settings.update') : $t('settings.add') }}
+                {{ isSavingModel ? $t('settings.saving') : (editingModelId ? $t('settings.update') : $t('settings.add')) }}
               </button>
             </div>
           </div>
@@ -696,6 +717,7 @@ function focusFirstInContainer(container) {
 
 const {
   settings,
+  allModels,
   resetSettings,
   resetModelParams,
   addCustomModel,
@@ -708,13 +730,15 @@ const {
   DEFAULT_MODEL_PARAMS,
   MODEL_PARAM_BOUNDS,
   ACCENT_COLORS,
-  BUILT_IN_MODELS,
   BUILT_IN_TEMPLATES,
 } = useSettings()
 
 const allTemplates = computed(() =>
   getAllTemplates().map((t) => ({ ...t, builtIn: t.builtIn ?? false }))
 )
+
+const builtInModels = computed(() => allModels.value.filter((m) => m.builtIn))
+const customModels = computed(() => allModels.value.filter((m) => m.isCustom))
 
 function close() {
   emit('close')
@@ -738,13 +762,16 @@ const editingModelId = ref(null)
 const cmForm = ref({
   name: '',
   modelId: '',
+  modelName: '',
+  provider: 'openai',
   apiUrl: '',
   apiKey: '',
 })
+const isSavingModel = ref(false)
 
 function openCustomModelForm() {
   editingModelId.value = null
-  cmForm.value = { name: '', modelId: '', apiUrl: '', apiKey: '' }
+  cmForm.value = { name: '', modelId: '', modelName: '', provider: 'openai', apiUrl: '', apiKey: '' }
   showCustomModelForm.value = true
 }
 
@@ -752,7 +779,9 @@ function editCustomModel(model) {
   editingModelId.value = model.id
   cmForm.value = {
     name: model.name,
-    modelId: model.modelId,
+    modelId: model.modelId || model.id,
+    modelName: model.modelName || model.modelId || '',
+    provider: model.provider || 'openai',
     apiUrl: model.apiUrl || '',
     apiKey: '',
   }
@@ -762,13 +791,17 @@ function editCustomModel(model) {
 function closeCustomModelForm() {
   showCustomModelForm.value = false
   editingModelId.value = null
-  cmForm.value = { name: '', modelId: '', apiUrl: '', apiKey: '' }
+  cmForm.value = { name: '', modelId: '', modelName: '', provider: 'openai', apiUrl: '', apiKey: '' }
 }
 
-function saveCustomModel() {
+async function saveCustomModel() {
+  if (isSavingModel.value) return
+
   const payload = {
     name: cmForm.value.name,
     modelId: cmForm.value.modelId,
+    modelName: cmForm.value.modelName,
+    provider: cmForm.value.provider,
     apiUrl: cmForm.value.apiUrl,
   }
   if (cmForm.value.apiKey?.trim()) {
@@ -784,19 +817,30 @@ function saveCustomModel() {
     return
   }
 
-  if (editingModelId.value) {
-    updateCustomModel(editingModelId.value, payload)
-  } else {
-    const created = addCustomModel(payload)
-    settings.value.model = created.id
+  isSavingModel.value = true
+  try {
+    if (editingModelId.value) {
+      await updateCustomModel(editingModelId.value, payload)
+    } else {
+      const created = await addCustomModel(payload)
+      settings.value.model = created.id
+    }
+    closeCustomModelForm()
+  } catch (err) {
+    alert(err.friendlyMessage || err.message || t('settings.saveModelFailed'))
+  } finally {
+    isSavingModel.value = false
   }
-  closeCustomModelForm()
 }
 
-function removeCustomModel(id) {
-  const model = settings.value.customModels?.find((m) => m.id === id)
+async function removeCustomModel(id) {
+  const model = customModels.value.find((m) => m.id === id)
   if (model && confirm(t('settings.deleteModelConfirm', { name: model.name }))) {
-    deleteCustomModel(id)
+    try {
+      await deleteCustomModel(id)
+    } catch (err) {
+      alert(err.friendlyMessage || err.message || t('settings.deleteModelFailed'))
+    }
   }
 }
 
@@ -1485,7 +1529,8 @@ html.dark .custom-model-form-header h4 {
   font-weight: 600;
 }
 
-.form-field input {
+.form-field input,
+.form-field select {
   width: 100%;
   padding: 0.55rem 0.75rem;
   border-radius: 50px;
@@ -1500,9 +1545,19 @@ html.dark .custom-model-form-header h4 {
   outline: none;
 }
 
-.form-field input:focus {
+.form-field input:focus,
+.form-field select:focus {
   border-color: var(--focus-yellow);
   box-shadow: 0 3px 0 0 var(--focus-yellow-darker), 0 0 0 3px rgba(255, 204, 0, 0.15);
+}
+
+.form-field select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23c4b89e' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-right: 2rem;
 }
 
 .custom-model-form-actions {

@@ -384,11 +384,11 @@ const editingSystemPrompt = ref('')
 const spTextareaRef = ref(null)
 
 // ─── Model selector ───
-const { settings, BUILT_IN_MODELS } = useSettings()
+const { settings, allModels } = useSettings()
 
 const currentModel = computed(() => settings.value.model)
-const builtInModels = computed(() => BUILT_IN_MODELS)
-const customModels = computed(() => settings.value.customModels || [])
+const builtInModels = computed(() => allModels.value.filter((m) => m.builtIn))
+const customModels = computed(() => allModels.value.filter((m) => m.isCustom))
 
 function handleModelChange(e) {
   const modelId = e.target.value

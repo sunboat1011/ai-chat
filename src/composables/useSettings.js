@@ -1,6 +1,14 @@
 import { ref, watch } from 'vue'
+import {
+  fetchModels,
+  createCustomModel as apiCreateCustomModel,
+  updateCustomModel as apiUpdateCustomModel,
+  deleteCustomModel as apiDeleteCustomModel,
+} from '@/api/models.js'
+import { fetchUserSettings, updateUserSettings } from '@/api/user.js'
 
 const SETTINGS_KEY = 'ai-chat-settings'
+const MODELS_CACHE_KEY = 'ai-chat-models-cache'
 
 // ─── Built-in models ───
 const BUILT_IN_MODELS = [
@@ -116,6 +124,9 @@ const ACCENT_COLORS = {
 
 // ─── Module-level singleton state ───
 const settings = ref({ ...DEFAULT_SETTINGS })
+const allModels = ref([])
+const isLoadingModels = ref(false)
+const modelsLoaded = ref(false)
 
 // ─── Load from localStorage ───
 function loadFromStorage() {
@@ -140,6 +151,25 @@ function saveToStorage() {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings.value))
   } catch (e) {
     console.error('Failed to save settings:', e)
+  }
+}
+
+// ─── Models cache ───
+function saveModelsToStorage(models) {
+  try {
+    localStorage.setItem(MODELS_CACHE_KEY, JSON.stringify(models))
+  } catch (e) {
+    console.error('Failed to save models cache:', e)
+  }
+}
+
+function loadModelsFromStorage() {
+  try {
+    const saved = localStorage.getItem(MODELS_CACHE_KEY)
+    return saved ? JSON.parse(saved) : null
+  } catch (e) {
+    console.error('Failed to load models cache:', e)
+    return null
   }
 }
 
@@ -179,25 +209,118 @@ function shadeColor(color, percent) {
   return `#${toHex(R)}${toHex(G)}${toHex(B)}`
 }
 
-// ─── API Key base64 encode / decode ───
-function encodeApiKey(key) {
-  if (!key) return ''
-  try {
-    return btoa(key)
-  } catch {
-    return btoa(unescape(encodeURIComponent(key)))
+// ─── HEX ↔ accent key conversion ───
+function accentKeyToHex(key) {
+  return ACCENT_COLORS[key] || key
+}
+
+function hexToAccentKey(hex) {
+  if (!hex) return null
+  const normalized = hex.toLowerCase()
+  for (const [key, value] of Object.entries(ACCENT_COLORS)) {
+    if (value.toLowerCase() === normalized) return key
+  }
+  return null
+}
+
+// ─── Backend model ↔ frontend model adapter ───
+function adaptModel(backendModel) {
+  return {
+    id: backendModel.id,
+    name: backendModel.displayName,
+    provider: backendModel.provider,
+    apiBaseUrl: backendModel.apiBaseUrl,
+    modelName: backendModel.modelName,
+    builtIn: backendModel.isBuiltin,
+    isCustom: backendModel.isCustom,
+    isEnabled: backendModel.isEnabled,
+    // Frontend convenience aliases
+    apiUrl: backendModel.apiBaseUrl,
+    apiKey: '',
+    modelId: backendModel.modelId || backendModel.id,
   }
 }
 
-// ─── Custom model helpers ───
-function getAllModelOptions(customModels = []) {
-  const builtins = BUILT_IN_MODELS.map((m) => ({ ...m, builtIn: true }))
-  const customs = (customModels || []).map((m) => ({ ...m, builtIn: false }))
-  return [...builtins, ...customs]
+// ─── Load models from backend ───
+async function loadModels() {
+  if (isLoadingModels.value) return
+  isLoadingModels.value = true
+  try {
+    const backendModels = await fetchModels()
+    allModels.value = backendModels.map(adaptModel)
+    saveModelsToStorage(backendModels)
+    modelsLoaded.value = true
+  } catch (err) {
+    console.warn('Failed to load models from backend, falling back to local:', err)
+    const cached = loadModelsFromStorage()
+    if (cached && cached.length > 0) {
+      allModels.value = cached.map(adaptModel)
+    } else {
+      // Fallback to built-in hardcoded list
+      allModels.value = BUILT_IN_MODELS.map((m) => ({
+        ...m,
+        provider: 'openai',
+        apiBaseUrl: '',
+        modelName: m.id,
+        builtIn: true,
+        isCustom: false,
+        isEnabled: true,
+        apiUrl: '',
+        apiKey: '',
+        modelId: m.id,
+      }))
+    }
+  } finally {
+    isLoadingModels.value = false
+  }
 }
 
-function getCustomModel(modelId, customModels = []) {
-  return customModels.find((m) => m.id === modelId)
+// ─── Load settings from backend ───
+async function loadSettingsFromBackend() {
+  try {
+    const backendSettings = await fetchUserSettings()
+    settings.value = {
+      ...settings.value,
+      theme: backendSettings.theme || settings.value.theme,
+      accentColor: hexToAccentKey(backendSettings.accentColor) || settings.value.accentColor,
+      defaultSystemPrompt: backendSettings.defaultSystemPrompt ?? settings.value.defaultSystemPrompt,
+      temperature: backendSettings.defaultTemperature ?? settings.value.temperature,
+      maxTokens: backendSettings.defaultMaxTokens ?? settings.value.maxTokens,
+      topP: backendSettings.defaultTopP ?? settings.value.topP,
+      model: backendSettings.defaultModelId || settings.value.model,
+    }
+    saveToStorage()
+    applyTheme(settings.value.theme)
+    applyAccentColor(settings.value.accentColor)
+  } catch (err) {
+    console.warn('Failed to load settings from backend, using local:', err)
+  }
+}
+
+// ─── Debounced backend sync ───
+let syncDebounceTimer = null
+
+async function saveSettingsToBackend(newSettings) {
+  const payload = {}
+  if (newSettings.theme !== undefined) payload.theme = newSettings.theme
+  if (newSettings.accentColor !== undefined) {
+    payload.accentColor = accentKeyToHex(newSettings.accentColor)
+  }
+  if (newSettings.defaultSystemPrompt !== undefined) {
+    payload.defaultSystemPrompt = newSettings.defaultSystemPrompt
+  }
+  if (newSettings.temperature !== undefined) payload.defaultTemperature = newSettings.temperature
+  if (newSettings.maxTokens !== undefined) payload.defaultMaxTokens = newSettings.maxTokens
+  if (newSettings.topP !== undefined) payload.defaultTopP = newSettings.topP
+  if (newSettings.model !== undefined) payload.defaultModelId = newSettings.model
+
+  if (Object.keys(payload).length === 0) return
+
+  try {
+    await updateUserSettings(payload)
+  } catch (err) {
+    console.warn('Failed to sync settings to backend:', err)
+  }
 }
 
 // ─── Listen for system theme changes ───
@@ -223,6 +346,12 @@ watch(
     saveToStorage()
     applyTheme(newVal.theme)
     applyAccentColor(newVal.accentColor)
+
+    // Debounced sync to backend
+    if (syncDebounceTimer) clearTimeout(syncDebounceTimer)
+    syncDebounceTimer = setTimeout(() => {
+      saveSettingsToBackend(newVal)
+    }, 1000)
   },
   { deep: true }
 )
@@ -250,47 +379,41 @@ export function useSettings() {
     }
   }
 
-  // ─── Custom model CRUD ───
-  function addCustomModel(model) {
-    const encodedKey = encodeApiKey(model.apiKey || '')
-    const newModel = {
-      id: `custom-${Date.now()}`,
-      name: model.name?.trim() || 'Custom Model',
+  // ─── Custom model CRUD (backend) ───
+  async function addCustomModel(model) {
+    const payload = {
+      displayName: model.name?.trim() || 'Custom Model',
       modelId: model.modelId?.trim() || 'gpt-4',
-      apiUrl: model.apiUrl?.trim() || '',
-      apiKey: encodedKey,
+      apiBaseUrl: model.apiUrl?.trim() || '',
+      modelName: model.modelName?.trim() || model.modelId?.trim() || 'gpt-4',
+      provider: model.provider || 'openai',
     }
-    settings.value.customModels = [...(settings.value.customModels || []), newModel]
-    return newModel
+    if (model.apiKey?.trim()) {
+      payload.apiKey = model.apiKey.trim()
+    }
+    const created = await apiCreateCustomModel(payload)
+    await loadModels()
+    return adaptModel(created)
   }
 
-  function updateCustomModel(modelId, updates) {
-    const list = settings.value.customModels || []
-    const idx = list.findIndex((m) => m.id === modelId)
-    if (idx === -1) return null
-
-    const updated = { ...list[idx] }
-    if (updates.name !== undefined) updated.name = updates.name?.trim() || updated.name
-    if (updates.modelId !== undefined) updated.modelId = updates.modelId?.trim() || updated.modelId
-    if (updates.apiUrl !== undefined) updated.apiUrl = updates.apiUrl?.trim() || ''
-    if (updates.apiKey !== undefined) {
-      const key = updates.apiKey?.trim() || ''
-      updated.apiKey = key ? encodeApiKey(key) : ''
+  async function updateCustomModel(modelId, updates) {
+    const payload = {}
+    if (updates.name !== undefined) payload.displayName = updates.name?.trim()
+    if (updates.apiUrl !== undefined) payload.apiBaseUrl = updates.apiUrl?.trim() || ''
+    if (updates.modelName !== undefined) payload.modelName = updates.modelName?.trim()
+    if (updates.provider !== undefined) payload.provider = updates.provider
+    if (updates.apiKey !== undefined && updates.apiKey?.trim()) {
+      payload.apiKey = updates.apiKey.trim()
     }
 
-    const newList = [...list]
-    newList[idx] = updated
-    settings.value.customModels = newList
-
-    if (settings.value.model === modelId) {
-      settings.value.model = modelId
-    }
-    return updated
+    const updated = await apiUpdateCustomModel(modelId, payload)
+    await loadModels()
+    return adaptModel(updated)
   }
 
-  function deleteCustomModel(modelId) {
-    const list = settings.value.customModels || []
-    settings.value.customModels = list.filter((m) => m.id !== modelId)
+  async function deleteCustomModel(modelId) {
+    await apiDeleteCustomModel(modelId)
+    await loadModels()
     if (settings.value.model === modelId) {
       settings.value.model = DEFAULT_SETTINGS.model
     }
@@ -345,17 +468,30 @@ export function useSettings() {
     settings.value.customTemplates = list.filter((t) => t.id !== templateId)
   }
 
+  // ─── Model helpers ───
   function getAllModels() {
-    return getAllModelOptions(settings.value.customModels)
+    return allModels.value
+  }
+
+  function getBuiltInModels() {
+    return allModels.value.filter((m) => m.builtIn)
+  }
+
+  function getCustomModels() {
+    return allModels.value.filter((m) => m.isCustom)
+  }
+
+  function getCustomModel(modelId) {
+    return allModels.value.find((m) => m.id === modelId)
   }
 
   function getActiveModelConfig() {
     const modelId = settings.value.model
-    const custom = getCustomModel(modelId, settings.value.customModels)
-    if (custom) {
+    const model = allModels.value.find((m) => m.id === modelId)
+    if (model) {
       return {
-        modelId: custom.modelId,
-        apiBaseUrl: custom.apiUrl || settings.value.apiBaseUrl,
+        modelId: model.modelName || model.id,
+        apiBaseUrl: model.apiBaseUrl || settings.value.apiBaseUrl,
       }
     }
     return {
@@ -366,6 +502,9 @@ export function useSettings() {
 
   return {
     settings,
+    allModels,
+    isLoadingModels,
+    modelsLoaded,
     saveSettings,
     loadSettings,
     resetSettings,
@@ -374,12 +513,17 @@ export function useSettings() {
     updateCustomModel,
     deleteCustomModel,
     getAllModels,
+    getBuiltInModels,
+    getCustomModels,
+    getCustomModel,
     getActiveModelConfig,
     addCustomTemplate,
     updateCustomTemplate,
     deleteCustomTemplate,
     getAllTemplates,
     getTemplateById,
+    loadModels,
+    loadSettingsFromBackend,
     DEFAULT_MODEL_PARAMS,
     MODEL_PARAM_BOUNDS,
     ACCENT_COLORS,
