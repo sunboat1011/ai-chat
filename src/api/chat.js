@@ -61,39 +61,26 @@ function parseSSEStream(reader, onChunk, onDone, onError) {
       .read()
       .then(({ done, value }) => {
         if (done) {
+          // Process any remaining buffered event before closing
+          if (buffer.trim()) {
+            parseEvent(buffer)
+          }
           onDone?.(fullText)
           return
         }
 
         buffer += decoder.decode(value, { stream: true })
-        const lines = buffer.split('\n')
-        buffer = lines.pop() // keep incomplete last line
+        // Normalize \r\n → \n so event splitting is consistent
+        buffer = buffer.replace(/\r\n/g, '\n')
 
-        for (const line of lines) {
-          const trimmed = line.trim()
-          if (!trimmed) continue
+        // SSE events are separated by two consecutive newlines
+        while (true) {
+          const eventEnd = buffer.indexOf('\n\n')
+          if (eventEnd === -1) break
 
-          if (trimmed.startsWith('data: ')) {
-            const data = trimmed.slice(6).trim()
-            if (data === '[DONE]') {
-              onDone?.(fullText)
-              return
-            }
-            try {
-              const parsed = JSON.parse(data)
-              const content = parsed.choices?.[0]?.delta?.content ?? parsed.content ?? ''
-              if (content) {
-                fullText += content
-                onChunk?.(content, fullText)
-              }
-            } catch {
-              // Raw text mode — append directly
-              if (data) {
-                fullText += data
-                onChunk?.(data, fullText)
-              }
-            }
-          }
+          const event = buffer.slice(0, eventEnd)
+          buffer = buffer.slice(eventEnd + 2)
+          parseEvent(event)
         }
 
         processChunk()
@@ -102,6 +89,62 @@ function parseSSEStream(reader, onChunk, onDone, onError) {
         if (err.name === 'AbortError') return
         onError?.(err, fullText)
       })
+  }
+
+  function parseEvent(event) {
+    const lines = event.split('\n')
+    const dataLines = []
+
+    for (const line of lines) {
+      // Support both 'data: <value>' (with space, per spec) and 'data:<value>'
+      // (without space, as Spring SseEmitter sends by default).
+      if (line.startsWith('data:')) {
+        dataLines.push(line.slice(5).trimStart())
+      }
+    }
+
+    if (dataLines.length === 0) return
+
+    // Multiple data: lines inside one event are joined with a single \n per spec
+    const data = dataLines.join('\n')
+
+    if (data === '[DONE]') {
+      onDone?.(fullText)
+      return
+    }
+
+    try {
+      const parsed = JSON.parse(data)
+
+      // Spring SseEmitter serializes plain strings as JSON (e.g. data:"hello").
+      // After JSON.parse we get a JS string, not an object — use it directly.
+      if (typeof parsed === 'string') {
+        if (parsed) {
+          fullText += parsed
+          onChunk?.(parsed, fullText)
+        }
+        return
+      }
+
+      // Try multiple common field paths (OpenAI-style, direct content, text, etc.)
+      const content =
+        parsed.choices?.[0]?.delta?.content ??
+        parsed.choices?.[0]?.text ??
+        parsed.delta?.content ??
+        parsed.content ??
+        parsed.text ??
+        parsed.message ??
+        ''
+
+      if (content) {
+        fullText += content
+        onChunk?.(content, fullText)
+      }
+    } catch {
+      // Raw text mode — append directly (preserve spaces, newlines, etc.)
+      fullText += data
+      onChunk?.(data, fullText)
+    }
   }
 
   processChunk()
@@ -168,10 +211,27 @@ export function streamChat({
   })
     .then(async (res) => {
       if (!res.ok) {
-        const errText = await res.text().catch(() => '')
-        const err = new Error(`HTTP ${res.status}: ${errText}`)
+        // Try unified JSON format first (backend contract: { code, message, data })
+        let friendlyMessage
+        try {
+          const result = await res.json()
+          if (result.code !== 'SUCCESS' && result.message) {
+            friendlyMessage = result.message
+          }
+        } catch {
+          // Not JSON — ignore, will fall back below
+        }
+
+        if (!friendlyMessage) {
+          const errText = await res.text().catch(() => '')
+          const err = new Error(`HTTP ${res.status}: ${errText}`)
+          err.status = res.status
+          friendlyMessage = describeError(err, { status: res.status })
+        }
+
+        const err = new Error(friendlyMessage)
         err.status = res.status
-        err.friendlyMessage = describeError(err, { status: res.status })
+        err.friendlyMessage = friendlyMessage
         throw err
       }
 
@@ -244,10 +304,27 @@ export function streamRegenerate({ conversationId, messageId, onChunk, onDone, o
   })
     .then(async (res) => {
       if (!res.ok) {
-        const errText = await res.text().catch(() => '')
-        const err = new Error(`HTTP ${res.status}: ${errText}`)
+        // Try unified JSON format first (backend contract: { code, message, data })
+        let friendlyMessage
+        try {
+          const result = await res.json()
+          if (result.code !== 'SUCCESS' && result.message) {
+            friendlyMessage = result.message
+          }
+        } catch {
+          // Not JSON — ignore, will fall back below
+        }
+
+        if (!friendlyMessage) {
+          const errText = await res.text().catch(() => '')
+          const err = new Error(`HTTP ${res.status}: ${errText}`)
+          err.status = res.status
+          friendlyMessage = describeError(err, { status: res.status })
+        }
+
+        const err = new Error(friendlyMessage)
         err.status = res.status
-        err.friendlyMessage = describeError(err, { status: res.status })
+        err.friendlyMessage = friendlyMessage
         throw err
       }
 

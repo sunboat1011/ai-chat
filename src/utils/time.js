@@ -5,6 +5,28 @@ const DAY = 24 * HOUR
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
+/**
+ * Parse a backend ISO-8601 timestamp string into a frontend unix millisecond timestamp.
+ *
+ * @param {string} isoString - ISO-8601 formatted string (e.g. '2026-05-29T10:30:00Z')
+ * @returns {number} Unix timestamp in milliseconds, or 0 if invalid
+ */
+export function parseISOTime(isoString) {
+  if (!isoString) return 0
+  return new Date(isoString).getTime()
+}
+
+/**
+ * Convert a frontend unix millisecond timestamp into a backend ISO-8601 string.
+ *
+ * @param {number} timestamp - Unix timestamp in milliseconds
+ * @returns {string} ISO-8601 formatted string
+ */
+export function toISOTime(timestamp) {
+  if (!timestamp) return new Date().toISOString()
+  return new Date(timestamp).toISOString()
+}
+
 const pad2 = (n) => (n < 10 ? '0' + n : String(n))
 
 function sameDay(a, b) {

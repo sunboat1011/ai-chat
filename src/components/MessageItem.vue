@@ -70,6 +70,24 @@
             @click="handleContentClick"
           ></div>
 
+          <!-- Status indicators -->
+          <div v-if="message.role === 'assistant' && message.status === 'error'" class="message-status error">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            {{ $t('message.statusError') }}
+          </div>
+          <div v-else-if="message.role === 'assistant' && message.status === 'interrupted'" class="message-status interrupted">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            {{ $t('message.statusInterrupted') }}
+          </div>
+
           <div v-if="message.streaming" class="typing-indicator">
             <span></span>
             <span></span>
@@ -282,10 +300,18 @@ watch(
 function highlightMatches() {
   if (!contentRef.value || isEditing.value) return
 
-  contentRef.value.innerHTML = renderedContent.value
-
   const query = props.searchQuery
-  if (!query) return
+  if (!query) {
+    // No active search: only rewrite innerHTML if there are leftover <mark>
+    // tags from a previous search. Otherwise let v-html handle rendering,
+    // avoiding redundant DOM writes during streaming.
+    if (contentRef.value.querySelector('mark.search-highlight')) {
+      contentRef.value.innerHTML = renderedContent.value
+    }
+    return
+  }
+
+  contentRef.value.innerHTML = renderedContent.value
 
   const lowerQuery = query.toLowerCase()
 
@@ -435,7 +461,9 @@ async function copyMessage() {
 }
 
 async function handleContentClick(e) {
-  const btn = e.target.closest('button[data-action="copy-code"]')
+  // Try data-action first (preferred), fall back to .copy-btn class
+  // in case DOMPurify strips the data attribute in some versions.
+  const btn = e.target.closest('button[data-action="copy-code"]') || e.target.closest('.copy-btn')
   if (!btn) return
 
   const wrapper = btn.closest('.code-block-wrapper')
@@ -560,6 +588,28 @@ async function handleContentClick(e) {
 .action-btn:hover {
   background: var(--bg-elevated);
   color: var(--text-primary);
+}
+
+/* ─── Status Indicators ─── */
+.message-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-top: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.message-status.error {
+  color: #e05a5a;
+  background: rgba(224, 90, 90, 0.08);
+}
+
+.message-status.interrupted {
+  color: #c49a3a;
+  background: rgba(196, 154, 58, 0.08);
 }
 
 /* ─── Edit Area ─── */

@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 import {
   streamChat,
   fetchConversations,
@@ -64,10 +64,36 @@ export function useChat() {
         conv.systemPrompt = ''
         needsSave = true
       }
+      // Backward-compat: add missing model params to conversation
+      if (!('modelId' in conv)) {
+        conv.modelId = settings.value.model || ''
+        needsSave = true
+      }
+      if (conv.temperature === undefined) {
+        conv.temperature = settings.value.temperature ?? 1.0
+        needsSave = true
+      }
+      if (conv.maxTokens === undefined) {
+        conv.maxTokens = settings.value.maxTokens ?? 2048
+        needsSave = true
+      }
+      if (conv.topP === undefined) {
+        conv.topP = settings.value.topP ?? 1.0
+        needsSave = true
+      }
       if (conv.messages && conv.messages.length > 0) {
         conv.messages.forEach((msg, idx) => {
           if (!msg.timestamp) {
             msg.timestamp = (conv.updatedAt || conv.createdAt || Date.now()) + idx * 1000
+            needsSave = true
+          }
+          // Backward-compat: add status/modelId to old messages
+          if (!msg.status) {
+            msg.status = msg.streaming ? 'streaming' : 'done'
+            needsSave = true
+          }
+          if (!('modelId' in msg)) {
+            msg.modelId = conv.modelId || settings.value.model || ''
             needsSave = true
           }
         })
@@ -158,6 +184,10 @@ export function useChat() {
       createdAt: Date.now(),
       updatedAt: Date.now(),
       systemPrompt: prompt,
+      modelId: settings.value.model || '',
+      temperature: settings.value.temperature ?? 1.0,
+      maxTokens: settings.value.maxTokens ?? 2048,
+      topP: settings.value.topP ?? 1.0,
     }
     conversations.value.unshift(conv)
     saveConversations(conversations.value)
@@ -171,7 +201,9 @@ export function useChat() {
       id: generateId(),
       role: m.role,
       content: m.content,
+      modelId: settings.value.model || '',
       timestamp: Date.now(),
+      status: 'done',
     }))
 
     // Try backend first
@@ -207,6 +239,10 @@ export function useChat() {
       createdAt: Date.now(),
       updatedAt: Date.now(),
       systemPrompt: prompt,
+      modelId: settings.value.model || '',
+      temperature: settings.value.temperature ?? 1.0,
+      maxTokens: settings.value.maxTokens ?? 2048,
+      topP: settings.value.topP ?? 1.0,
     }
     conversations.value.unshift(conv)
     saveConversations(conversations.value)
@@ -292,13 +328,16 @@ export function useChat() {
     }
 
     const convId = activeConversation.value
+    const modelConfig = getActiveModelConfig()
 
     // Build user message
     const userMessage = {
       id: generateId(),
       role: 'user',
       content: userContent.trim(),
+      modelId: modelConfig.modelId,
       timestamp: Date.now(),
+      status: 'done',
     }
 
     messages.value.push(userMessage)
@@ -309,14 +348,16 @@ export function useChat() {
       await updateConversationTitle(convId, title)
     }
 
-    // Prepare AI message placeholder
-    const aiMessage = {
+    // Prepare AI message placeholder (reactive so content updates trigger re-render)
+    const aiMessage = reactive({
       id: generateId(),
       role: 'assistant',
       content: '',
+      modelId: modelConfig.modelId,
       timestamp: Date.now(),
       streaming: true,
-    }
+      status: 'streaming',
+    })
     messages.value.push(aiMessage)
     isLoading.value = true
 
@@ -324,7 +365,6 @@ export function useChat() {
     const systemPrompt = conv?.systemPrompt || ''
 
     // Call streaming API
-    const modelConfig = getActiveModelConfig()
     track('message_send', { model: modelConfig.modelId })
     abortController.value = streamChat({
       modelId: modelConfig.modelId,
@@ -340,6 +380,7 @@ export function useChat() {
       onDone: (fullText) => {
         aiMessage.content = fullText
         aiMessage.streaming = false
+        aiMessage.status = 'done'
         isLoading.value = false
         // Backend auto-saves; just update local cache
         persistConversation()
@@ -350,6 +391,7 @@ export function useChat() {
           aiMessage.content = `**Error:** ${err.message}`
         }
         aiMessage.streaming = false
+        aiMessage.status = 'error'
         isLoading.value = false
         persistConversation()
       },
@@ -376,19 +418,21 @@ export function useChat() {
 
     const convId = activeConversation.value
 
-    // Create a new placeholder message (frontend shows loading immediately)
-    const newAiMessage = {
+    // Create a new placeholder message (reactive so content updates trigger re-render)
+    const modelConfig = getActiveModelConfig()
+    const newAiMessage = reactive({
       id: 'temp_' + generateId(),
       role: 'assistant',
       content: '',
+      modelId: modelConfig.modelId,
       timestamp: Date.now(),
       streaming: true,
-    }
+      status: 'streaming',
+    })
     messages.value.splice(aiIndex, 1, newAiMessage)
     isLoading.value = true
 
     // Call backend regenerate interface via SSE
-    const modelConfig = getActiveModelConfig()
     track('message_regenerate', { model: modelConfig.modelId })
     abortController.value = streamRegenerate({
       conversationId: convId,
@@ -399,6 +443,7 @@ export function useChat() {
       onDone: (fullText) => {
         newAiMessage.content = fullText
         newAiMessage.streaming = false
+        newAiMessage.status = 'done'
         isLoading.value = false
         persistConversation()
       },
@@ -407,6 +452,7 @@ export function useChat() {
           newAiMessage.content = `**Error:** ${err.message}`
         }
         newAiMessage.streaming = false
+        newAiMessage.status = 'error'
         isLoading.value = false
         persistConversation()
       },
@@ -429,6 +475,7 @@ export function useChat() {
       ...m,
       id: generateId(),
       streaming: false,
+      status: m.status === 'streaming' ? 'interrupted' : (m.status || 'done'),
     }))
 
     const baseTitle = (conv.title || 'New Chat').replace(/\s*\(branch( \d+)?\)$/i, '')
@@ -471,6 +518,10 @@ export function useChat() {
       createdAt: Date.now(),
       updatedAt: Date.now(),
       systemPrompt: conv.systemPrompt || '',
+      modelId: conv.modelId || settings.value.model || '',
+      temperature: conv.temperature ?? settings.value.temperature ?? 1.0,
+      maxTokens: conv.maxTokens ?? settings.value.maxTokens ?? 2048,
+      topP: conv.topP ?? settings.value.topP ?? 1.0,
     }
     conversations.value.unshift(newConv)
     saveConversations(conversations.value)

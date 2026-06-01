@@ -53,6 +53,9 @@ export const zhCN = {
     copiedBtn: 'Copied!',
     messageSingular: 'message',
     messagePlural: 'messages',
+    statusInterrupted: 'Generation interrupted',
+    statusError: 'Generation failed',
+    retry: 'Retry',
   },
 
   // ─── Chat View ───
@@ -260,6 +263,16 @@ export const zhCN = {
     logoutConfirmMessage: 'Are you sure you want to log out?',
     logoutConfirmBtn: 'Log Out',
     loggedInAs: 'Logged in as {username}',
+  },
+
+  // ─── Migration ───
+  migrate: {
+    success: 'Successfully imported {importedConversations} conversations and {importedMessages} messages',
+    promptTitle: 'Local Data Detected',
+    promptMessage: 'Your local storage contains conversation data. Would you like to migrate it to the cloud?',
+    migrateBtn: 'Migrate to Cloud',
+    skipBtn: 'Skip',
+    migrating: 'Migrating…',
   },
 
   // ─── Error Boundary ───

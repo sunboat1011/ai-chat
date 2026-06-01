@@ -74,3 +74,26 @@ export function clearDraft(conversationId) {
     console.error('Failed to clear draft:', e)
   }
 }
+
+/**
+ * Load all draft entries from localStorage.
+ * Returns a mapping object: { [conversationId]: draftContent }
+ */
+export function loadAllDrafts() {
+  try {
+    const drafts = {}
+    const prefix = DRAFT_KEY_PREFIX
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key && key.startsWith(prefix)) {
+        const convId = key.slice(prefix.length)
+        if (convId && convId !== DRAFT_PENDING_KEY) {
+          drafts[convId] = localStorage.getItem(key) || ''
+        }
+      }
+    }
+    return drafts
+  } catch {
+    return {}
+  }
+}

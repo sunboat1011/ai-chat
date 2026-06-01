@@ -127,6 +127,23 @@
         </button>
       </form>
 
+      <!-- Migration prompt -->
+      <div v-if="showMigratePrompt" class="migrate-prompt">
+        <div class="migrate-icon">☁️</div>
+        <div class="migrate-text">
+          <div class="migrate-title">{{ $t('migrate.promptTitle') }}</div>
+          <div class="migrate-desc">{{ $t('migrate.promptMessage') }}</div>
+        </div>
+        <div class="migrate-actions">
+          <button class="migrate-btn migrate-skip" @click="skipMigrate">
+            {{ $t('migrate.skipBtn') }}
+          </button>
+          <button class="migrate-btn migrate-confirm" :disabled="isMigrating" @click="doMigrate">
+            {{ isMigrating ? $t('migrate.migrating') : $t('migrate.migrateBtn') }}
+          </button>
+        </div>
+      </div>
+
       <!-- Switch link -->
       <div class="login-switch">
         <span>{{ isLogin ? $t('auth.noAccount') : $t('auth.alreadyHaveAccount') }}</span>
@@ -144,12 +161,16 @@ import { useRouter } from 'vue-router'
 import { t } from '@/composables/useText.js'
 import { login, register } from '@/api/auth.js'
 import { getToken, isTokenExpired } from '@/utils/token.js'
+import { hasLocalData, migrateLocalData } from '@/api/migrate.js'
+import { showInfo } from '@/composables/useErrorToast'
 
 const router = useRouter()
 
 const isLogin = ref(true)
 const isSubmitting = ref(false)
 const errorMessage = ref('')
+const showMigratePrompt = ref(false)
+const isMigrating = ref(false)
 
 const form = reactive({
   username: '',
@@ -176,11 +197,30 @@ onMounted(() => {
 function switchTab(toLogin) {
   isLogin.value = toLogin
   errorMessage.value = ''
+  showMigratePrompt.value = false
   // Reset form on tab switch
   form.username = ''
   form.email = ''
   form.password = ''
   form.confirmPassword = ''
+}
+
+function skipMigrate() {
+  showMigratePrompt.value = false
+  router.push('/')
+}
+
+async function doMigrate() {
+  isMigrating.value = true
+  try {
+    const result = await migrateLocalData()
+    showInfo(t('migrate.success', result))
+    showMigratePrompt.value = false
+    router.push('/')
+  } catch (err) {
+    errorMessage.value = err.friendlyMessage || err.message || 'Migration failed'
+    isMigrating.value = false
+  }
 }
 
 function validate() {
@@ -225,7 +265,13 @@ async function handleSubmit() {
         ...(form.email.trim() ? { email: form.email.trim() } : {}),
       })
     }
-    router.push('/')
+
+    // After successful auth, check for local data to migrate
+    if (hasLocalData()) {
+      showMigratePrompt.value = true
+    } else {
+      router.push('/')
+    }
   } catch (err) {
     errorMessage.value = err.friendlyMessage || err.message || 'Authentication failed'
   } finally {
@@ -370,6 +416,80 @@ async function handleSubmit() {
 
 .switch-link:hover {
   color: var(--accent-hover);
+}
+
+/* ─── Migration Prompt ─── */
+.migrate-prompt {
+  margin-top: 1.25rem;
+  padding: 1rem;
+  background: var(--bg-tertiary);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: 16px;
+  text-align: center;
+}
+
+.migrate-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.migrate-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.migrate-desc {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.75rem;
+  line-height: 1.5;
+}
+
+.migrate-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.migrate-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 2px solid transparent;
+}
+
+.migrate-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.migrate-skip {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: var(--border-color);
+}
+
+.migrate-skip:hover {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+.migrate-confirm {
+  background: var(--accent-primary);
+  color: #fff;
+  border-color: var(--accent-primary);
+  box-shadow: 0 4px 0 0 #11a89b;
+}
+
+.migrate-confirm:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 
 /* ─── Mobile Responsive ─── */

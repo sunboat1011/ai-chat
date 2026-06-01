@@ -222,15 +222,23 @@ body {
   font-size: 0.875em;
   background: var(--bg-secondary);
   padding: 0.15em 0.4em;
-  border-radius: 8px;
+  border-radius: 6px;
   color: var(--text-primary);
 }
 
-.markdown-body pre {
-  margin: 1rem 0;
-  border-radius: 20px;
+/* Wrapper controls the unified rounded corners */
+.code-block-wrapper {
+  border-radius: 12px;
   overflow: hidden;
   border: 1px solid var(--border-subtle);
+  margin: 1rem 0;
+}
+
+.markdown-body pre {
+  margin: 0;
+  border-radius: 0;
+  overflow: visible;
+  border: none;
 }
 
 .markdown-body pre code {
@@ -250,34 +258,52 @@ body {
   align-items: center;
   padding: 0.5rem 1rem;
   background: var(--bg-code-header);
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid rgba(196, 184, 158, 0.15);
   font-size: 0.75rem;
   color: #9f927d;
   font-family: 'Fira Code', monospace;
 }
 
+.code-block-header .lang-label {
+  text-transform: lowercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
 .code-block-header .copy-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.25rem 0.6rem;
-  border: none;
-  background: transparent;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid rgba(196, 184, 158, 0.25);
+  background: rgba(255, 255, 255, 0.06);
   color: #9f927d;
   cursor: pointer;
-  border-radius: 50px;
+  border-radius: 6px;
   font-size: 0.75rem;
   font-weight: 600;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: inherit;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .code-block-header .copy-btn:hover {
-  background: rgba(114, 93, 66, 0.2);
+  background: rgba(255, 255, 255, 0.12);
   color: #e8d5bc;
+  border-color: rgba(196, 184, 158, 0.4);
+}
+
+.code-block-header .copy-btn:active {
+  transform: scale(0.96);
 }
 
 .code-block-header .copy-btn.copied {
   color: #6fba2c;
+  border-color: rgba(111, 186, 44, 0.4);
+  background: rgba(111, 186, 44, 0.1);
+}
+
+.code-block-header .copy-btn svg {
+  flex-shrink: 0;
 }
 
 /* ─── Highlight.js Theme Override ─── */

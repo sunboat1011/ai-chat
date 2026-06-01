@@ -490,7 +490,7 @@ export function useSettings() {
     const model = allModels.value.find((m) => m.id === modelId)
     if (model) {
       return {
-        modelId: model.modelName || model.id,
+        modelId: model.modelId || model.id,
         apiBaseUrl: model.apiBaseUrl || settings.value.apiBaseUrl,
       }
     }
