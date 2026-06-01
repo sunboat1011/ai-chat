@@ -216,6 +216,8 @@ export const zhCN = {
     httpGeneric: 'Request failed ({status}). Please try again.',
     offlineMode: 'Currently in offline mode. Data is saved locally only.',
     deleteFailed: 'Failed to delete conversation. Please try again.',
+    deleteMessageFailed: 'Failed to delete message. Please try again.',
+    restoreMessageFailed: 'Failed to restore message. Please try again.',
     unhandledRejection: 'An unexpected error occurred. Please try again.',
     unknownError: 'Something went wrong.',
   },

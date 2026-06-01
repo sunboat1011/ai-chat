@@ -42,6 +42,72 @@ function describeError(err, context = {}) {
 }
 
 /**
+ * Shared SSE stream parser for streamChat and streamRegenerate.
+ * Reads a ReadableStream, parses `event: message` / `data: ...` lines,
+ * and calls the provided callbacks.
+ *
+ * @param {ReadableStreamDefaultReader} reader
+ * @param {Function} [onChunk]  - (chunkText, fullText) => void
+ * @param {Function} [onDone]   - (fullText) => void
+ * @param {Function} [onError]  - (err, fullText) => void
+ */
+function parseSSEStream(reader, onChunk, onDone, onError) {
+  const decoder = new TextDecoder()
+  let fullText = ''
+  let buffer = ''
+
+  const processChunk = () => {
+    reader
+      .read()
+      .then(({ done, value }) => {
+        if (done) {
+          onDone?.(fullText)
+          return
+        }
+
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() // keep incomplete last line
+
+        for (const line of lines) {
+          const trimmed = line.trim()
+          if (!trimmed) continue
+
+          if (trimmed.startsWith('data: ')) {
+            const data = trimmed.slice(6).trim()
+            if (data === '[DONE]') {
+              onDone?.(fullText)
+              return
+            }
+            try {
+              const parsed = JSON.parse(data)
+              const content = parsed.choices?.[0]?.delta?.content ?? parsed.content ?? ''
+              if (content) {
+                fullText += content
+                onChunk?.(content, fullText)
+              }
+            } catch {
+              // Raw text mode — append directly
+              if (data) {
+                fullText += data
+                onChunk?.(data, fullText)
+              }
+            }
+          }
+        }
+
+        processChunk()
+      })
+      .catch((err) => {
+        if (err.name === 'AbortError') return
+        onError?.(err, fullText)
+      })
+  }
+
+  processChunk()
+}
+
+/**
  * Send a message to the AI backend with SSE streaming.
  *
  * @param {Object}   options
@@ -94,8 +160,6 @@ export function streamChat({
     headers['Authorization'] = `Bearer ${token}`
   }
 
-  let receivedAny = false
-
   fetch(`${API_BASE}/chat/stream`, {
     method: 'POST',
     headers,
@@ -112,61 +176,100 @@ export function streamChat({
       }
 
       const reader = res.body.getReader()
-      const decoder = new TextDecoder()
-      let fullText = ''
 
-      const processStream = () => {
-        reader
-          .read()
-          .then(({ done, value }) => {
-            if (done) {
-              onDone?.(fullText)
-              return
-            }
+      parseSSEStream(
+        reader,
+        (chunk, fullText) => {
+          onChunk?.(chunk, fullText)
+        },
+        (fullText) => {
+          onDone?.(fullText)
+        },
+        (err, fullText) => {
+          // Stream interrupted mid-flight — preserve partial content.
+          showWarning(t('errors.streamInterrupted'))
+          trackError('api', { message: 'stream_interrupted', status: err.status })
+          const wrapped = new Error(t('errors.streamInterrupted'))
+          wrapped.cause = err
+          wrapped.partialText = fullText
+          onError?.(wrapped)
+        }
+      )
+    })
+    .catch((err) => {
+      if (err.name === 'AbortError') return
+      let friendly
+      if (err.friendlyMessage) {
+        friendly = err.friendlyMessage
+      } else if (err instanceof TypeError) {
+        friendly = describeError(err)
+      } else {
+        friendly = err.message || t('errors.unknownError')
+      }
+      showError(friendly)
+      trackError('api', { message: friendly, status: err.status })
+      const wrapped = new Error(friendly)
+      wrapped.cause = err
+      wrapped.status = err.status
+      onError?.(wrapped)
+    })
 
-            const chunk = decoder.decode(value, { stream: true })
-            receivedAny = receivedAny || chunk.length > 0
-            // Parse SSE lines: data: ...\n\n
-            const lines = chunk.split('\n')
-            for (const line of lines) {
-              if (line.startsWith('data: ')) {
-                const data = line.slice(6).trim()
-                if (data === '[DONE]') {
-                  onDone?.(fullText)
-                  return
-                }
-                try {
-                  const parsed = JSON.parse(data)
-                  const content = parsed.choices?.[0]?.delta?.content ?? parsed.content ?? ''
-                  if (content) {
-                    fullText += content
-                    onChunk?.(content, fullText)
-                  }
-                } catch {
-                  // Raw text mode — append directly
-                  if (data) {
-                    fullText += data
-                    onChunk?.(data, fullText)
-                  }
-                }
-              }
-            }
+  return controller
+}
 
-            processStream()
-          })
-          .catch((err) => {
-            if (err.name === 'AbortError') return
-            // Stream interrupted mid-flight — preserve partial content.
-            showWarning(t('errors.streamInterrupted'))
-            trackError('api', { message: 'stream_interrupted', status: err.status })
-            const wrapped = new Error(t('errors.streamInterrupted'))
-            wrapped.cause = err
-            wrapped.partialText = fullText
-            onError?.(wrapped)
-          })
+/**
+ * Regenerate an AI response via SSE streaming.
+ *
+ * @param {Object}   options
+ * @param {string}   options.conversationId  - Conversation ID
+ * @param {string}   options.messageId       - The assistant message ID to regenerate
+ * @param {Function} [options.onChunk]       - Called with each text chunk
+ * @param {Function} [options.onDone]        - Called when stream finishes
+ * @param {Function} [options.onError]       - Called on network / parse error
+ * @returns {AbortController} - Call .abort() to cancel the request
+ */
+export function streamRegenerate({ conversationId, messageId, onChunk, onDone, onError }) {
+  const controller = new AbortController()
+
+  const headers = { 'Content-Type': 'application/json' }
+  const token = getToken()
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+
+  fetch(`${API_BASE}/conversations/${conversationId}/messages/${messageId}/regenerate`, {
+    method: 'POST',
+    headers,
+    signal: controller.signal,
+  })
+    .then(async (res) => {
+      if (!res.ok) {
+        const errText = await res.text().catch(() => '')
+        const err = new Error(`HTTP ${res.status}: ${errText}`)
+        err.status = res.status
+        err.friendlyMessage = describeError(err, { status: res.status })
+        throw err
       }
 
-      processStream()
+      const reader = res.body.getReader()
+
+      parseSSEStream(
+        reader,
+        (chunk, fullText) => {
+          onChunk?.(chunk, fullText)
+        },
+        (fullText) => {
+          onDone?.(fullText)
+        },
+        (err, fullText) => {
+          showWarning(t('errors.streamInterrupted'))
+          trackError('api', { message: 'stream_regenerate_interrupted', status: err.status })
+          const wrapped = new Error(t('errors.streamInterrupted'))
+          wrapped.cause = err
+          wrapped.partialText = fullText
+          onError?.(wrapped)
+        }
+      )
     })
     .catch((err) => {
       if (err.name === 'AbortError') return
@@ -264,4 +367,24 @@ export async function updateConversation(conversationId, payload = {}) {
  */
 export async function deleteConversation(conversationId) {
   return request(`/conversations/${conversationId}`, { method: 'DELETE' })
+}
+
+/**
+ * Delete a message.
+ *
+ * @param {string} messageId
+ * @returns {Promise<null>}
+ */
+export async function deleteMessage(messageId) {
+  return request(`/messages/${messageId}`, { method: 'DELETE' })
+}
+
+/**
+ * Restore a deleted message.
+ *
+ * @param {string} messageId
+ * @returns {Promise<Object>} MessageResponse
+ */
+export async function restoreMessage(messageId) {
+  return request(`/messages/${messageId}/restore`, { method: 'POST' })
 }

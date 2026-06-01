@@ -6,6 +6,9 @@ import {
   fetchConversation,
   updateConversation as apiUpdateConversation,
   deleteConversation as apiDeleteConversation,
+  deleteMessage as apiDeleteMessage,
+  restoreMessage as apiRestoreMessage,
+  streamRegenerate,
 } from '@/api/chat'
 import { loadConversations, saveConversations, generateId, clearDraft } from '@/utils/storage'
 import { adaptConversation, adaptMessage } from '@/utils/adapter'
@@ -371,14 +374,11 @@ export function useChat() {
     const userMessage = messages.value[aiIndex - 1]
     if (userMessage?.role !== 'user') return
 
-    const userContent = userMessage.content
     const convId = activeConversation.value
-    const conv = conversations.value.find((c) => c.id === convId)
-    const systemPrompt = conv?.systemPrompt || ''
 
-    // Remove the old AI message and insert a new placeholder at the same position
+    // Create a new placeholder message (frontend shows loading immediately)
     const newAiMessage = {
-      id: generateId(),
+      id: 'temp_' + generateId(),
       role: 'assistant',
       content: '',
       timestamp: Date.now(),
@@ -387,17 +387,12 @@ export function useChat() {
     messages.value.splice(aiIndex, 1, newAiMessage)
     isLoading.value = true
 
-    // Call streaming API with the same user content
+    // Call backend regenerate interface via SSE
     const modelConfig = getActiveModelConfig()
     track('message_regenerate', { model: modelConfig.modelId })
-    abortController.value = streamChat({
-      modelId: modelConfig.modelId,
-      message: userContent,
-      systemPrompt,
+    abortController.value = streamRegenerate({
       conversationId: convId,
-      temperature: settings.value.temperature,
-      maxTokens: settings.value.maxTokens,
-      topP: settings.value.topP,
+      messageId,
       onChunk: (chunk, fullText) => {
         newAiMessage.content = fullText
       },
@@ -500,8 +495,9 @@ export function useChat() {
   }
 
   // ─── Delete Message ───
-  function deleteMessage(messageId) {
+  async function deleteMessage(messageId) {
     if (isLoading.value) return
+
     const index = messages.value.findIndex((m) => m.id === messageId)
     if (index === -1) return
 
@@ -514,8 +510,22 @@ export function useChat() {
     const deleted = messages.value[index]
     lastDeleted.value = { message: deleted, index, convId: activeConversation.value }
 
+    // Immediate local deletion for instant feedback
     messages.value.splice(index, 1)
     persistConversation()
+
+    // Async backend call (skip in offline mode)
+    if (!isOfflineMode.value) {
+      try {
+        await apiDeleteMessage(messageId)
+      } catch {
+        // Backend delete failed — roll back local state
+        messages.value.splice(index, 0, deleted)
+        lastDeleted.value = null
+        showError(t('errors.deleteMessageFailed'))
+        return
+      }
+    }
 
     // Auto-clear undo after 5 seconds
     undoTimer = setTimeout(() => {
@@ -524,16 +534,30 @@ export function useChat() {
     }, 5000)
   }
 
-  function undoDelete() {
+  async function undoDelete() {
     if (!lastDeleted.value) return
     const { message, index, convId } = lastDeleted.value
 
     if (activeConversation.value !== convId) {
-      setActiveConversation(convId)
+      await setActiveConversation(convId)
     }
 
+    // Immediate local restore for instant feedback
     messages.value.splice(index, 0, message)
     persistConversation()
+
+    // Async backend call (skip in offline mode)
+    if (!isOfflineMode.value) {
+      try {
+        await apiRestoreMessage(message.id)
+      } catch {
+        // Backend restore failed — re-delete locally
+        messages.value.splice(index, 1)
+        persistConversation()
+        showError(t('errors.restoreMessageFailed'))
+        return
+      }
+    }
 
     if (undoTimer) {
       clearTimeout(undoTimer)
