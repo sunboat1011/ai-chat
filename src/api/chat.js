@@ -99,7 +99,14 @@ function parseSSEStream(reader, onChunk, onDone, onError) {
       // Support both 'data: <value>' (with space, per spec) and 'data:<value>'
       // (without space, as Spring SseEmitter sends by default).
       if (line.startsWith('data:')) {
-        dataLines.push(line.slice(5).trimStart())
+        let value = line.slice(5)
+        // SSE spec: only the first space after 'data:' is a field separator,
+        // not part of the value. Do NOT trim all leading whitespace — that
+        // would destroy code indentation (leading spaces/tabs inside the data).
+        if (value.startsWith(' ')) {
+          value = value.slice(1)
+        }
+        dataLines.push(value)
       }
     }
 
