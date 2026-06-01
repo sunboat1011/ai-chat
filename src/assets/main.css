@@ -274,7 +274,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.3rem 0.7rem;
+  padding: 0.3rem 0.6rem;
   border: 1px solid rgba(196, 184, 158, 0.25);
   background: rgba(255, 255, 255, 0.06);
   color: #9f927d;
@@ -283,6 +283,8 @@ body {
   font-size: 0.75rem;
   font-weight: 600;
   font-family: inherit;
+  line-height: 1;
+  white-space: nowrap;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -304,6 +306,11 @@ body {
 
 .code-block-header .copy-btn svg {
   flex-shrink: 0;
+  display: block;
+}
+
+.code-block-header .copy-btn .copy-btn-text {
+  display: inline;
 }
 
 /* ─── Highlight.js Theme Override ─── */
